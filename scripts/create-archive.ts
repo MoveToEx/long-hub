@@ -3,8 +3,8 @@ import { Post, Tag, User, seq } from '@/lib/db';
 import tar from 'tar';
 
 (async () => {
-    if (fs.existsSync('www.tar')) {
-        fs.unlinkSync('www.tar');
+    if (fs.existsSync('archive.tar')) {
+        fs.unlinkSync('archive.tar');
     }
 
     const posts = await Post.findAll({
@@ -20,7 +20,7 @@ import tar from 'tar';
     fs.writeFileSync('./upload/posts.json', JSON.stringify(data));
 
     await tar.create({
-        file: 'www.tar',
+        file: 'archive.tar',
         cwd: './upload/'
     }, ['posts', 'posts.json']);
 
