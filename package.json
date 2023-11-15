@@ -1,24 +1,55 @@
 {
-  "name": "experiment",
+  "name": "long-hub",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "init": "npx ts-node ./scripts/init.ts",
+    "create-archive": "npx ts-node ./scripts/create-archive.ts",
+    "load-legacy-archive": "npx ts-node ./scripts/load-legacy-archive.ts",
+    "load-archive": "npx ts-node ./scripts/load-archive.ts"
   },
   "dependencies": {
+    "@azure/msal-node": "^2.5.1",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mdx-js/loader": "^3.0.0",
+    "@mdx-js/react": "^3.0.0",
+    "@mui/icons-material": "^5.14.16",
+    "@mui/material": "^5.14.17",
+    "@next/mdx": "^14.0.2",
+    "@types/cli-progress": "^3.11.5",
+    "@types/lodash": "^4.14.201",
+    "@types/mdx": "^2.0.10",
+    "@types/sqlite3": "^3.1.11",
+    "@types/tar": "^6.1.9",
+    "axios": "^1.6.0",
+    "bcrypt": "^5.1.1",
+    "blockhash-core": "^0.1.0",
+    "cli-progress": "^3.12.0",
+    "image-hash": "^5.3.2",
+    "iron-session": "^6.3.1",
+    "js-base64": "^3.7.5",
+    "lodash": "^4.17.21",
+    "next": "^14.0.2",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.0.1"
+    "react-router-dom": "^6.18.0",
+    "sequelize": "^6.34.0",
+    "sharp": "^0.32.6",
+    "sqlite3": "^5.1.6",
+    "tar": "^6.2.0",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "14.0.1"
+    "eslint-config-next": "14.0.1",
+    "typescript": "^5"
   }
 }

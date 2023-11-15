@@ -1,4 +1,12 @@
 {
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    },
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  },
   "compilerOptions": {
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
@@ -6,6 +14,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    "downlevelIteration": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",

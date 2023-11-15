@@ -1,95 +1,84 @@
+'use client';
 import Image from 'next/image'
-import styles from './page.module.css'
+import Grid from '@mui/material/Unstable_Grid2';
+import Link from 'next/link';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
+import Skeleton from '@mui/material/Skeleton';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import _ from 'lodash';
+
+const PAGINATION_LIMIT = 24;
+
+function toGridItems(res: any) {
+	var elem;
+	if (_.isEmpty(res)) {
+		elem = _.range(PAGINATION_LIMIT).map((x: number) => (
+			<>
+				<Skeleton variant="rectangular" height={128} />
+				<Skeleton variant="text" height={24} />
+				<Skeleton variant="text" height={24} />
+			</>
+		))
+	}
+	else {
+		elem = res.data.map((e: any) => (
+			<Link href={`/post/${e.id}`} key={e.id}>
+				<Image
+					src={e.image}
+					alt={e.text}
+					height={0}
+					width={0}
+					sizes='100vw'
+					style={{
+						width: '100%',
+						height: '300px',
+						objectFit: 'contain'
+					}}
+				/>
+			</Link>
+		))
+	}
+	return elem.map((e: any, i: number) => (
+		<Grid xs={12} sm={6} md={3} key={i}>
+			{e}
+		</Grid>
+	));
+}
 
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+	const [result, setResult] = useState({});
+	const [page, setPage] = useState(1);
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+	function onPage(e: React.ChangeEvent<unknown>, val: number) {
+		setResult({});
+		setPage(val);
+		window.scroll({
+			top: 0,
+			left: 0
+		});
+	}
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+	useEffect(() => {
+		axios.get('/api/post/?offset=' + (page * PAGINATION_LIMIT - PAGINATION_LIMIT))
+			.then(x => setResult(x.data))
+			.catch(x => setResult({}));
+	}, [page]);
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+	return (
+		<>
+			<Grid container spacing={2}>
+				{toGridItems(result as any)}
+			</Grid>
+			<Stack alignItems="center">
+				<Pagination
+					count={_.isEmpty(result) ? 0 : Math.ceil((result as any).count / PAGINATION_LIMIT)}
+					siblingCount={0}
+					page={page}
+					onChange={onPage}
+				></Pagination>
+			</Stack>
+		</>
+	);
 }
