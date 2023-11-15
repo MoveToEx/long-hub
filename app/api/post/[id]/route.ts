@@ -1,8 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
-import axios from "axios";
 import _ from "lodash";
-import { seq, Post, Tag } from "@/lib/db";
-import { Base64 } from "js-base64";
+import { Post, Tag } from "@/lib/db";
+import fs from 'fs';
 
 export async function GET(req: NextRequest, {
     params
@@ -67,5 +66,26 @@ export async function PUT(req: NextRequest, {
 
     await post.save();
 
-    return NextResponse.json({ status: 'ok' });
+    return NextResponse.json({ info: 'modified' });
+}
+
+export async function DELETE(req: NextRequest, {
+    params
+}: {
+    params: {
+        id: string
+    }
+}) {
+    var post = await Post.findByPk(params.id);
+
+    if (!post) {
+        return NextResponse.json({ error: 'post ' + params.id + ' not found' }, { status: 404 });
+    }
+
+    fs.rmSync('.' + (post as any).image);
+
+    await (post as any).removeTags();
+    await post.destroy();
+
+    return NextResponse.json({ info: 'removed' }, { status: 200 });
 }
