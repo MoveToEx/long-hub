@@ -18,9 +18,14 @@ export async function GET(req: NextRequest, {
         }
     });
 
+    const count = await (tag as any).countPosts();
+
     const posts = await (tag as any).getPosts({
         joinTableAttributes: []
     }).then((x: any) => x.slice(offset, offset + limit));
 
-    return NextResponse.json(posts.map((x: any) => x.toJSON()));
+    return NextResponse.json({
+        count: count,
+        data: posts.map((x: any) => x.toJSON())
+    });
 }

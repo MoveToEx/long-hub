@@ -93,7 +93,7 @@ export default function SearchPage({
             </Snackbar>
 
             <Grid container spacing={2}>
-                {toGridItems(result)}
+                {toGridItems((result as any).data)}
             </Grid>
 
             <Stack alignItems="center">
