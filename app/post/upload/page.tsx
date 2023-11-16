@@ -22,6 +22,7 @@ import styles from './page.module.css';
 import { useEffect, useState } from 'react';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Image from 'next/image';
 import _ from 'lodash';
 import axios from 'axios';
@@ -88,6 +89,15 @@ export default function UploadPage() {
                 setButtonDisabled(false);
                 setLoading(false);
             });
+    }
+
+    function skip() {
+        setFiles([...files.slice(1)]);
+        setSnackbar({
+            open: true,
+            severity: 'info',
+            content: 'Skipped 1 image'
+        });
     }
 
     if (files.length == 0) {
@@ -236,12 +246,12 @@ export default function UploadPage() {
                         </Box>
 
 
-                        <Box sx={{ m: 2, position: 'relative' }}>
+                        <Box sx={{ m: 2, position: 'relative' }} >
 
-                            <Stack direction="row">
+                            <Stack direction="row" spacing={2}>
                                 <FormControlLabel control={<Checkbox value={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar images" />
 
-                                <Box sx={{ m: 2, position: 'relative' }}>
+                                <Box sx={{ position: 'relative' }}>
                                     <Fab onClick={submit} color="primary" disabled={buttonDisabled}>
                                         <SendIcon />
                                     </Fab>
@@ -259,6 +269,10 @@ export default function UploadPage() {
                                         )
                                     }
                                 </Box>
+
+                                <Fab onClick={skip} color="error">
+                                    <DeleteIcon />
+                                </Fab>
                             </Stack>
                         </Box>
                     </Stack>
