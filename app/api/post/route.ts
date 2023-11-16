@@ -2,6 +2,8 @@ import { NextResponse, NextRequest } from "next/server";
 import _ from 'lodash';
 import { Post, Tag } from "@/lib/db";
 import fs from 'fs';
+// @ts-expect-error -- upstream types do not exist: https://github.com/btd/sharp-phash/issues/14
+import phash from "sharp-phash";
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -41,7 +43,9 @@ export async function POST(req: NextRequest) {
         const buffer = Buffer.from(await img.arrayBuffer());
         fs.writeFileSync(process.cwd() + filename, buffer, { flag: 'w' });
 
+        (post as any).imageHash = await phash(buffer);
         (post as any).image = filename;
+        
         post.save();
     }
     catch (e) {

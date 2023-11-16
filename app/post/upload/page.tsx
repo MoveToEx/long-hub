@@ -11,20 +11,20 @@ import CircularProgress from '@mui/material/CircularProgress';
 import SendIcon from '@mui/icons-material/Send';
 import Rating from '@mui/material/Rating';
 import Snackbar from '@mui/material/Snackbar';
-import MuiAlert, { AlertProps } from '@mui/material/Alert';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import Link from 'next/link';
+import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import styles from './page.module.css';
-import { useEffect, useState, forwardRef } from 'react';
+import { useEffect, useState } from 'react';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Image from 'next/image';
 import _ from 'lodash';
 import axios from 'axios';
-
-const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
-    props,
-    ref,
-) {
-    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
 
 export default function UploadPage() {
     const [loading, setLoading] = useState(false);
@@ -34,7 +34,11 @@ export default function UploadPage() {
     const [aggr, setAggr] = useState(0);
     const [inputTags, setInputTags] = useState<string[]>([]);
     const [tagsLib, setTagsLib] = useState<string[]>([]);
+    const [ignoreSimilar, setIgnoreSimilar] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [similar, setSimilar] = useState<string[]>([]);
     const [snackbar, setSnackbar] = useState<any>({ open: false });
+
     let elem;
 
     useEffect(() => {
@@ -53,13 +57,21 @@ export default function UploadPage() {
         };
         fd.append('image', files[0].file);
         axios
-            .post('/api/post', fd)
+            .post('/api/similar', fd)
             .then(res => {
-                return axios.put('/api/post/' + res.data.id, meta);
-            }).then(res => {
+                if (res.data.length && !ignoreSimilar) {
+                    setSimilar(res.data);
+                    setDialogOpen(true);
+                    throw 'rejected for similar posts';
+                }
+            })
+            .then(() => axios.post('/api/post', fd))
+            .then(res => axios.put('/api/post/' + res.data.id, meta))
+            .then(() => {
                 setText('');
                 setAggr(0);
                 setInputTags([]);
+                setIgnoreSimilar(false);
                 setFiles(_.slice(files, 1));
                 setSnackbar({
                     open: true,
@@ -70,7 +82,7 @@ export default function UploadPage() {
                 setSnackbar({
                     open: true,
                     severity: 'error',
-                    content: 'Failed when uploading'
+                    content: 'Failed when uploading: ' + e
                 });
             }).finally(() => {
                 setButtonDisabled(false);
@@ -162,7 +174,7 @@ export default function UploadPage() {
                         }} />
                 </Grid>
                 <Grid item xs={12} md={8}>
-                    <Stack spacing={2} alignItems="center">
+                    <Stack spacing={2} alignItems="center" sx={{ m: 2 }}>
                         <Typography variant="h6">
                             {files.length.toString() + ' left'}
                         </Typography>
@@ -223,23 +235,31 @@ export default function UploadPage() {
                             />
                         </Box>
 
-                        <Box sx={{ m: 1, position: 'relative' }}>
-                            <Fab onClick={submit} color="primary" disabled={buttonDisabled}>
-                                <SendIcon />
-                            </Fab>
-                            {
-                                loading && (
-                                    <CircularProgress
-                                        size={68}
-                                        sx={{
-                                            position: 'absolute',
-                                            top: -6,
-                                            left: -6,
-                                            zIndex: 1
-                                        }}
-                                    />
-                                )
-                            }
+
+                        <Box sx={{ m: 2, position: 'relative' }}>
+
+                            <Stack direction="row">
+                                <FormControlLabel control={<Checkbox value={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar images" />
+
+                                <Box sx={{ m: 2, position: 'relative' }}>
+                                    <Fab onClick={submit} color="primary" disabled={buttonDisabled}>
+                                        <SendIcon />
+                                    </Fab>
+                                    {
+                                        loading && (
+                                            <CircularProgress
+                                                size={68}
+                                                sx={{
+                                                    position: 'absolute',
+                                                    top: -6,
+                                                    left: -6,
+                                                    zIndex: 1
+                                                }}
+                                            />
+                                        )
+                                    }
+                                </Box>
+                            </Stack>
                         </Box>
                     </Stack>
                 </Grid>
@@ -249,14 +269,48 @@ export default function UploadPage() {
 
     return (
         <>
+            <Dialog onClose={() => setDialogOpen(!dialogOpen)} open={dialogOpen} maxWidth="md" fullWidth>
+                <DialogTitle>Similar images</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        {"The following posts have a similar image to yours. To upload anyway, check the ignore checkbox and submit again."}
+                    </DialogContentText>
+                    <Box>
+                        <Grid container>
+                            {
+                                similar.map((post: any) => (
+                                    <Grid item key={post.id} md={6} xs={12}>
+                                        <Link href={'/post/' + post.id} key={post.image} target="_blank">
+                                            <Image
+                                                src={post.image}
+                                                alt={post.id}
+                                                height={0}
+                                                width={0}
+                                                sizes='100vw'
+                                                style={{
+                                                    width: '100%',
+                                                    height: '300px',
+                                                    objectFit: 'contain'
+                                                }}
+                                            />
+                                        </Link>
+                                    </Grid>
+                                ))
+                            }
+                        </Grid>
+                    </Box>
+                </DialogContent>
+            </Dialog >
+
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={2000}
                 onClose={() => { setSnackbar({ ...snackbar, open: false }); }}>
-                <Alert severity={snackbar.severity}>
+                <Alert severity={snackbar.severity} variant='filled' elevation={6}>
                     {snackbar.content ?? ''}
                 </Alert>
             </Snackbar>
+
             {elem}
         </>
     )

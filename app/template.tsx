@@ -23,6 +23,7 @@ import Home from '@mui/icons-material/Home';
 import TagIcon from '@mui/icons-material/Tag';
 import Search from '@mui/icons-material/Search';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import ImageIcon from '@mui/icons-material/Image';
 import Menu from '@mui/icons-material/Menu';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -90,6 +91,7 @@ export default function RootTemplate({
                         <DrawerItem title="List" href="/post/list" icon={<FormatListBulletedIcon />} />
                         <DrawerItem title="Upload" href="/post/upload" icon={<FileUploadIcon />} />
                         <DrawerItem title="Search" href="/post/search" icon={<Search />} />
+                        <DrawerItem title="Find similar" href="/post/similar" icon={<ImageIcon />} />
                         <DrawerItem title="Document" href="/doc" icon={<TextSnippetIcon />} />
                     </List>
                 </Box>

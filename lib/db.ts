@@ -16,6 +16,7 @@ export const Post = seq.define("posts", {
     },
     text: DataTypes.TEXT,
     image: DataTypes.STRING,
+    imageHash: DataTypes.STRING,
     aggr: {
         type: DataTypes.FLOAT,
         defaultValue: 0.0

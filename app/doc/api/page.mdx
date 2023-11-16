@@ -138,5 +138,26 @@ import Stack from '@mui/material/Stack';
     </AccordionDetails>
 </Accordion>
 
+<Accordion>
+    <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
+        <code>POST /api/similar/</code> - Search for posts with perceptually similar images
+    </AccordionSummary>
+
+    <AccordionDetails>
+        Method: `POST`  
+        URL: `/api/similar/`  
+        Accepts: `multipart/form-data`  
+        Params:
+
+        <DataTable
+            head={['Name', 'Description', 'Example', 'Note']}
+            data={
+                [
+                    [<code>image</code>, 'Image to search for', '...', '']
+                ]
+            } />
+    </AccordionDetails>
+</Accordion>
+
 
 </Stack>
