@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, {
     const { searchParams } = new URL(req.url);
     const offset = Number(searchParams.get('offset') ?? '0');
     const limit = Number(searchParams.get('limit') ?? '24');
-    const query = JSON.parse(Buffer.from(params.query, 'base64').toString());
+    const query = JSON.parse(Buffer.from(decodeURIComponent(params.query), 'base64').toString());
 
     var filterOption: any = {
         where: {},

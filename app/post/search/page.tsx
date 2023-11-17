@@ -80,7 +80,7 @@ export default function SearchPage() {
 
     useEffect(() => {
         if (_.isEmpty(inputValue)) return;
-        var encoded = Base64.encode(JSON.stringify(query));
+        var encoded = encodeURIComponent(Base64.encode(JSON.stringify(query)));
         axios.get('/api/search/' + encoded + '?offset=' + ((page - 1) * 24).toString())
             .then(x => setResult(x.data));
     }, [query, page, inputValue]);
