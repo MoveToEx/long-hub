@@ -125,9 +125,9 @@ export default function UploadPage() {
                         {
                             similar.map((post: any) => (
                                 <Grid item key={post.id} md={6} xs={12}>
-                                    <Link href={'/post/' + post.id} key={post.image} target="_blank">
+                                    <Link href={'/post/' + post.id} key={post.imageURL} target="_blank">
                                         <Image
-                                            src={post.image}
+                                            src={post.imageURL}
                                             alt={post.id}
                                             height={0}
                                             width={0}

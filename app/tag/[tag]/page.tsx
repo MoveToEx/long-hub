@@ -6,8 +6,6 @@ import Link from 'next/link';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Skeleton from '@mui/material/Skeleton';
-import Alert from '@mui/material/Alert';
-import Snackbar from '@mui/material/Snackbar';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import TagIcon from '@mui/icons-material/Tag';
@@ -32,7 +30,7 @@ function toGridItems(res: any) {
         elem = res.map((e: any, i: number) => (
             <Link href={`/post/${e.id}`} key={i}>
                 <Image
-                    src={e.image}
+                    src={e.imageURL}
                     alt={e.text}
                     height={0}
                     width={0}
@@ -63,7 +61,6 @@ export default function SearchPage({
 }) {
     const [page, setPage] = useState(1);
     const [result, setResult] = useState({});
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     function onPage(e: React.ChangeEvent<unknown>, val: number) {
         setResult({});
@@ -85,12 +82,6 @@ export default function SearchPage({
                 <TagIcon fontSize="large" />
                 {params.tag}
             </Typography>
-            
-            <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={() => setSnackbarOpen(false)}>
-                <Alert severity='error' onClose={() => setSnackbarOpen(false)}>
-                    Failed when fetching data.
-                </Alert>
-            </Snackbar>
 
             <Grid container spacing={2}>
                 {toGridItems((result as any).data)}

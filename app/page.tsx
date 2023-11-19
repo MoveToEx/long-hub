@@ -26,7 +26,7 @@ function toGridItems(res: any) {
 		elem = res.data.map((e: any) => (
 			<Link href={`/post/${e.id}`} key={e.id}>
 				<Image
-					src={e.image}
+					src={e.imageURL}
 					alt={e.text}
 					height={0}
 					width={0}

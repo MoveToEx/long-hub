@@ -36,7 +36,7 @@ function toStack(data: any) {
                 <Grid xs={4} md={2} mdOffset={2} sx={{ minHeight: '128px' }}>
                     <Link href={`/post/${x.id}`}>
                         <Image
-                            src={x.image}
+                            src={x.imageURL}
                             alt={x.id}
                             height={0}
                             width={0}

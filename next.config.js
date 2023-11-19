@@ -20,7 +20,13 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'img.longhub.top',
                 port: '',
-                pathname: '/*'
+                pathname: '/**'
+            },
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+                port: '3042',
+                pathname: '/**'
             }
         ]
     },

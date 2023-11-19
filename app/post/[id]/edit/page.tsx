@@ -37,7 +37,7 @@ export default function Post({
         axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + params.id)
             .then((x: any) => {
                 setText(x.data.text);
-                setImage(x.data.image);
+                setImage(x.data.imageURL);
                 setTags(x.data.tags.map((x: any) => x.name));
                 setAggr(x.data.aggr);
             })
