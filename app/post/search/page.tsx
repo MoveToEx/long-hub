@@ -15,12 +15,30 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import _ from 'lodash';
 import Autocomplete from '@mui/material/Autocomplete';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Base64 } from 'js-base64';
 
 const PAGINATION_LIMIT = 24;
 
 function startsWith(s: string, pattern: string[]) {
     return pattern.map((val: string) => s.startsWith(val)).reduce((x, y) => x || y);
+}
+
+function toQuerySelector(items: string[]) {
+    return {
+        text: items.filter(s => !startsWith(s, ['+', '-', '@', '>', '<'])),
+        tag: {
+            include: items.filter(s => s.startsWith('+')).map(s => _.trimStart(s, '+')),
+            exclude: items.filter(s => s.startsWith('-')).map(s => _.trimStart(s, '-')),
+        },
+        aggr: _.mapValues(_.pickBy({
+            gte: items.find(s => />=[\d.]+/.test(s)),
+            lte: items.find(s => /<=[\d.]+/.test(s)),
+            gt: items.find(s => />[\d.]+/.test(s)),
+            lt: items.find(s => /<[\d.]+/.test(s)),
+        }), s => Number(_.trimStart(s, '<=>'))),
+        id: items.filter(s => s.startsWith('@')).map(s => _.trimStart(s, '@'))
+    }
 }
 
 function toGridItems(res: any) {
@@ -67,6 +85,8 @@ export default function SearchPage() {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [inputValue, setInputValue] = useState<string[]>([]);
     const [tags, setTags] = useState([]);
+    const router = useRouter();
+    const searchParam = useSearchParams();
 
     function onPage(e: React.ChangeEvent<unknown>, val: number) {
         setResult({});
@@ -79,16 +99,27 @@ export default function SearchPage() {
     }
 
     useEffect(() => {
-        if (_.isEmpty(inputValue)) return;
-        var encoded = encodeURIComponent(Base64.encode(JSON.stringify(query)));
-        axios.get('/api/search/' + encoded + '?offset=' + ((page - 1) * 24).toString())
+        if (!searchParam.has("s")) return;
+        
+        var decoded = JSON.parse(Base64.decode(decodeURIComponent(searchParam.get("s") ?? '')));
+        var selector = JSON.stringify(toQuerySelector(decoded));
+        
+        setInputValue(decoded);
+        axios.get('/api/search/' + encodeURIComponent(Base64.encode(selector)) + '?offset=' + ((page - 1) * 24).toString())
             .then(x => setResult(x.data));
+    }, [searchParam]);
+    
+    useEffect(() => {
+        if (_.isEmpty(inputValue)) return;
+        var encoded = Base64.encode(JSON.stringify(inputValue));
+
+        router.push('/post/search?s=' + encodeURIComponent(encoded));
     }, [query, page, inputValue]);
 
     useEffect(() => {
         axios.get('/api/tag/')
             .then(x => setTags(x.data.map((i: any) => i.name)));
-    }, [])
+    }, []);
 
     return (
         <>
@@ -124,21 +155,7 @@ export default function SearchPage() {
                 onChange={(__, newValue) => {
                     setResult({});
                     setInputValue(newValue);
-                    var q = {
-                        text: newValue.filter(s => !startsWith(s, ['+', '-', '@', '>', '<'])),
-                        tag: {
-                            include: newValue.filter(s => s.startsWith('+')).map(s => _.trimStart(s, '+')),
-                            exclude: newValue.filter(s => s.startsWith('-')).map(s => _.trimStart(s, '-')),
-                        },
-                        aggr: _.mapValues(_.pickBy({
-                            gte: newValue.find(s => />=[\d.]+/.test(s)),
-                            lte: newValue.find(s => /<=[\d.]+/.test(s)),
-                            gt: newValue.find(s => />[\d.]+/.test(s)),
-                            lt: newValue.find(s => /<[\d.]+/.test(s)),
-                        }), s => Number(_.trimStart(s, '<=>'))),
-                        id: newValue.filter(s => s.startsWith('@')).map(s => _.trimStart(s, '@'))
-                    }
-                    setQuery(q);
+                    setQuery(toQuerySelector(newValue));
                     setPage(1);
                 }}
                 renderInput={
@@ -159,10 +176,10 @@ export default function SearchPage() {
             </Typography>
 
             <Grid container spacing={2}>
-                {_.isEmpty(inputValue) ? <></> : toGridItems(result)}
+                {_.isEmpty(result) ? <></> : toGridItems(result)}
             </Grid>
 
-            <Stack alignItems="center" sx={{marginTop: '24px'}}>
+            <Stack alignItems="center" sx={{ marginTop: '24px' }}>
                 <Pagination count={_.isEmpty(result) ? 0 : Math.ceil((result as any).count / PAGINATION_LIMIT)}
                     siblingCount={0}
                     page={page}
