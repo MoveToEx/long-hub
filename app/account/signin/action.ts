@@ -49,5 +49,5 @@ export default async function signIn(state: any, fd: FormData) {
 */
 
 export default async function signIn(state: any, fd: FormData) {
-    return;
+    return '';
 }

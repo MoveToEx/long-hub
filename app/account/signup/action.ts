@@ -33,5 +33,5 @@ export default async function signUp(state: any, fd: FormData) {
 }*/
 
 export default async function signUp(state: any, fd: FormData) {
-    return;
+    return '';
 }
