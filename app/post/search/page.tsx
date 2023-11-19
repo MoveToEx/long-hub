@@ -142,6 +142,13 @@ export default function SearchPage() {
                         <Chip variant="outlined" label={option} {...getTagProps({ index })} key={index} />
                     ))
                 }
+                renderOption={(props, option) => {
+                    return (
+                        <li {...props} key={option}>
+                            {option}
+                        </li>
+                    );
+                }}
                 filterOptions={(options, { inputValue }) => {
                     if (inputValue.startsWith('+') || inputValue.startsWith('-')) {
                         return options
