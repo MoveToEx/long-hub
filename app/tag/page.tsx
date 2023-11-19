@@ -13,7 +13,7 @@ export default function Tags() {
     const [tags, setTags] = useState<any[]>([]);
 
     useEffect(() => {
-        axios.get('/api/tag/').then(x => setTags(x.data));
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag/').then(x => setTags(x.data));
     }, []);
 
     return (

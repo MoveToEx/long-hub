@@ -16,12 +16,12 @@ import Stack from '@mui/material/Stack';
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>GET /api/post/</code> - Get posts
+        <code>GET /post/</code> - Get posts
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `GET`  
-        URL: `/api/post`  
+        URL: `/post`  
         Params:  
 
         <DataTable
@@ -39,12 +39,12 @@ import Stack from '@mui/material/Stack';
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>GET /api/post/search/[selector]</code> - Search for posts that matches a selector
+        <code>GET /post/search/[selector]</code> - Search for posts that matches a selector
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `GET`  
-        URL: `/api/post/search/[selector]`, selector=an uri-encoded base64 string of a stringified JSON object, possibly with the following fields:  
+        URL: `/post/search/[selector]`, selector=an uri-encoded base64 string of a stringified JSON object, possibly with the following fields:  
 
         <DataTable
             head={['Name', 'Type', 'Searches for...', 'Example', 'Note']}
@@ -80,24 +80,24 @@ import Stack from '@mui/material/Stack';
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>GET /api/post/tag/[TAG]/</code> - Search for posts tagged with TAG
+        <code>GET /post/tag/[TAG]/</code> - Search for posts tagged with TAG
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `GET`  
-        URL: `/api/post/tag/[tag]`, tag=Tag name to search for  
+        URL: `/post/tag/[tag]`, tag=Tag name to search for  
         Params: None
     </AccordionDetails>
 </Accordion>
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>POST /api/post/</code> - Upload an empty post
+        <code>POST /post/</code> - Upload an empty post
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `POST`  
-        URL: `/api/post/upload`  
+        URL: `/post/upload`  
         Accepts: `multipart/form-data`  
         Params:
 
@@ -109,18 +109,18 @@ import Stack from '@mui/material/Stack';
                 ]
             } />
 
-        To create a post, combine this endpoint with <code>PUT /api/post/[id]</code>
+        To create a post, combine this endpoint with <code>PUT /post/[id]</code>
     </AccordionDetails>
 </Accordion>
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>PUT /api/post/[id]/</code> - Modify a post
+        <code>PUT /post/[id]/</code> - Modify a post
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `PUT`  
-        URL: `/api/post/[id]/`, id=ID of the post to be modified  
+        URL: `/post/[id]/`, id=ID of the post to be modified  
         Accepts: <code>application/json</code>  
 
         Request body:
@@ -140,12 +140,12 @@ import Stack from '@mui/material/Stack';
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>POST /api/similar/</code> - Search for posts with perceptually similar images
+        <code>POST /similar/</code> - Search for posts with perceptually similar images
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `POST`  
-        URL: `/api/similar/`  
+        URL: `/similar/`  
         Accepts: `multipart/form-data`  
         Params:
 

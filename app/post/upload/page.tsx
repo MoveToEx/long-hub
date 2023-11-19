@@ -43,7 +43,7 @@ export default function UploadPage() {
     let elem;
 
     useEffect(() => {
-        axios.get('/api/tag')
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag')
             .then(x => setTagsLib(x.data.map((x: any) => x.name)));
     }, []);
 
@@ -58,7 +58,7 @@ export default function UploadPage() {
         };
         fd.append('image', files[0].file);
         axios
-            .post('/api/similar', fd)
+            .post(process.env.NEXT_PUBLIC_BACKEND_HOST + '/similar', fd)
             .then(res => {
                 if (res.data.length && !ignoreSimilar) {
                     setSimilar(res.data);
@@ -66,8 +66,8 @@ export default function UploadPage() {
                     throw 'rejected for similar posts';
                 }
             })
-            .then(() => axios.post('/api/post', fd))
-            .then(res => axios.put('/api/post/' + res.data.id, meta))
+            .then(() => axios.post(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post', fd))
+            .then(res => axios.put(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + res.data.id, meta))
             .then(() => {
                 setText('');
                 setAggr(0);

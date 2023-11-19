@@ -89,7 +89,7 @@ export default function PostList() {
     }
 
     useEffect(() => {
-        axios.get('/api/post/?offset=' + (page - 1) * 24 + '&limit=' + PAGINATION_LIMIT)
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/?offset=' + (page - 1) * 24 + '&limit=' + PAGINATION_LIMIT)
             .then(x => setResult(x.data as any));
     }, [page]);
 

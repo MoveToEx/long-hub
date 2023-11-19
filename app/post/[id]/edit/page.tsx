@@ -34,7 +34,7 @@ export default function Post({
     const router = useRouter();
 
     useEffect(() => {
-        axios.get('/api/post/' + params.id)
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + params.id)
             .then((x: any) => {
                 setText(x.data.text);
                 setImage(x.data.image);
@@ -45,7 +45,7 @@ export default function Post({
                 setLoading(false);
                 setButtonDisabled(false);
             });
-        axios.get('/api/tag')
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag')
             .then(x => setTagsLib(x.data.map((x: any) => x.name)));
     }, [params.id]);
 
@@ -62,7 +62,7 @@ export default function Post({
             aggr: aggr
         };
         console.log(meta);
-        axios.put(`/api/post/${params.id}/`, meta)
+        axios.put(process.env.NEXT_PUBLIC_BACKEND_HOST + `/post/${params.id}/`, meta)
             .then(() => router.push(`/post/${params.id}/`));
     }
 

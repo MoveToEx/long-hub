@@ -105,7 +105,7 @@ export default function SearchPage() {
         var selector = JSON.stringify(toQuerySelector(decoded));
         
         setInputValue(decoded);
-        axios.get('/api/search/' + encodeURIComponent(Base64.encode(selector)) + '?offset=' + ((page - 1) * 24).toString())
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/search/' + encodeURIComponent(Base64.encode(selector)) + '?offset=' + ((page - 1) * 24).toString())
             .then(x => setResult(x.data));
     }, [searchParam]);
     
@@ -117,7 +117,7 @@ export default function SearchPage() {
     }, [query, page, inputValue]);
 
     useEffect(() => {
-        axios.get('/api/tag/')
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag/')
             .then(x => setTags(x.data.map((i: any) => i.name)));
     }, []);
 

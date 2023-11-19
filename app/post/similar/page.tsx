@@ -27,7 +27,7 @@ export default function UploadPage() {
         var fd = new FormData();
         fd.append('image', file.file);
         axios
-            .post('/api/similar', fd)
+            .post(process.env.NEXT_PUBLIC_BACKEND_HOST + '/similar', fd)
             .then(res => setSimilar(res.data))
             .catch(e => {
                 setSnackbar({

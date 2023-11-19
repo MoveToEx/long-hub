@@ -24,7 +24,7 @@ export default function Post({
     const [info, setInfo] = useState<any>({});
 
     useEffect(() => {
-        axios.get('/api/post/' + params.id).then(x => setInfo(x.data));
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + params.id).then(x => setInfo(x.data));
     }, []);
 
     return (

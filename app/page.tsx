@@ -1,5 +1,5 @@
 'use client';
-import Image from 'next/image'
+import Image from 'next/image';
 import Grid from '@mui/material/Unstable_Grid2';
 import Link from 'next/link';
 import Pagination from '@mui/material/Pagination';
@@ -61,7 +61,8 @@ export default function Home() {
 	}
 
 	useEffect(() => {
-		axios.get('/api/post/?offset=' + (page * PAGINATION_LIMIT - PAGINATION_LIMIT))
+		console.log(process.env);
+		axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/?offset=' + (page * PAGINATION_LIMIT - PAGINATION_LIMIT))
 			.then(x => setResult(x.data))
 			.catch(x => setResult({}));
 	}, [page]);

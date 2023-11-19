@@ -75,7 +75,7 @@ export default function SearchPage({
     }
 
     useEffect(() => {
-        axios.get('/api/tag/' + params.tag + '?offset=' + ((page - 1) * 24).toString())
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag/' + params.tag + '?offset=' + ((page - 1) * 24).toString())
             .then(x => setResult(x.data));
     }, [page, params.tag]);
 
