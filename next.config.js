@@ -14,6 +14,9 @@ const nextConfig = {
         return config
     },
     pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
-}
+    images: {
+        domains: ["https://img.longhub.top"]
+    },
+};
 
 module.exports = withMDX(nextConfig);
