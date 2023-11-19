@@ -15,7 +15,14 @@ const nextConfig = {
     },
     pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
     images: {
-        domains: ["https://img.longhub.top"]
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'img.longhub.top',
+                port: '',
+                pathname: '/*'
+            }
+        ]
     },
 };
 
