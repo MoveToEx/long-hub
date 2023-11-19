@@ -1,5 +1,5 @@
 'use server';
-
+/*
 import * as React from 'react';
 import { seq, User } from '@/lib/db';
 import { genAccessKey } from '@/lib/util';
@@ -30,4 +30,8 @@ export default async function signUp(state: any, fd: FormData) {
     });
 
     redirect('/account/signin');
+}*/
+
+export default async function signUp(state: any, fd: FormData) {
+    return;
 }

@@ -1,5 +1,7 @@
 'use server';
 
+/*
+
 import * as React from 'react';
 import { seq, User } from '@/lib/db';
 import { genAccessKey } from '@/lib/util';
@@ -42,4 +44,10 @@ export default async function signIn(state: any, fd: FormData) {
 
     revalidatePath('/');
     redirect('/');
+}
+
+*/
+
+export default async function signIn(state: any, fd: FormData) {
+    return;
 }
