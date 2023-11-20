@@ -17,7 +17,9 @@ export default async function Post({
         id: String
     }
 }) {
-    const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + params.id);
+    const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + params.id, {
+        cache: 'no-cache'
+    });
     const data = await response.json();
 
     return (
