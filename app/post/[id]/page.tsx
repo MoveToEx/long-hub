@@ -26,6 +26,7 @@ export default async function Post({
                 <Grid item xs={12} md={4}>
                     <Image
                         src={data.imageURL}
+                        unoptimized
                         width={0}
                         height={0}
                         alt={params.id.toString()}
