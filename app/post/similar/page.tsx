@@ -4,21 +4,21 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Snackbar from '@mui/material/Snackbar';
-import Link from 'next/link';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
 import styles from './page.module.css';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import _ from 'lodash';
 import axios from 'axios';
+import LinkImageGrid from '@/components/LinkImageGrid';
+import { useSnackbar } from 'notistack';
 
 export default function UploadPage() {
     const [file, setFile] = useState<any>(null);
     const [similar, setSimilar] = useState<any>(null);
-    const [snackbar, setSnackbar] = useState<any>({ open: false });
+
+    const { enqueueSnackbar } = useSnackbar();
 
     let elem;
 
@@ -29,14 +29,8 @@ export default function UploadPage() {
         axios
             .post(process.env.NEXT_PUBLIC_BACKEND_HOST + '/similar', fd)
             .then(res => setSimilar(res.data))
-            .catch(e => {
-                setSnackbar({
-                    open: true,
-                    severity: 'error',
-                    content: 'Failed when uploading: ' + e
-                });
-            });
-    }, [file]);
+            .catch(e => enqueueSnackbar('Failed when uploading: ' + e, { variant: 'error' }) );
+    }, [file, enqueueSnackbar]);
 
     if (file === null) {
         elem = (
@@ -52,7 +46,7 @@ export default function UploadPage() {
                             setFile({
                                 file: f,
                                 url: URL.createObjectURL(f)
-                            })
+                            });
                         }
                     }}
                 />
@@ -121,34 +115,28 @@ export default function UploadPage() {
             elem = (
                 <>
                     <Typography variant="h5">{similar.length} similar images found</Typography>
-                    <Grid container>
-                        {
-                            similar.map((post: any) => (
-                                <Grid item key={post.id} md={6} xs={12}>
-                                    <Link href={'/post/' + post.id} key={post.imageURL} target="_blank">
-                                        <Image
-                                            src={post.imageURL}
-                                            alt={post.id}
-                                            height={0}
-                                            width={0}
-                                            sizes='100vw'
-                                            style={{
-                                                width: '100%',
-                                                height: '300px',
-                                                objectFit: 'contain'
-                                            }}
-                                        />
-                                    </Link>
-                                </Grid>
-                            ))
-                        }
-                    </Grid>
+                    <LinkImageGrid
+                        src={similar.map((post: any) => ({
+                            href: `/post/${post.id}`,
+                            src: post.imageURL
+                        }))}
+                        skeletonHeight={128}
+                        gridProps={{
+                            md: 6,
+                            xs: 12
+                        }}
+                        gridContainerProps={{
+                            spacing: 2
+                        }}
+                        linkProps={{
+                            target: '_blank'
+                        }} />
                 </>
             );
         }
 
         elem = (
-            <Grid container sx={{mt: 4}}>
+            <Grid container sx={{ mt: 4 }}>
                 <Grid item md={4} xs={12}>
                     <Image
                         src={file.url}
@@ -173,15 +161,6 @@ export default function UploadPage() {
 
     return (
         <>
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={2000}
-                onClose={() => { setSnackbar({ ...snackbar, open: false }); }}>
-                <Alert severity={snackbar.severity} variant='filled' elevation={6}>
-                    {snackbar.content ?? ''}
-                </Alert>
-            </Snackbar>
-
             {elem}
         </>
     )

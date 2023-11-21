@@ -1,21 +1,17 @@
 'use client';
 
 import TextField from '@mui/material/TextField';
-import Image from 'next/image'
 import Chip from '@mui/material/Chip';
-import Grid from '@mui/material/Unstable_Grid2';
-import Link from 'next/link';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
-import Alert from '@mui/material/Alert';
-import Snackbar from '@mui/material/Snackbar';
+import LinkImageGrid from '@/components/LinkImageGrid';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import _ from 'lodash';
 import Autocomplete from '@mui/material/Autocomplete';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSnackbar } from 'notistack';
 import { Base64 } from 'js-base64';
 
 const PAGINATION_LIMIT = 24;
@@ -41,52 +37,16 @@ function toQuerySelector(items: string[]) {
     }
 }
 
-function toGridItems(res: any) {
-    var elem;
-    if (_.isEmpty(res)) {
-        elem = _.range(PAGINATION_LIMIT).map((x: number) => (
-            <>
-                <Skeleton variant="rectangular" height={128} />
-                <Skeleton variant="text" height={24} />
-                <Skeleton variant="text" height={24} />
-            </>
-        ))
-    }
-    else {
-        elem = res.data.map((e: any, i: number) => (
-            <Link href={`/post/${e.id}`} key={i}>
-                <Image
-                    src={e.imageURL}
-                    alt={e.text}
-                    height={0}
-                    width={0}
-                    sizes='100vw'
-
-                    style={{
-                        width: '100%',
-                        height: '300px',
-                        objectFit: 'contain'
-                    }}
-                />
-            </Link>
-        ))
-    }
-    return elem.map((e: any, i: number) => (
-        <Grid xs={12} sm={6} md={3} key={i}>
-            {e}
-        </Grid>
-    ));
-}
-
 export default function SearchPage() {
     const [query, setQuery] = useState<any>({});
     const [page, setPage] = useState(1);
     const [result, setResult] = useState({});
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [inputValue, setInputValue] = useState<string[]>([]);
     const [tags, setTags] = useState([]);
+
     const router = useRouter();
     const searchParam = useSearchParams();
+    const { enqueueSnackbar } = useSnackbar();
 
     function onPage(e: React.ChangeEvent<unknown>, val: number) {
         setResult({});
@@ -100,21 +60,22 @@ export default function SearchPage() {
 
     useEffect(() => {
         if (!searchParam.has("s")) return;
-        
+
         var decoded = JSON.parse(Base64.decode(decodeURIComponent(searchParam.get("s") ?? '')));
         var selector = JSON.stringify(toQuerySelector(decoded));
-        
+
         setInputValue(decoded);
         axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/search/' + encodeURIComponent(Base64.encode(selector)) + '?offset=' + ((page - 1) * 24).toString())
-            .then(x => setResult(x.data));
-    }, [searchParam]);
-    
+            .then(x => setResult(x.data))
+            .catch(_ => enqueueSnackbar('Failed when fetching data', { variant: 'error' }));
+    }, [searchParam, enqueueSnackbar, page]);
+
     useEffect(() => {
         if (_.isEmpty(inputValue)) return;
         var encoded = Base64.encode(JSON.stringify(inputValue));
 
         router.push('/post/search?s=' + encodeURIComponent(encoded));
-    }, [query, page, inputValue]);
+    }, [query, inputValue, router]);
 
     useEffect(() => {
         axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag/')
@@ -123,11 +84,6 @@ export default function SearchPage() {
 
     return (
         <>
-            <Snackbar open={snackbarOpen} autoHideDuration={4000} onClose={() => setSnackbarOpen(false)}>
-                <Alert severity='error' onClose={() => setSnackbarOpen(false)}>
-                    Failed when fetching data.
-                </Alert>
-            </Snackbar>
             <Autocomplete
                 multiple
                 freeSolo
@@ -143,11 +99,7 @@ export default function SearchPage() {
                     ))
                 }
                 renderOption={(props, option) => {
-                    return (
-                        <li {...props} key={option}>
-                            {option}
-                        </li>
-                    );
+                    return <li {...props} key={option}>{option}</li>;
                 }}
                 filterOptions={(options, { inputValue }) => {
                     if (inputValue.startsWith('+') || inputValue.startsWith('-')) {
@@ -159,7 +111,7 @@ export default function SearchPage() {
                         return [];
                     }
                 }}
-                onChange={(__, newValue) => {
+                onChange={(_, newValue) => {
                     setResult({});
                     setInputValue(newValue);
                     setQuery(toQuerySelector(newValue));
@@ -177,14 +129,24 @@ export default function SearchPage() {
                 }
             />
 
-
             <Typography variant="h6" align="center">
                 {_.isEmpty(result) ? <></> : 'Found ' + (result as any).count + ' results'}
             </Typography>
 
-            <Grid container spacing={2}>
-                {_.isEmpty(result) ? <></> : toGridItems(result)}
-            </Grid>
+            <LinkImageGrid
+                src={_.isEmpty(inputValue) ? null : (result as any)?.data?.map((x: any) => ({
+                    href: `/post/${x.id}`,
+                    src: x.imageURL
+                }))}
+                skeletonHeight={128}
+                gridContainerProps={{
+                    spacing: 2
+                }}
+                gridProps={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }} />
 
             <Stack alignItems="center" sx={{ marginTop: '24px' }}>
                 <Pagination count={_.isEmpty(result) ? 0 : Math.ceil((result as any).count / PAGINATION_LIMIT)}
@@ -194,5 +156,5 @@ export default function SearchPage() {
                     onChange={onPage} />
             </Stack>
         </>
-    )
+    );
 }

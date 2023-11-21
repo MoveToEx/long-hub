@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import _ from 'lodash';
+import PostMeta from '@/lib/PostMeta';
 
 export default function Post({
     params
@@ -25,50 +26,39 @@ export default function Post({
     }
 }) {
     const [loading, setLoading] = useState(true);
-    const [buttonDisabled, setButtonDisabled] = useState(true);
-    const [text, setText] = useState('');
+    const [meta, setMeta] = useState<PostMeta>({
+        text: '',
+        aggr: 0,
+        tags: [],
+    });
     const [image, setImage] = useState('');
-    const [tags, setTags] = useState<string[]>([]);
-    const [aggr, setAggr] = useState(0);
     const [tagsLib, setTagsLib] = useState<string[]>([]);
     const router = useRouter();
 
     useEffect(() => {
         axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + params.id)
             .then((x: any) => {
-                setText(x.data.text);
+                setMeta({
+                    text: x.data.text,
+                    tags: x.data.tags.map((x: any) => x.name),
+                    aggr: x.data.aggr
+                });
                 setImage(x.data.imageURL);
-                setTags(x.data.tags.map((x: any) => x.name));
-                setAggr(x.data.aggr);
             })
-            .finally(() => {
-                setLoading(false);
-                setButtonDisabled(false);
-            });
+            .finally(() => setLoading(false));
         axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag')
             .then(x => setTagsLib(x.data.map((x: any) => x.name)));
     }, [params.id]);
 
-    useEffect(() => {
-        console.log(text);
-    }, [text]);
-
     function submit() {
         setLoading(true);
-        setButtonDisabled(true);
-        var meta = {
-            text: text,
-            tags: tags,
-            aggr: aggr
-        };
-        console.log(meta);
         axios.put(process.env.NEXT_PUBLIC_BACKEND_HOST + `/post/${params.id}/`, meta)
             .then(() => router.push(`/post/${params.id}/`));
     }
 
 
     return (
-        <Grid container spacing={2} sx={{ paddingTop: '16px', paddingBottom: '16px' }}>
+        <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
             <Grid item xs={12} md={4}>
                 {image ?
                     <Image
@@ -85,25 +75,31 @@ export default function Post({
                     : <></>}
             </Grid>
             <Grid item xs={12} md={8}>
-                <Stack spacing={2} alignItems="center" sx={{mb: 2}}>
+                <Stack spacing={2} alignItems="center" sx={{ mb: 2 }}>
                     <TextField
                         label="Text"
                         fullWidth
-                        value={text}
-                        onChange={(e) => {
-                            setText(e.target.value);
+                        value={meta.text}
+                        onChange={e => {
+                            setMeta({
+                                ...meta,
+                                text: e.target.value
+                            });
                         }}
                     />
                     <Autocomplete
                         multiple
                         freeSolo
-                        value={tags}
+                        value={meta.tags}
                         fullWidth
                         options={
                             tagsLib || []
                         }
                         onChange={(__, newValue) => {
-                            setTags(newValue);
+                            setMeta({
+                                ...meta,
+                                tags: newValue
+                            });
                         }}
                         renderOption={(props, option) => {
                             return (
@@ -129,18 +125,21 @@ export default function Post({
                     <Box alignItems="center">
                         <Typography component="legend">Aggressiveness</Typography>
                         <Rating
-                            value={aggr}
+                            value={meta.aggr}
                             precision={0.5}
                             max={10}
                             size="large"
                             onChange={(event, newValue) => {
-                                setAggr(newValue ?? 0);
+                                setMeta({
+                                    ...meta,
+                                    aggr: newValue ?? 0
+                                });
                             }}
                         />
                     </Box>
 
                     <Box sx={{ m: 1, position: 'relative' }}>
-                        <Fab onClick={submit} color="primary" disabled={buttonDisabled}>
+                        <Fab onClick={submit} color="primary" disabled={loading}>
                             <SendIcon />
                         </Fab>
                         {

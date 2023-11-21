@@ -10,16 +10,16 @@ import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import SendIcon from '@mui/icons-material/Send';
 import Rating from '@mui/material/Rating';
-import Snackbar from '@mui/material/Snackbar';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Link from 'next/link';
-import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import styles from './page.module.css';
 import { useEffect, useState } from 'react';
+import { useSnackbar } from 'notistack';
+import PostMeta from '@/lib/PostMeta';
+import LinkImageGrid from '@/components/LinkImageGrid';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -29,16 +29,18 @@ import axios from 'axios';
 
 export default function UploadPage() {
     const [loading, setLoading] = useState(false);
-    const [buttonDisabled, setButtonDisabled] = useState(false);
     const [files, setFiles] = useState<any[]>([]);
-    const [text, setText] = useState('');
-    const [aggr, setAggr] = useState(0);
-    const [inputTags, setInputTags] = useState<string[]>([]);
+    const [meta, setMeta] = useState<PostMeta>({
+        text: '',
+        aggr: 0,
+        tags: []
+    });
     const [tagsLib, setTagsLib] = useState<string[]>([]);
     const [ignoreSimilar, setIgnoreSimilar] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [similar, setSimilar] = useState<string[]>([]);
-    const [snackbar, setSnackbar] = useState<any>({ open: false });
+
+    const { enqueueSnackbar } = useSnackbar();
 
     let elem;
 
@@ -48,14 +50,8 @@ export default function UploadPage() {
     }, []);
 
     function submit() {
-        setButtonDisabled(true);
         setLoading(true);
         var fd = new FormData();
-        var meta = {
-            text: text,
-            tags: inputTags,
-            aggr: aggr
-        };
         fd.append('image', files[0].file);
         axios
             .post(process.env.NEXT_PUBLIC_BACKEND_HOST + '/similar', fd)
@@ -69,35 +65,22 @@ export default function UploadPage() {
             .then(() => axios.post(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post', fd))
             .then(res => axios.put(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + res.data.id, meta))
             .then(() => {
-                setText('');
-                setAggr(0);
-                setInputTags([]);
+                setMeta({
+                    text: '',
+                    aggr: 0,
+                    tags: []
+                });
                 setIgnoreSimilar(false);
                 setFiles(_.slice(files, 1));
-                setSnackbar({
-                    open: true,
-                    severity: 'success',
-                    content: 'Uploaded successfully'
-                });
-            }).catch(e => {
-                setSnackbar({
-                    open: true,
-                    severity: 'error',
-                    content: 'Failed when uploading: ' + e
-                });
-            }).finally(() => {
-                setButtonDisabled(false);
-                setLoading(false);
-            });
+                enqueueSnackbar('Uploaded successfully', { variant: 'success' });
+            })
+            .catch(e => enqueueSnackbar('Failed when uploading: ' + e, { variant: 'error' }))
+            .finally(() => setLoading(false));
     }
 
     function skip() {
         setFiles([...files.slice(1)]);
-        setSnackbar({
-            open: true,
-            severity: 'info',
-            content: 'Skipped 1 image'
-        });
+        enqueueSnackbar('Skipped 1 image', { variant: 'info' });
     }
 
     if (files.length == 0) {
@@ -191,25 +174,31 @@ export default function UploadPage() {
                         <TextField
                             label="Text"
                             fullWidth
-                            value={text}
+                            value={meta.text}
                             type="text"
                             autoComplete="off"
                             name="text"
                             autoFocus
                             onChange={(e) => {
-                                setText(e.target.value);
+                                setMeta({
+                                    ...meta,
+                                    text: e.target.value
+                                });
                             }}
                         />
                         <Autocomplete
                             multiple
                             freeSolo
-                            value={inputTags}
+                            value={meta.tags}
                             fullWidth
                             options={
                                 tagsLib || []
                             }
                             onChange={(__, newValue) => {
-                                setInputTags(newValue);
+                                setMeta({
+                                    ...meta,
+                                    tags: newValue
+                                });
                             }}
                             renderOption={(props, option) => {
                                 return (
@@ -235,12 +224,15 @@ export default function UploadPage() {
                         <Box alignItems="center">
                             <Typography component="legend">Aggressiveness</Typography>
                             <Rating
-                                value={aggr}
+                                value={meta.aggr}
                                 precision={0.5}
                                 max={10}
                                 size="large"
                                 onChange={(event, newValue) => {
-                                    setAggr(newValue ?? 0);
+                                    setMeta({
+                                        ...meta,
+                                        aggr: newValue ?? 0
+                                    });
                                 }}
                             />
                         </Box>
@@ -252,7 +244,7 @@ export default function UploadPage() {
                                 <FormControlLabel control={<Checkbox value={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar images" />
 
                                 <Box sx={{ position: 'relative' }}>
-                                    <Fab onClick={submit} color="primary" disabled={buttonDisabled}>
+                                    <Fab onClick={submit} color="primary" disabled={loading}>
                                         <SendIcon />
                                     </Fab>
                                     {
@@ -290,40 +282,25 @@ export default function UploadPage() {
                         {"The following posts have a similar image to yours. To upload anyway, check the ignore checkbox and submit again."}
                     </DialogContentText>
                     <Box>
-                        <Grid container>
-                            {
-                                similar.map((post: any) => (
-                                    <Grid item key={post.id} md={6} xs={12}>
-                                        <Link href={'/post/' + post.id} key={post.imageURL} target="_blank">
-                                            <Image
-                                                src={post.imageURL}
-                                                alt={post.id}
-                                                height={0}
-                                                width={0}
-                                                sizes='100vw'
-                                                style={{
-                                                    width: '100%',
-                                                    height: '300px',
-                                                    objectFit: 'contain'
-                                                }}
-                                            />
-                                        </Link>
-                                    </Grid>
-                                ))
-                            }
-                        </Grid>
+                        <LinkImageGrid
+                            src={similar.map((post: any) => ({
+                                href: `/post/${post.id}`,
+                                src: post.imageURL
+                            }))}
+                            skeletonHeight={128}
+                            gridProps={{
+                                md: 6,
+                                xs: 12
+                            }}
+                            gridContainerProps={{
+                                spacing: 2
+                            }}
+                            linkProps={{
+                                target: '_blank'
+                            }} />
                     </Box>
                 </DialogContent>
             </Dialog >
-
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={2000}
-                onClose={() => { setSnackbar({ ...snackbar, open: false }); }}>
-                <Alert severity={snackbar.severity} variant='filled' elevation={6}>
-                    {snackbar.content ?? ''}
-                </Alert>
-            </Snackbar>
 
             {elem}
         </>

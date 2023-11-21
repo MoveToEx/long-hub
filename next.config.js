@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 
-const withMDX = require('@next/mdx')()
+const withMDX = require('@next/mdx')();
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: process.env.ANALYZE == 'true'
+});
 
 const nextConfig = {
     webpack: (
@@ -28,14 +31,8 @@ const nextConfig = {
                 port: '3042',
                 pathname: '/**'
             },
-            {
-                protocol: 'http',
-                hostname: '192.168.110.16',
-                port: '3042',
-                pathname: '/**'
-            },
         ]
     },
 };
 
-module.exports = withMDX(nextConfig);
+module.exports = withBundleAnalyzer(withMDX(nextConfig));

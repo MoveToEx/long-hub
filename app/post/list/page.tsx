@@ -8,9 +8,8 @@ import Skeleton from '@mui/material/Skeleton';
 import Grid from '@mui/material/Unstable_Grid2';
 import Image from 'next/image';
 import Pagination from '@mui/material/Pagination';
-import Chip from '@mui/material/Chip';
-import TagIcon from '@mui/icons-material/Tag';
 import Link from 'next/link';
+import TagRow from '@/components/TagRow';
 
 const PAGINATION_LIMIT = 64;
 
@@ -52,21 +51,15 @@ function toStack(data: any) {
                 </Grid>
                 <Grid xs={8} md={6}>
                     <Stack spacing={1}>
-                        <p>
+                        <div>
                             {x.id}
-                        </p>
-                        <p>
+                        </div>
+                        <div>
                             {x.text.length == 0 ? <i>Notext</i> : x.text}
-                        </p>
-                        <Stack spacing={1} direction="row" display="inline">
-                            {x.tags.length == 0
-                                ? <i> Untagged </i>
-                                : x.tags.map((e: any, i: number) => (
-                                    <Link href={'/tag/' + e.name} key={i}>
-                                        <Chip label={e.name} sx={{ fontSize: '16px' }} icon={<TagIcon />} />
-                                    </Link>
-                                ))}
-                        </Stack>
+                        </div>
+                        <div>
+                            <TagRow tags={x.tags.map((e: any) => e.name)} />
+                        </div>
                     </Stack>
                 </Grid>
             </Grid>
@@ -108,5 +101,5 @@ export default function PostList() {
                 ></Pagination>
             </Stack>
         </>
-    )
+    );
 }

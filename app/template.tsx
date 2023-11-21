@@ -27,6 +27,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import Menu from '@mui/icons-material/Menu';
 import Image from 'next/image';
 import Link from 'next/link';
+import { SnackbarProvider } from 'notistack';
 
 export default function RootTemplate({
     children,
@@ -97,11 +98,13 @@ export default function RootTemplate({
                 </Box>
             </Drawer>
 
-            <Box component="main">
-                <Container>
-                    {children}
-                </Container>
-            </Box>
+            <SnackbarProvider maxSnack={5} autoHideDuration={3000}>
+                <Box component="main">
+                    <Container>
+                        {children}
+                    </Container>
+                </Box>
+            </SnackbarProvider>
         </ThemeProvider>
     )
 }

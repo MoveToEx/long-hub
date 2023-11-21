@@ -1,14 +1,12 @@
 import Grid from '@mui/material/Grid';
 import Image from 'next/image';
-import Chip from '@mui/material/Chip';
-import TagIcon from '@mui/icons-material/Tag';
 import Stack from '@mui/material/Stack';
 import Rating from '@mui/material/Rating';
-import Link from 'next/link';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
 import EditIcon from '@mui/icons-material/Edit';
 import _ from 'lodash';
+import TagRow from '@/components/TagRow';
 
 export default async function Post({
     params
@@ -24,7 +22,7 @@ export default async function Post({
 
     return (
         <>
-            <Grid container spacing={2}>
+            <Grid container spacing={2} sx={{pt: 2, pb: 2}}>
                 <Grid item xs={12} md={4}>
                     <Image
                         src={data.imageURL}
@@ -48,16 +46,7 @@ export default async function Post({
                         </div>
                         <div>
                             Tags:
-                            <Stack spacing={1} direction="row" display="inline">
-                                {data.tags.length == 0
-                                    ? <i> Untagged </i>
-                                    : data.tags.map((e: any) => (
-                                        <Link href={'/tag/' + e.name} key={e.id}>
-                                            <Chip label={e.name} sx={{ fontSize: '16px' }} icon={<TagIcon />} />
-                                        </Link>
-                                    ))
-                                }
-                            </Stack>
+                            <TagRow tags={data.tags.map((e: any) => e.name)} />
                         </div>
                         <div>
                             <Typography component="legend">Aggressiveness</Typography>
