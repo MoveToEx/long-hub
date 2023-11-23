@@ -18,7 +18,7 @@ import Chip from '@mui/material/Chip';
 import styles from './page.module.css';
 import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
-import PostMetadata from '@/lib/Metadata';
+import PostMetadata from '@/lib/PostMetadata';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
