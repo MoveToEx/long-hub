@@ -4,8 +4,6 @@ import TagIcon from '@mui/icons-material/Tag';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import axios from 'axios';
 
 export default async function Tags() {
     const tags = await fetch(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag/').then(async x => await x.json());

@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import TagIcon from '@mui/icons-material/Tag';
 import axios from 'axios';
 import _ from 'lodash';
-
+import LinkImageGrid from '@/components/LinkImageGrid';
 
 const PAGINATION_LIMIT = 24;
 
@@ -83,9 +83,20 @@ export default function SearchPage({
                 {params.tag}
             </Typography>
 
-            <Grid container spacing={2}>
-                {toGridItems((result as any).data)}
-            </Grid>
+            <LinkImageGrid
+                src={_.isEmpty(result) ? null : (result as any).data.map((x: any) => ({
+                    href: `/post/${x.id}`,
+                    src: x.imageURL
+                }))}
+                skeletonHeight={128}
+                gridContainerProps={{
+                    spacing: 2
+                }}
+                gridProps={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }} />
 
             <Stack alignItems="center">
                 <Pagination count={_.isEmpty(result) ? 0 : Math.ceil((result as any).count / PAGINATION_LIMIT)}

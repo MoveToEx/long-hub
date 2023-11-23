@@ -18,7 +18,7 @@ import Chip from '@mui/material/Chip';
 import styles from './page.module.css';
 import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
-import PostMeta from '@/lib/PostMeta';
+import PostMetadata from '@/lib/Metadata';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -30,7 +30,7 @@ import axios from 'axios';
 export default function UploadPage() {
     const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState<any[]>([]);
-    const [meta, setMeta] = useState<PostMeta>({
+    const [meta, setMeta] = useState<PostMetadata>({
         text: '',
         aggr: 0,
         tags: []

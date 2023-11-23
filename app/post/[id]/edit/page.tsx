@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import _ from 'lodash';
-import PostMeta from '@/lib/PostMeta';
+import PostMetadata from '@/lib/PostMetadata';
 
 export default function Post({
     params
@@ -26,7 +26,7 @@ export default function Post({
     }
 }) {
     const [loading, setLoading] = useState(true);
-    const [meta, setMeta] = useState<PostMeta>({
+    const [meta, setMeta] = useState<PostMetadata>({
         text: '',
         aggr: 0,
         tags: [],

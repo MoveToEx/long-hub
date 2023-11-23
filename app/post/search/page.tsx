@@ -13,29 +13,9 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
 import { Base64 } from 'js-base64';
+import { parseSelector } from '@/lib/SearchSelector';
 
 const PAGINATION_LIMIT = 24;
-
-function startsWith(s: string, pattern: string[]) {
-    return pattern.map((val: string) => s.startsWith(val)).reduce((x, y) => x || y);
-}
-
-function toQuerySelector(items: string[]) {
-    return {
-        text: items.filter(s => !startsWith(s, ['+', '-', '@', '>', '<'])),
-        tag: {
-            include: items.filter(s => s.startsWith('+')).map(s => _.trimStart(s, '+')),
-            exclude: items.filter(s => s.startsWith('-')).map(s => _.trimStart(s, '-')),
-        },
-        aggr: _.mapValues(_.pickBy({
-            gte: items.find(s => />=[\d.]+/.test(s)),
-            lte: items.find(s => /<=[\d.]+/.test(s)),
-            gt: items.find(s => />[\d.]+/.test(s)),
-            lt: items.find(s => /<[\d.]+/.test(s)),
-        }), s => Number(_.trimStart(s, '<=>'))),
-        id: items.filter(s => s.startsWith('@')).map(s => _.trimStart(s, '@'))
-    }
-}
 
 export default function SearchPage() {
     const [query, setQuery] = useState<any>({});
@@ -62,7 +42,7 @@ export default function SearchPage() {
         if (!searchParam.has("s")) return;
 
         var decoded = JSON.parse(Base64.decode(decodeURIComponent(searchParam.get("s") ?? '')));
-        var selector = JSON.stringify(toQuerySelector(decoded));
+        var selector = JSON.stringify(parseSelector(decoded));
 
         setInputValue(decoded);
         axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/search/' + encodeURIComponent(Base64.encode(selector)) + '?offset=' + ((page - 1) * 24).toString())
@@ -114,7 +94,7 @@ export default function SearchPage() {
                 onChange={(_, newValue) => {
                     setResult({});
                     setInputValue(newValue);
-                    setQuery(toQuerySelector(newValue));
+                    setQuery(parseSelector(newValue));
                     setPage(1);
                 }}
                 renderInput={

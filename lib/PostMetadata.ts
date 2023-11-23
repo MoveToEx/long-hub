@@ -1,7 +1,7 @@
-interface PostMeta {
+interface PostMetadata {
     text: string,
     aggr: number,
     tags: string[]
 };
 
-export default PostMeta;
+export default PostMetadata;

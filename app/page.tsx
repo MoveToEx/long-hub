@@ -3,18 +3,21 @@ import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import { useEffect, useState } from 'react';
 import LinkImageGrid from '@/components/LinkImageGrid';
-import axios from 'axios';
 import _ from 'lodash';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const PAGINATION_LIMIT = 24;
 
 export default function Home() {
+	const searchParam = useSearchParams();
+	const router = useRouter();
 	const [result, setResult] = useState({});
-	const [page, setPage] = useState(1);
+	const [page, setPage] = useState(Number(searchParam.get('page') ?? 1));
 
 	function onPage(e: React.ChangeEvent<unknown>, val: number) {
-		setResult({});
+		router.push('/?page=' + val);
 		setPage(val);
+		setResult({});
 		window.scroll({
 			top: 0,
 			left: 0
@@ -22,15 +25,16 @@ export default function Home() {
 	}
 
 	useEffect(() => {
-		axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/?offset=' + (page * PAGINATION_LIMIT - PAGINATION_LIMIT))
-			.then(x => setResult(x.data))
-			.catch(x => setResult({}));
+		fetch(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/?offset=' + (page * PAGINATION_LIMIT - PAGINATION_LIMIT), { next: { revalidate: 300 } })
+			.then(res => res.json())
+			.then(x => setResult(x))
+			.catch(() => setResult({}));
 	}, [page]);
 
 	return (
 		<>
 			<LinkImageGrid
-				src={_.isEmpty(result) ? null : (result as any).data.map((x: any) => ({
+				src={_.isEmpty(result) ? [] : (result as any).data.map((x: any) => ({
 					href: `/post/${x.id}`,
 					src: x.imageURL
 				}))}
