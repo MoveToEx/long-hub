@@ -42,8 +42,7 @@ export default function LinkImageGrid({
                     src={e.src}
                     alt={e.src}
                     height={0}
-                    width={0}
-                    sizes='100vw'
+                    width={300}
                     style={{
                         width: '100%',
                         height: '300px',

@@ -1,11 +1,7 @@
 'use client';
 
-import Image from 'next/image'
-import Grid from '@mui/material/Unstable_Grid2';
-import Link from 'next/link';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import TagIcon from '@mui/icons-material/Tag';
@@ -14,43 +10,6 @@ import _ from 'lodash';
 import LinkImageGrid from '@/components/LinkImageGrid';
 
 const PAGINATION_LIMIT = 24;
-
-function toGridItems(res: any) {
-    var elem;
-    if (_.isEmpty(res)) {
-        elem = _.range(PAGINATION_LIMIT).map((x: number) => (
-            <>
-                <Skeleton variant="rectangular" height={128} />
-                <Skeleton variant="text" height={24} />
-                <Skeleton variant="text" height={24} />
-            </>
-        ))
-    }
-    else {
-        elem = res.map((e: any, i: number) => (
-            <Link href={`/post/${e.id}`} key={i}>
-                <Image
-                    src={e.imageURL}
-                    alt={e.text}
-                    height={0}
-                    width={0}
-                    sizes='100vw'
-
-                    style={{
-                        width: '100%',
-                        height: '300px',
-                        objectFit: 'contain'
-                    }}
-                />
-            </Link>
-        ))
-    }
-    return elem.map((e: any, i: number) => (
-        <Grid xs={12} sm={6} md={3} key={i}>
-            {e}
-        </Grid>
-    ));
-}
 
 export default function SearchPage({
     params

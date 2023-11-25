@@ -10,11 +10,12 @@ const nextConfig = {
         config,
         { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
     ) => {
-        config.externals = [
-            ...(config.externals ?? []),
-            'sequelize'
-        ]
-        return config
+        if (!isServer) {
+            config.resolve.fallback = {
+                child_process: false
+            };
+        }
+        return config;
     },
     pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
     images: {

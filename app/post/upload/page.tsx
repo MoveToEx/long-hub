@@ -25,6 +25,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Image from 'next/image';
 import _ from 'lodash';
+import Link from '@mui/material/Link';
 import axios from 'axios';
 
 export default function UploadPage() {
@@ -158,12 +159,12 @@ export default function UploadPage() {
                         id="preview-image"
                         alt="Preview"
                         src={files[0].url}
-                        height={0}
+                        height={500}
                         width={0}
-                        sizes="100vw"
                         style={{
                             width: '100%',
-                            height: 'auto'
+                            height: 'auto',
+                            objectFit: 'contain'
                         }} />
                 </Grid>
                 <Grid item xs={12} md={8}>
@@ -195,19 +196,17 @@ export default function UploadPage() {
                                 tagsLib || []
                             }
                             onChange={(__, newValue) => {
-                                setMeta({
-                                    ...meta,
-                                    tags: newValue
-                                });
+                                if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
+                                    setMeta({
+                                        ...meta,
+                                        tags: newValue
+                                    });
+                                }
                             }}
                             renderOption={(props, option) => {
-                                return (
-                                    <li {...props} key={option}>
-                                        {option}
-                                    </li>
-                                );
+                                return <li {...props} key={option}>{option}</li>;
                             }}
-                            renderTags={(value: readonly string[], getTagProps) =>
+                            renderTags={(value, getTagProps) =>
                                 value.map((option: string, index: number) => (
                                     <Chip {...getTagProps({ index })} variant="outlined" label={option} key={index} />
                                 ))
@@ -217,6 +216,8 @@ export default function UploadPage() {
                                     <TextField
                                         {...params}
                                         label="Tags"
+                                        error={!/^[a-z0-9_]*$/.test(params.inputProps.value as string ?? '')}
+                                        helperText={"Only lower case, digits and underline are allowed in tags"}
                                         variant="outlined" />
                                 )
                             }
@@ -240,9 +241,8 @@ export default function UploadPage() {
 
                         <Box sx={{ p: 2, position: 'relative' }} >
 
-                            <Stack direction="row" spacing={2}>
-                                <FormControlLabel control={<Checkbox value={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar images" />
-
+                            <Stack direction="row" spacing={1}>
+                                <FormControlLabel control={<Checkbox value={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar" />
                                 <Box sx={{ position: 'relative' }}>
                                     <Fab onClick={submit} color="primary" disabled={loading}>
                                         <SendIcon />
@@ -267,6 +267,10 @@ export default function UploadPage() {
                                 </Fab>
                             </Stack>
                         </Box>
+
+                        <Typography variant="subtitle2">
+                            Make sure to read <Link href="/doc/uploading" target="_blank">upload docs</Link> first.
+                        </Typography>
                     </Stack>
                 </Grid>
             </Grid>

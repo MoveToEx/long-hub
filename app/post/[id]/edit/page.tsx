@@ -66,11 +66,11 @@ export default function Post({
                         alt="Preview"
                         src={image}
                         height={0}
-                        width={0}
-                        sizes="100vw"
+                        width={500}
                         style={{
                             width: '100%',
-                            height: 'auto'
+                            height: 'auto',
+                            objectFit: 'contain'
                         }} />
                     : <></>}
             </Grid>
@@ -78,6 +78,7 @@ export default function Post({
                 <Stack spacing={2} alignItems="center" sx={{ mb: 2 }}>
                     <TextField
                         label="Text"
+                        name="text"
                         fullWidth
                         value={meta.text}
                         onChange={e => {
@@ -96,10 +97,12 @@ export default function Post({
                             tagsLib || []
                         }
                         onChange={(__, newValue) => {
-                            setMeta({
-                                ...meta,
-                                tags: newValue
-                            });
+                            if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
+                                setMeta({
+                                    ...meta,
+                                    tags: newValue
+                                });
+                            }
                         }}
                         renderOption={(props, option) => {
                             return (
@@ -118,6 +121,9 @@ export default function Post({
                                 <TextField
                                     {...params}
                                     label="Tags"
+                                    type="text"
+                                    error={!/^[a-z0-9_]*$/.test(params.inputProps.value as string ?? '')}
+                                    helperText={"Only lower case, digits and underline are allowed in tags"}
                                     variant="outlined" />
                             )
                         }

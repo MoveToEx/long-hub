@@ -50,13 +50,14 @@ export default function RootTemplate({
         setMenuState(!menuState);
     }
 
-    function navigate(path: String) {
-        toggleMenu();
-    }
-
     function DrawerItem({ title, href, icon }: { title: string, href: string, icon: React.ReactElement }) {
         return (
-            <ListItemButton href={href} LinkComponent={Link} selected={window.location.pathname == href} onClick={() => navigate(href)}>
+            <ListItemButton
+                href={href}
+                LinkComponent={Link}
+                selected={window.location.pathname == href}
+                onClick={() => setMenuState(false)}
+            >
                 <ListItemIcon>{icon}</ListItemIcon>
                 <ListItemText primary={title} />
             </ListItemButton>

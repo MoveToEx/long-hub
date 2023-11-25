@@ -141,12 +141,11 @@ export default function UploadPage() {
                     <Image
                         src={file.url}
                         alt='preview'
-                        height={0}
+                        height={500}
                         width={0}
-                        sizes='100vw'
                         style={{
                             width: '100%',
-                            height: '300px',
+                            height: 'auto',
                             objectFit: 'contain'
                         }}
                     />
@@ -159,10 +158,5 @@ export default function UploadPage() {
         );
     }
 
-    return (
-        <>
-            {elem}
-        </>
-    )
-
+    return elem;
 }
