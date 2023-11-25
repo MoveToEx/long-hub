@@ -17,7 +17,7 @@ import { PostDetailResponse } from '@/lib/PostResponse';
 async function CopyImage(url: string | null, enqueueSnackbar: EnqueueSnackbar) {
     if (url === null) return;
 
-    const blob = await fetch(url).then(x => x.blob());
+    const blob = await fetch(url, { mode: 'no-cors' }).then(x => x.blob());
     let clipItem;
 
     if (blob.type === 'image/gif') {
