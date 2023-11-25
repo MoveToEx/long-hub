@@ -11,13 +11,10 @@ import _ from 'lodash';
 import TagRow from '@/components/TagRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useSnackbar, EnqueueSnackbar } from 'notistack';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PostDetailResponse } from '@/lib/PostResponse';
 
-async function CopyImage(url: string | null, enqueueSnackbar: EnqueueSnackbar) {
-    if (url === null) return;
-
-    const blob = await fetch(url).then(x => x.blob());
+async function CopyImage(blob: Blob, enqueueSnackbar: EnqueueSnackbar) {
     let clipItem;
 
     if (blob.type === 'image/gif') {
@@ -68,6 +65,9 @@ export default function Post({
 }) {
     const { enqueueSnackbar } = useSnackbar();
     const [post, setPost] = useState<PostDetailResponse | null>(null);
+    const [imgBlob, setImgBlob] = useState<Blob | null>(null);
+    const [imgObjectURL, setImgObjectURL] = useState<string | null>(null);
+    let imgElement;
 
     useEffect(() => {
         fetch(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + params.id, {
@@ -79,9 +79,22 @@ export default function Post({
             .then(x => setPost(x));
     }, [params.id]);
 
-    let imgElement;
+    useEffect(() => {
+        if (!post?.imageURL) return;
 
-    if (post == null) {
+        fetch(post.imageURL)
+            .then(x => x.blob())
+            .then(x => setImgBlob(x));
+    }, [post]);
+
+    useEffect(() => {
+        if (imgBlob === null) return;
+
+        setImgObjectURL(URL.createObjectURL(imgBlob));
+    }, [imgBlob]);
+
+
+    if (post == null || imgObjectURL === '') {
         imgElement = (
             <Stack alignItems="center" sx={{ pt: 5 }}>
                 <CircularProgress />
@@ -91,7 +104,7 @@ export default function Post({
     else {
         imgElement = (
             <Image
-                src={post.imageURL}
+                src={imgObjectURL ?? ''}
                 unoptimized
                 width={0}
                 height={500}
@@ -102,7 +115,9 @@ export default function Post({
                     objectFit: 'contain'
                 }}
                 onClick={() => {
-                    CopyImage(post?.imageURL, enqueueSnackbar);
+                    if (imgBlob === null) return;
+
+                    CopyImage(imgBlob, enqueueSnackbar);
                 }}
             />
         );
