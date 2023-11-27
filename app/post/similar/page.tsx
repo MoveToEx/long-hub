@@ -120,7 +120,6 @@ export default function UploadPage() {
                             href: `/post/${post.id}`,
                             src: post.imageURL
                         }))}
-                        skeletonHeight={128}
                         gridProps={{
                             md: 6,
                             xs: 12

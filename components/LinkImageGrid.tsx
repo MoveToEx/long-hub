@@ -11,41 +11,36 @@ interface LinkImage {
 
 export default function LinkImageGrid({
     src,
-    skeletonHeight,
     gridProps,
     gridContainerProps,
     linkProps
 }: {
     src: LinkImage[] | null,
-    skeletonHeight: number,
     gridProps?: any,
     gridContainerProps?: any,
     linkProps?: any
 }) {
     var elem;
-    if (src === null) {
-        return <></>;
-    }
-    else if (_.isEmpty(src)) {
+    if (src === null || _.isEmpty(src)) {
         elem = _.range(24).map(() => (
             <>
-                <Skeleton variant="rectangular" height={skeletonHeight} />
-                <Skeleton variant="text" height={24} />
-                <Skeleton variant="text" height={24} />
+                <Skeleton variant="rectangular" height={300} />
             </>
         ))
     }
     else {
         elem = src.map((e: LinkImage) => (
-            <Link {...linkProps} href={e.href} key={e.href} prefetch={false}>
+            <Link {...linkProps} href={e.href} key={e.href}>
                 <Image
                     src={e.src}
                     alt={e.src}
-                    height={0}
+                    height={300}
                     width={300}
                     style={{
                         width: '100%',
-                        height: '300px',
+                        height: 'auto',
+                        maxHeight: '300px',
+                        margin: 'auto',
                         objectFit: 'contain'
                     }}
                 />

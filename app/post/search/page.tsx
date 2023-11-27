@@ -112,21 +112,22 @@ export default function SearchPage() {
             <Typography variant="h6" align="center">
                 {_.isEmpty(result) ? <></> : 'Found ' + (result as any).count + ' results'}
             </Typography>
-
-            <LinkImageGrid
-                src={_.isEmpty(inputValue) ? null : (result as any)?.data?.map((x: any) => ({
-                    href: `/post/${x.id}`,
-                    src: x.imageURL
-                }))}
-                skeletonHeight={128}
-                gridContainerProps={{
-                    spacing: 2
-                }}
-                gridProps={{
-                    xs: 12,
-                    sm: 6,
-                    md: 3
-                }} />
+            {
+                !_.isEmpty(inputValue) &&
+                <LinkImageGrid
+                    src={(result as any)?.data?.map((x: any) => ({
+                        href: `/post/${x.id}`,
+                        src: x.imageURL
+                    }))}
+                    gridContainerProps={{
+                        spacing: 2
+                    }}
+                    gridProps={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }} />
+            }
 
             <Stack alignItems="center" sx={{ marginTop: '24px' }}>
                 <Pagination count={_.isEmpty(result) ? 0 : Math.ceil((result as any).count / PAGINATION_LIMIT)}

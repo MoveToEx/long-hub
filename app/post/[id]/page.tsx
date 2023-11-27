@@ -14,21 +14,26 @@ import { useSnackbar, EnqueueSnackbar } from 'notistack';
 import { useState, useEffect, useMemo } from 'react';
 import { PostDetailResponse } from '@/lib/PostResponse';
 
-async function CopyImage(blob: Blob, enqueueSnackbar: EnqueueSnackbar) {
+async function CopyImage(url: string, blob: Blob, enqueueSnackbar: EnqueueSnackbar) {
     let clipItem;
+
+    console.log(blob, url);
+
+    const write = (blobs: Record<string, Blob>) => {
+        const item = new ClipboardItem(blobs);
+        navigator.clipboard.write([item])
+            .then(() => enqueueSnackbar('Copied to clipboard', { variant: 'success' }))
+            .catch(() => enqueueSnackbar('Failed when writing to clipboard', { variant: 'error' }));
+    }
 
     if (blob.type === 'image/gif') {
         enqueueSnackbar('Only first frame of animated images will be copied.', { variant: 'warning' });
     }
 
     if (blob.type === 'image/png') {
-        clipItem = new ClipboardItem({
+        write({
             [blob.type]: blob
         });
-
-        navigator.clipboard.write([clipItem])
-            .then(() => enqueueSnackbar('Copied to clipboard', { variant: 'success' }))
-            .catch(() => enqueueSnackbar('Failed when writing to clipboard', { variant: 'error' }));
     }
     else {
         const canvas = document.createElement('canvas');
@@ -42,13 +47,15 @@ async function CopyImage(blob: Blob, enqueueSnackbar: EnqueueSnackbar) {
 
             canvas.width = elem.naturalWidth;
             canvas.height = elem.naturalHeight;
-            context.drawImage(elem, 0, 0);
-            canvas.toBlob((blob) => {
-                if (blob === null) throw new Error('unable to convert to png blob');
+            context?.drawImage(elem, 0, 0);
+            canvas.toBlob((pngBlob) => {
+                if (pngBlob === null) throw new Error('unable to convert to png blob');
 
-                navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
-                    .then(() => enqueueSnackbar('Copied to clipboard', { variant: 'success' }))
-                    .catch(() => enqueueSnackbar('Failed when writing to clipboard', { variant: 'error' }));
+                write({
+                    'text/html': new Blob(['<img src="' + url + '"></img>'], { type: 'text/html' }),
+                    [pngBlob.type]: pngBlob,
+                    [`web ${blob.type}`]: blob
+                });
 
             }, "image/png");
         };
@@ -117,7 +124,7 @@ export default function Post({
                 onClick={() => {
                     if (imgBlob === null) return;
 
-                    CopyImage(imgBlob, enqueueSnackbar);
+                    CopyImage(post.imageURL, imgBlob, enqueueSnackbar);
                 }}
             />
         );

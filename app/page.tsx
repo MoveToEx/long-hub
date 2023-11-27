@@ -35,11 +35,10 @@ export default function Home() {
 	return (
 		<Box sx={{ m: 2 }}>
 			<LinkImageGrid
-				src={_.isEmpty(result) ? [] : (result as any).data.map((x: any) => ({
+				src={_.isEmpty(result) ? null : (result as any).data.map((x: any) => ({
 					href: `/post/${x.id}`,
 					src: x.imageURL
 				}))}
-				skeletonHeight={128}
 				gridContainerProps={{
 					spacing: 2
 				}}

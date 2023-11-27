@@ -47,7 +47,6 @@ export default function SearchPage({
                     href: `/post/${x.id}`,
                     src: x.imageURL
                 }))}
-                skeletonHeight={128}
                 gridContainerProps={{
                     spacing: 2
                 }}
