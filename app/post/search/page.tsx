@@ -45,7 +45,7 @@ export default function SearchPage() {
         var selector = JSON.stringify(parseSelector(decoded));
 
         setInputValue(decoded);
-        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/search/' + encodeURIComponent(Base64.encode(selector)) + '?offset=' + ((page - 1) * 24).toString())
+        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/search/?s=' + encodeURIComponent(Base64.encode(selector)) + '?offset=' + ((page - 1) * 24).toString())
             .then(x => setResult(x.data))
             .catch(_ => enqueueSnackbar('Failed when fetching data', { variant: 'error' }));
     }, [searchParam, enqueueSnackbar, page]);
