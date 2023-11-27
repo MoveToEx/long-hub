@@ -242,7 +242,7 @@ export default function UploadPage() {
                         <Box sx={{ p: 2, position: 'relative' }} >
 
                             <Stack direction="row" spacing={1}>
-                                <FormControlLabel control={<Checkbox value={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar" />
+                                <FormControlLabel control={<Checkbox checked={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar" />
                                 <Box sx={{ position: 'relative' }}>
                                     <Fab onClick={submit} color="primary" disabled={loading}>
                                         <SendIcon />
