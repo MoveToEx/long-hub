@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import _ from 'lodash';
-import PostMetadata from '@/lib/PostMetadata';
+import PostMetadata from '@/lib/types/PostMetadata';
 
 export default function Post({
     params
@@ -36,7 +36,7 @@ export default function Post({
     const router = useRouter();
 
     useEffect(() => {
-        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + params.id)
+        axios.get('/api/post/' + params.id)
             .then((x: any) => {
                 setMeta({
                     text: x.data.text,
@@ -46,7 +46,7 @@ export default function Post({
                 setImage(x.data.imageURL);
             })
             .finally(() => setLoading(false));
-        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag')
+        axios.get('/api/tag')
             .then(x => setTagsLib(x.data.map((x: any) => x.name)));
     }, [params.id]);
 

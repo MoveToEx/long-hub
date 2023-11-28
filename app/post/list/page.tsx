@@ -19,7 +19,7 @@ function toStack(data: any) {
         res = _.range(PAGINATION_LIMIT).map((x: number) => (
             <Grid container key={x.toString()} spacing={2}>
                 <Grid xs={4} md={2} mdOffset={2}>
-                    <Skeleton variant='rectangular' height='150px' />
+                    <Skeleton variant='rectangular' height={200} />
                 </Grid>
                 <Grid xs={8} md={6}>
                     <Skeleton variant='text' />
@@ -37,11 +37,13 @@ function toStack(data: any) {
                         <Image
                             src={x.imageURL}
                             alt={x.id}
-                            height={0}
+                            height={200}
                             width={200}
                             style={{
                                 width: '100%',
                                 height: 'auto',
+                                maxHeight: '200px',
+                                margin: 'auto',
                                 objectFit: 'contain'
                             }}
                         />
@@ -80,7 +82,7 @@ export default function PostList() {
     }
 
     useEffect(() => {
-        fetch(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/?offset=' + (page - 1) * 64 + '&limit=' + PAGINATION_LIMIT)
+        fetch('/api/post/?offset=' + (page - 1) * 64 + '&limit=' + PAGINATION_LIMIT)
             .then(x => x.json())
             .then(x => setResult(x as any));
     }, [page]);

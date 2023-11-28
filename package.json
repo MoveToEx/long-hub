@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "db:drop": "npx ts-node ./scripts/db-drop.ts",
+    "db:import": "npx ts-node ./scripts/db-import.ts",
+    "db:export": "npx ts-node ./scripts/db-export.ts",
+    "dev:start-image-host": "npx ts-node ./scripts/dev-start-img-host.ts",
     "init": "npx ts-node ./scripts/init.ts",
     "create-archive": "npx ts-node ./scripts/create-archive.ts",
     "load-legacy-archive": "npx ts-node ./scripts/load-legacy-archive.ts",
@@ -22,6 +26,7 @@
     "@mui/material": "^5.14.17",
     "@next/mdx": "^14.0.2",
     "@types/cli-progress": "^3.11.5",
+    "@types/color": "^3.0.6",
     "@types/lodash": "^4.14.201",
     "@types/mdx": "^2.0.10",
     "@types/sqlite3": "^3.1.11",
@@ -31,6 +36,7 @@
     "blockhash-core": "^0.1.0",
     "cli-progress": "^3.12.0",
     "csstype": "^3.1.2",
+    "dotenv": "^16.3.1",
     "image-hash": "^5.3.2",
     "iron-session": "^6.3.1",
     "js-base64": "^3.7.5",
@@ -54,9 +60,11 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "cors": "^2.8.5",
     "cross-env": "^7.0.3",
     "eslint": "^8",
     "eslint-config-next": "14.0.1",
+    "express": "^4.18.2",
     "typescript": "^5"
   }
 }

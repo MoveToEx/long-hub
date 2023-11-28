@@ -16,12 +16,12 @@ import Stack from '@mui/material/Stack';
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>GET /post/</code> - Get posts
+        <code>GET /api/post/</code> - Get posts
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `GET`  
-        URL: `/post`  
+        URL: `/api/post`  
         Params:  
 
         <DataTable
@@ -39,12 +39,24 @@ import Stack from '@mui/material/Stack';
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>GET /post/search/[selector]</code> - Search for posts that matches a selector
+        <code>GET /api/post/search/</code> - Search for posts that matches a selector
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `GET`  
-        URL: `/post/search/[selector]`, selector=an uri-encoded base64 string of a stringified JSON object, possibly with the following fields:  
+        URL: `/api/post/search`
+
+        Params:
+
+        <DataTable
+            head={['Name', 'Description', 'Example', 'Note']}
+            data={
+                [
+                    [<code>s</code>, 'Selector to search for', '{...}', 'See below for details'],
+                    [<code>offset</code>, 'Skips first # posts', '0', ''],
+                    [<code>limit</code>, 'Max count of posts in response', '24', 'Must not exceed 24' ]
+                ]
+            } />
 
         <DataTable
             head={['Name', 'Type', 'Searches for...', 'Example', 'Note']}
@@ -64,40 +76,29 @@ import Stack from '@mui/material/Stack';
                     [<code>aggr.ne</code>, <code>number</code>, 'Post with aggressiveness not equal to %value', '5.5', '']
                 ]   
             } />
-
-        Params:
-
-        <DataTable
-            head={['Name', 'Description', 'Example', 'Note']}
-            data={
-                [
-                    [<code>offset</code>, 'Skips first # posts', '0', ''],
-                    [<code>limit</code>, 'Max count of posts in response', '24', 'Must not exceed 24' ]
-                ]
-            } />
     </AccordionDetails>
 </Accordion>
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>GET /post/tag/[TAG]/</code> - Search for posts tagged with TAG
+        <code>GET /api/post/tag/[TAG]/</code> - Search for posts tagged with TAG
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `GET`  
-        URL: `/post/tag/[tag]`, tag=Tag name to search for  
+        URL: `/api/post/tag/[tag]`, tag=Tag name to search for  
         Params: None
     </AccordionDetails>
 </Accordion>
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>POST /post/</code> - Upload an empty post
+        <code>POST /api/post/</code> - Upload an empty post
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `POST`  
-        URL: `/post/upload`  
+        URL: `/api/post/upload`  
         Accepts: `multipart/form-data`  
         Params:
 
@@ -115,12 +116,12 @@ import Stack from '@mui/material/Stack';
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>PUT /post/[id]/</code> - Modify a post
+        <code>PUT /api/post/[id]/</code> - Modify a post
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `PUT`  
-        URL: `/post/[id]/`, id=ID of the post to be modified  
+        URL: `/api/post/[id]/`, id=ID of the post to be modified  
         Accepts: <code>application/json</code>  
 
         Request body:
@@ -140,12 +141,12 @@ import Stack from '@mui/material/Stack';
 
 <Accordion>
     <AccordionSummary expandIcon={ <ExpandMoreIcon /> }>
-        <code>POST /similar/</code> - Search for posts with perceptually similar images
+        <code>POST /api/similar/</code> - Search for posts with perceptually similar images
     </AccordionSummary>
 
     <AccordionDetails>
         Method: `POST`  
-        URL: `/similar/`  
+        URL: `/api/similar/`  
         Accepts: `multipart/form-data`  
         Params:
 

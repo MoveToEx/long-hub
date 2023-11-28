@@ -10,6 +10,10 @@ const nextConfig = {
         config,
         { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
     ) => {
+        config.externals = [
+            ...(config.externals ?? []),
+            'sequelize'
+        ];
         if (!isServer) {
             config.resolve.fallback = {
                 child_process: false

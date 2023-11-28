@@ -13,7 +13,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
 import { Base64 } from 'js-base64';
-import { parseSelector } from '@/lib/SearchSelector';
+import { parseSelector } from '@/lib/types/SearchSelector';
 
 const PAGINATION_LIMIT = 24;
 
@@ -45,7 +45,7 @@ export default function SearchPage() {
         var selector = JSON.stringify(parseSelector(decoded));
 
         setInputValue(decoded);
-        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/search/?s=' + encodeURIComponent(Base64.encode(selector)) + '?offset=' + ((page - 1) * 24).toString())
+        axios.get('/api/search/?s=' + encodeURIComponent(Base64.encode(selector)) + '?offset=' + ((page - 1) * 24).toString())
             .then(x => setResult(x.data))
             .catch(_ => enqueueSnackbar('Failed when fetching data', { variant: 'error' }));
     }, [searchParam, enqueueSnackbar, page]);
@@ -58,7 +58,7 @@ export default function SearchPage() {
     }, [query, inputValue, router]);
 
     useEffect(() => {
-        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag/')
+        axios.get('/api/tag/')
             .then(x => setTags(x.data.map((i: any) => i.name)));
     }, []);
 

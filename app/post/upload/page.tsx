@@ -18,7 +18,7 @@ import Chip from '@mui/material/Chip';
 import styles from './page.module.css';
 import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
-import PostMetadata from '@/lib/PostMetadata';
+import PostMetadata from '@/lib/types/PostMetadata';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -46,7 +46,7 @@ export default function UploadPage() {
     let elem;
 
     useEffect(() => {
-        axios.get(process.env.NEXT_PUBLIC_BACKEND_HOST + '/tag')
+        axios.get('/api/tag')
             .then(x => setTagsLib(x.data.map((x: any) => x.name)));
     }, []);
 
@@ -55,7 +55,7 @@ export default function UploadPage() {
         var fd = new FormData();
         fd.append('image', files[0].file);
         axios
-            .post(process.env.NEXT_PUBLIC_BACKEND_HOST + '/similar', fd)
+            .post('/api/similar', fd)
             .then(res => {
                 if (res.data.length && !ignoreSimilar) {
                     setSimilar(res.data);
@@ -63,8 +63,8 @@ export default function UploadPage() {
                     throw 'rejected for similar posts';
                 }
             })
-            .then(() => axios.post(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post', fd))
-            .then(res => axios.put(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + res.data.id, meta))
+            .then(() => axios.post('/api/post', fd))
+            .then(res => axios.put('/api/post/' + res.data.id, meta))
             .then(() => {
                 setMeta({
                     text: '',
@@ -81,6 +81,12 @@ export default function UploadPage() {
 
     function skip() {
         setFiles([...files.slice(1)]);
+        setMeta({
+            text: '',
+            aggr: 0,
+            tags: []
+        });
+        setIgnoreSimilar(false);
         enqueueSnackbar('Skipped 1 image', { variant: 'info' });
     }
 

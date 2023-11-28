@@ -26,7 +26,7 @@ export default function Home() {
 	}
 
 	useEffect(() => {
-		fetch(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/?offset=' + (page * PAGINATION_LIMIT - PAGINATION_LIMIT), { next: { revalidate: 120 } })
+		fetch('/api/post/?offset=' + (page * PAGINATION_LIMIT - PAGINATION_LIMIT), { next: { revalidate: 120 } })
 			.then(res => res.json())
 			.then(x => setResult(x))
 			.catch(() => setResult({}));

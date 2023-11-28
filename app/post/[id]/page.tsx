@@ -12,7 +12,7 @@ import TagRow from '@/components/TagRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useSnackbar, EnqueueSnackbar } from 'notistack';
 import { useState, useEffect, useMemo } from 'react';
-import { PostDetailResponse } from '@/lib/PostResponse';
+import { PostDetailResponse } from '@/lib/types/PostResponse';
 
 async function CopyImage(url: string, blob: Blob, enqueueSnackbar: EnqueueSnackbar) {
     let clipItem;
@@ -77,7 +77,7 @@ export default function Post({
     let imgElement;
 
     useEffect(() => {
-        fetch(process.env.NEXT_PUBLIC_BACKEND_HOST + '/post/' + params.id, {
+        fetch('/api/post/' + params.id, {
             next: {
                 revalidate: 600
             }
