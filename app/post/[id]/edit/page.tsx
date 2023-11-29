@@ -52,7 +52,7 @@ export default function Post({
 
     function submit() {
         setLoading(true);
-        axios.put(process.env.NEXT_PUBLIC_BACKEND_HOST + `/post/${params.id}/`, meta)
+        axios.put(`/api/post/${params.id}/`, meta)
             .then(() => router.push(`/post/${params.id}/`));
     }
 
