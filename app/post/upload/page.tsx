@@ -27,6 +27,7 @@ import Image from 'next/image';
 import _ from 'lodash';
 import Link from '@mui/material/Link';
 import axios from 'axios';
+import DropArea from '@/components/DropArea';
 
 export default function UploadPage() {
     const [loading, setLoading] = useState(false);
@@ -92,69 +93,28 @@ export default function UploadPage() {
 
     if (files.length == 0) {
         elem = (
-            <Stack alignItems="center">
-                <input
-                    accept="image/*"
-                    id="file-input"
-                    multiple
-                    type="file"
-                    hidden
-                    onChange={(e) => {
-                        if (e.target.files?.length) {
-                            setFiles(
-                                [...e.target.files].map(x => ({
-                                    file: x,
-                                    url: URL.createObjectURL(x)
-                                }))
-                            )
-                        }
-                    }}
-                />
-                <Box
-                    className={styles.droparea}
-                    alignItems="center"
-                    justifyContent="center"
-                    id="drop-area"
-                    onClick={() => {
-                        document.getElementById('file-input')?.focus();
-                        document.getElementById('file-input')?.click();
-                    }}
-                    onDrop={(e) => {
-                        document.getElementById('drop-area')?.classList.remove(styles.droparea_hover);
-                        e.preventDefault();
-                        var a: any[] = [];
-                        [...e.dataTransfer.items].forEach(item => {
-                            if (item.kind !== 'file') {
-                                return;
-                            }
-                            var f = item.getAsFile();
-                            if (!f?.type.startsWith('image')) {
-                                return;
-                            }
-                            a.push({
-                                file: f,
-                                url: URL.createObjectURL(f)
-                            });
-                        });
-                        setFiles(a);
-                    }}
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                    }}
-                    onDragEnter={(e) => {
-                        e.preventDefault();
-                        document.getElementById('drop-area')?.classList.add(styles.droparea_hover);
-                    }}
-                    onDragLeave={(e) => {
-                        e.preventDefault();
-                        document.getElementById('drop-area')?.classList.remove(styles.droparea_hover);
-                    }} >
+            <DropArea 
+                accept="image/*"
+                multiple
+                label={
                     <Typography variant="button" fontSize="24px" display="block" gutterBottom>
                         SELECT FILE
                     </Typography>
-
-                </Box>
-            </Stack >
+                }
+                className={styles.droparea}
+                dragClassName={styles.droparea_hover}
+                onChange={files => {
+                    if (!files) return;
+                    var a = [];
+                    for (var file of files) {
+                        a.push({
+                            file: file,
+                            url: URL.createObjectURL(file)
+                        });
+                    }
+                    setFiles(a);
+                }}
+            />
         )
     }
     else {

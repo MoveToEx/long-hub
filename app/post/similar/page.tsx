@@ -1,8 +1,6 @@
 'use client';
 
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -12,6 +10,7 @@ import Image from 'next/image';
 import _ from 'lodash';
 import axios from 'axios';
 import LinkImageGrid from '@/components/LinkImageGrid';
+import DropArea from '@/components/DropArea';
 import { useSnackbar } from 'notistack';
 
 export default function UploadPage() {
@@ -34,65 +33,20 @@ export default function UploadPage() {
 
     if (file === null) {
         elem = (
-            <Stack alignItems="center">
-                <input
-                    accept="image/*"
-                    id="file-input"
-                    type="file"
-                    hidden
-                    onChange={(e) => {
-                        if (e.target.files?.length) {
-                            var f = e.target.files[0];
-                            setFile({
-                                file: f,
-                                url: URL.createObjectURL(f)
-                            });
-                        }
-                    }}
-                />
-                <Box
-                    className={styles.droparea}
-                    alignItems="center"
-                    justifyContent="center"
-                    id="drop-area"
-                    onClick={() => {
-                        document.getElementById('file-input')?.focus();
-                        document.getElementById('file-input')?.click();
-                    }}
-                    onDrop={(e) => {
-                        document.getElementById('drop-area')?.classList.remove(styles.droparea_hover);
-                        e.preventDefault();
-                        var a = [...e.dataTransfer.items];
-                        if (a[0].kind !== 'file') {
-                            return;
-                        }
-
-                        var f = a[0].getAsFile();
-                        if (!f?.type.startsWith('image')) {
-                            return;
-                        }
-
-                        setFile({
-                            file: f,
-                            url: URL.createObjectURL(f)
-                        });
-                    }}
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                    }}
-                    onDragEnter={(e) => {
-                        e.preventDefault();
-                        document.getElementById('drop-area')?.classList.add(styles.droparea_hover);
-                    }}
-                    onDragLeave={(e) => {
-                        e.preventDefault();
-                        document.getElementById('drop-area')?.classList.remove(styles.droparea_hover);
-                    }} >
+            <DropArea
+                accept="image/*"
+                label={
                     <Typography variant="button" fontSize="24px" display="block" gutterBottom>
                         SELECT FILE
                     </Typography>
-                </Box>
-            </Stack>
+                }
+                className={styles.droparea}
+                dragClassName={styles.droparea_hover}
+                onChange={file => {
+                    if (!file) return;
+                    setFile(file);
+                }}
+            />
         )
     }
     else {
@@ -106,7 +60,7 @@ export default function UploadPage() {
                 </Backdrop>
             )
         }
-        else if (similar?.length === 0) {
+        else if (similar.length === 0) {
             elem = (
                 <Typography variant="h5">No similar images found</Typography>
             )
