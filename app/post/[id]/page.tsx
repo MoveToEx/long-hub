@@ -12,13 +12,9 @@ import TagRow from '@/components/TagRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useSnackbar, EnqueueSnackbar } from 'notistack';
 import { useState, useEffect, useMemo } from 'react';
-import { PostDetailResponse } from '@/lib/types/PostResponse';
+import PostResponse from '@/lib/types/PostResponse';
 
 async function CopyImage(url: string, blob: Blob, enqueueSnackbar: EnqueueSnackbar) {
-    let clipItem;
-
-    console.log(blob, url);
-
     const write = (blobs: Record<string, Blob>) => {
         const item = new ClipboardItem(blobs);
         navigator.clipboard.write([item])
@@ -71,7 +67,7 @@ export default function Post({
     }
 }) {
     const { enqueueSnackbar } = useSnackbar();
-    const [post, setPost] = useState<PostDetailResponse | null>(null);
+    const [post, setPost] = useState<PostResponse | null>(null);
     const [imgBlob, setImgBlob] = useState<Blob | null>(null);
     const [imgObjectURL, setImgObjectURL] = useState<string | null>(null);
     let imgElement;

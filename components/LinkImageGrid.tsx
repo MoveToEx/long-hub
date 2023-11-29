@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Grid from '@mui/material/Unstable_Grid2';
 import Link from 'next/link';
 import Skeleton from '@mui/material/Skeleton';
-import _ from 'lodash';
+import _, { Falsey } from 'lodash';
 
 interface LinkImage {
     href: string;
@@ -15,13 +15,13 @@ export default function LinkImageGrid({
     gridContainerProps,
     linkProps
 }: {
-    src: LinkImage[] | null,
+    src: LinkImage[] | Falsey,
     gridProps?: any,
     gridContainerProps?: any,
     linkProps?: any
 }) {
     var elem;
-    if (src === null || _.isEmpty(src)) {
+    if (!src) {
         elem = _.range(24).map(() => (
             <>
                 <Skeleton variant="rectangular" height={300} />

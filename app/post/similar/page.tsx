@@ -35,6 +35,7 @@ export default function UploadPage() {
         elem = (
             <DropArea
                 accept="image/*"
+                multiple={false}
                 label={
                     <Typography variant="button" fontSize="24px" display="block" gutterBottom>
                         SELECT FILE
@@ -44,7 +45,11 @@ export default function UploadPage() {
                 dragClassName={styles.droparea_hover}
                 onChange={file => {
                     if (!file) return;
-                    setFile(file);
+
+                    setFile({
+                        file: file,
+                        url: URL.createObjectURL(file)
+                    });
                 }}
             />
         )

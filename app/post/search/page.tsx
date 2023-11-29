@@ -14,22 +14,23 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
 import { Base64 } from 'js-base64';
 import { parseSelector } from '@/lib/types/SearchSelector';
+import { PostsResponse } from '@/lib/types/PostResponse';
+import { TagsResponse } from '@/lib/types/TagResponse';
 
 const PAGINATION_LIMIT = 24;
 
 export default function SearchPage() {
-    const [query, setQuery] = useState<any>({});
     const [page, setPage] = useState(1);
-    const [result, setResult] = useState({});
+    const [result, setResult] = useState<PostsResponse | null>(null);
     const [inputValue, setInputValue] = useState<string[]>([]);
-    const [tags, setTags] = useState([]);
+    const [tags, setTags] = useState<string[]>([]);
 
     const router = useRouter();
     const searchParam = useSearchParams();
     const { enqueueSnackbar } = useSnackbar();
 
     function onPage(e: React.ChangeEvent<unknown>, val: number) {
-        setResult({});
+        setResult(null);
         setPage(val);
         window.scroll({
             top: 0,
@@ -46,7 +47,7 @@ export default function SearchPage() {
 
         setInputValue(decoded);
         axios.get('/api/search/?s=' + encodeURIComponent(Base64.encode(selector)) + '&offset=' + ((page - 1) * 24).toString())
-            .then(x => setResult(x.data))
+            .then(({ data }: { data: PostsResponse }) => setResult(data))
             .catch(_ => enqueueSnackbar('Failed when fetching data', { variant: 'error' }));
     }, [searchParam, enqueueSnackbar, page]);
 
@@ -55,11 +56,11 @@ export default function SearchPage() {
         var encoded = Base64.encode(JSON.stringify(inputValue));
 
         router.push('/post/search?s=' + encodeURIComponent(encoded));
-    }, [query, inputValue, router]);
+    }, [inputValue, router]);
 
     useEffect(() => {
         axios.get('/api/tag/')
-            .then(x => setTags(x.data.map((i: any) => i.name)));
+            .then(({ data }: { data: TagsResponse }) => setTags(data.map(i => i.name)));
     }, []);
 
     return (
@@ -92,9 +93,8 @@ export default function SearchPage() {
                     }
                 }}
                 onChange={(_, newValue) => {
-                    setResult({});
+                    setResult(null);
                     setInputValue(newValue);
-                    setQuery(parseSelector(newValue));
                     setPage(1);
                 }}
                 renderInput={
@@ -110,12 +110,11 @@ export default function SearchPage() {
             />
 
             <Typography variant="h6" align="center">
-                {_.isEmpty(result) ? <></> : 'Found ' + (result as any).count + ' results'}
+                {result === null ? <></> : 'Found ' + result.count + ' results'}
             </Typography>
             {
-                !_.isEmpty(inputValue) &&
                 <LinkImageGrid
-                    src={(result as any)?.data?.map((x: any) => ({
+                    src={!result ? [] : result.data.map((x: any) => ({
                         href: `/post/${x.id}`,
                         src: x.imageURL
                     }))}
@@ -130,10 +129,9 @@ export default function SearchPage() {
             }
 
             <Stack alignItems="center" sx={{ marginTop: '24px' }}>
-                <Pagination count={_.isEmpty(result) ? 0 : Math.ceil((result as any).count / PAGINATION_LIMIT)}
+                <Pagination count={!result ? 0 : Math.ceil(result.count / PAGINATION_LIMIT)}
                     siblingCount={0}
                     page={page}
-                    defaultPage={4}
                     onChange={onPage} />
             </Stack>
         </>

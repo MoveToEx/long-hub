@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import _ from 'lodash';
 import PostMetadata from '@/lib/types/PostMetadata';
+import { useSnackbar } from 'notistack';
 
 export default function Post({
     params
@@ -33,6 +34,7 @@ export default function Post({
     });
     const [image, setImage] = useState('');
     const [tagsLib, setTagsLib] = useState<string[]>([]);
+    const { enqueueSnackbar } = useSnackbar();
     const router = useRouter();
 
     useEffect(() => {
@@ -102,6 +104,9 @@ export default function Post({
                                     ...meta,
                                     tags: newValue
                                 });
+                            }
+                            else {
+                                enqueueSnackbar('Illegal tag name', { variant: 'error' });
                             }
                         }}
                         renderOption={(props, option) => {

@@ -8,6 +8,7 @@ import TagIcon from '@mui/icons-material/Tag';
 import axios from 'axios';
 import _ from 'lodash';
 import LinkImageGrid from '@/components/LinkImageGrid';
+import { PostsResponse } from '@/lib/types/PostResponse';
 
 const PAGINATION_LIMIT = 24;
 
@@ -19,10 +20,10 @@ export default function SearchPage({
     }
 }) {
     const [page, setPage] = useState(1);
-    const [result, setResult] = useState({});
+    const [result, setResult] = useState<PostsResponse | null>(null);
 
     function onPage(e: React.ChangeEvent<unknown>, val: number) {
-        setResult({});
+        setResult(null);
         setPage(val);
         window.scroll({
             top: 0,
@@ -43,7 +44,7 @@ export default function SearchPage({
             </Typography>
 
             <LinkImageGrid
-                src={_.isEmpty(result) ? null : (result as any).data.map((x: any) => ({
+                src={result?.data.map(x => ({
                     href: `/post/${x.id}`,
                     src: x.imageURL
                 }))}
@@ -57,7 +58,7 @@ export default function SearchPage({
                 }} />
 
             <Stack alignItems="center">
-                <Pagination count={_.isEmpty(result) ? 0 : Math.ceil((result as any).count / PAGINATION_LIMIT)}
+                <Pagination count={result === null ? 0 : Math.ceil(result.count / PAGINATION_LIMIT)}
                     siblingCount={0}
                     page={page}
                     defaultPage={4}

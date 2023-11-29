@@ -8,9 +8,10 @@ import Box from '@mui/material/Box';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { TagsResponse } from '@/lib/types/TagResponse';
 
 export default function Tags() {
-    const [tags, setTags] = useState<any[]>([]);
+    const [tags, setTags] = useState<TagsResponse>([]);
 
     useEffect(() => {
         axios.get('/api/tag')
@@ -20,12 +21,12 @@ export default function Tags() {
     return (
         <Box sx={{marginTop: '12px'}}>
             {
-                tags.map((e: any) => (
-                    <Badge badgeContent={e.count} key={e.name} color="primary" style={{
+                tags.map(tag => (
+                    <Badge badgeContent={tag.count} key={tag.name} color="primary" style={{
                         margin: "6px"
                     }}>
-                        <Link href={"/tag/" + e.name} prefetch={false}>
-                            <Chip label={<Typography>{e.name}</Typography>} icon={<TagIcon />} />
+                        <Link href={"/tag/" + tag.name} prefetch={false}>
+                            <Chip label={<Typography>{tag.name}</Typography>} icon={<TagIcon />} />
                         </Link>
                     </Badge>
                 ))
