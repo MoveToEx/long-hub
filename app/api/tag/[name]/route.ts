@@ -26,8 +26,9 @@ export async function GET(req: NextRequest, {
     }
 
     const posts = await tag.getPosts({
-        offset: offset
-    }).then(x => x.slice(0, limit));
+        offset: offset,
+        limit: limit
+    });
 
     return NextResponse.json({
         "count": await tag.countPosts(),

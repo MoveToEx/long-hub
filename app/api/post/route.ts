@@ -25,8 +25,9 @@ export async function GET(req: NextRequest) {
                 attributes: []
             }
         },
-        offset: offset
-    }).then(x => x.slice(0, limit));
+        offset: offset,
+        limit: limit
+    });
 
     return NextResponse.json({
         count: await Post.count(),
