@@ -1,9 +1,9 @@
 
 
-export function createQueryString(url: string, params: Record<string, any>) {
+export function createQueryString(params: Record<string, any>) {
     const qs = new URLSearchParams();
     for (const key in params) {
         qs.set(key, params[key]);
     }
-    return url + '?' + qs.toString();
+    return qs.toString();
 }

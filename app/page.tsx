@@ -1,28 +1,25 @@
 'use client';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import _ from 'lodash';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import { PostsResponse } from '@/lib/types/PostResponse';
-import { createQueryString } from '@/lib/util';
 
 const PAGINATION_LIMIT = 24;
 
-function Home() {
+export default function Home() {
 	const searchParam = useSearchParams();
 	const router = useRouter();
-
-	const [page, setPage] = useState(Number(searchParam.get('page') ?? 1));
 	const [result, setResult] = useState<PostsResponse | null>(null);
+	const [page, setPage] = useState(Number(searchParam.get('page') ?? 1));
 
 	function onPage(e: React.ChangeEvent<unknown>, val: number) {
-		if (page == val) return;
-
-		setResult(null);
+		router.push('/?page=' + val);
 		setPage(val);
+		setResult(null);
 		window.scroll({
 			top: 0,
 			left: 0
@@ -30,25 +27,14 @@ function Home() {
 	}
 
 	useEffect(() => {
-		const page = Number(searchParam.get('page') ?? 1);
-		
-		fetch(createQueryString('/api/post/', {
-			offset: ((page - 1) * PAGINATION_LIMIT)
-		}), { next: { revalidate: 120 }})
+		fetch('/api/post/?offset=' + (page * PAGINATION_LIMIT - PAGINATION_LIMIT), { next: { revalidate: 120 } })
 			.then(res => res.json())
 			.then(x => setResult(x))
 			.catch(() => setResult(null));
-	}, [searchParam]);
-
-	useEffect(() => {
-		router.push(createQueryString('/', {
-			page: page
-		}));
 	}, [page]);
 
 	return (
 		<Box sx={{ m: 2 }}>
-
 			<LinkImageGrid
 				src={result?.data.map(x => ({
 					href: `/post/${x.id}`,
@@ -72,13 +58,4 @@ function Home() {
 			</Stack>
 		</Box>
 	);
-}
-
-
-export default function _wrapper() {
-	return (
-		<Suspense>
-			<Home />
-		</Suspense>
-	)
 }
