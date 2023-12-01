@@ -101,7 +101,7 @@ export default function Post({
     }, [imgBlob]);
 
 
-    if (post == null || imgObjectURL === null) {
+    if (post == null) {
         imgElement = (
             <Stack alignItems="center" sx={{ pt: 5 }}>
                 <CircularProgress />
