@@ -73,7 +73,6 @@ export default function Post({
     const { enqueueSnackbar } = useSnackbar();
     const [post, setPost] = useState<PostResponse | null>(null);
     const [imgBlob, setImgBlob] = useState<Blob | null>(null);
-    const [imgObjectURL, setImgObjectURL] = useState<string | null>(null);
     let imgElement;
 
     useEffect(() => {
@@ -93,13 +92,6 @@ export default function Post({
             .then(x => x.blob())
             .then(x => setImgBlob(x));
     }, [post]);
-
-    useEffect(() => {
-        if (imgBlob === null) return;
-
-        setImgObjectURL(URL.createObjectURL(imgBlob));
-    }, [imgBlob]);
-
 
     if (post == null) {
         imgElement = (
@@ -121,8 +113,6 @@ export default function Post({
                     objectFit: 'contain'
                 }}
                 onClick={() => {
-                    if (imgBlob === null) return;
-
                     CopyImage(imgBlob, enqueueSnackbar);
                 }}
             />
