@@ -13,6 +13,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useSnackbar, EnqueueSnackbar } from 'notistack';
 import { useState, useEffect, useMemo } from 'react';
 import PostResponse from '@/lib/types/PostResponse';
+import Link from 'next/link';
 
 async function CopyImage(url: string, blob: Blob, enqueueSnackbar: EnqueueSnackbar) {
     const write = (blobs: Record<string, Blob>) => {
@@ -160,7 +161,7 @@ export default function Post({
                 position: 'absolute',
                 right: '32px',
                 bottom: '32px'
-            }} href={`/post/${params.id}/edit`}>
+            }} LinkComponent={Link} href={`/post/${params.id}/edit`}>
                 <EditIcon />
             </Fab>
         </>
