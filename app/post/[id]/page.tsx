@@ -15,12 +15,16 @@ import { useState, useEffect, useMemo } from 'react';
 import PostResponse from '@/lib/types/PostResponse';
 import Link from 'next/link';
 
-async function CopyImage(url: string, blob: Blob, enqueueSnackbar: EnqueueSnackbar) {
+async function CopyImage(blob: Blob | null, enqueueSnackbar: EnqueueSnackbar) {
+    if (!blob) {
+        enqueueSnackbar('Uncompressed image is still loading', { variant: 'info' });
+        return;
+    }
     const write = (blobs: Record<string, Blob>) => {
         const item = new ClipboardItem(blobs);
         navigator.clipboard.write([item])
             .then(() => enqueueSnackbar('Copied to clipboard', { variant: 'success' }))
-            .catch(() => enqueueSnackbar('Failed when writing to clipboard', { variant: 'error' }));
+            .catch((e) => enqueueSnackbar('Failed when copying: ' + e, { variant: 'error' }));
     }
 
     if (blob.type === 'image/gif') {
@@ -44,12 +48,11 @@ async function CopyImage(url: string, blob: Blob, enqueueSnackbar: EnqueueSnackb
 
             canvas.width = elem.naturalWidth;
             canvas.height = elem.naturalHeight;
-            context?.drawImage(elem, 0, 0);
+            context.drawImage(elem, 0, 0);
             canvas.toBlob((pngBlob) => {
                 if (pngBlob === null) throw new Error('unable to convert to png blob');
 
                 write({
-                    'text/html': new Blob(['<img src="' + url + '"></img>'], { type: 'text/html' }),
                     [pngBlob.type]: pngBlob,
                     [`web ${blob.type}`]: blob
                 });
@@ -108,9 +111,8 @@ export default function Post({
     else {
         imgElement = (
             <Image
-                src={imgObjectURL ?? ''}
-                unoptimized
-                width={0}
+                src={post.imageURL}
+                width={300}
                 height={500}
                 alt={params.id as string}
                 style={{
@@ -121,7 +123,7 @@ export default function Post({
                 onClick={() => {
                     if (imgBlob === null) return;
 
-                    CopyImage(post.imageURL, imgBlob, enqueueSnackbar);
+                    CopyImage(imgBlob, enqueueSnackbar);
                 }}
             />
         );
