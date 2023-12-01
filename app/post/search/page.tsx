@@ -6,7 +6,7 @@ import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LinkImageGrid from '@/components/LinkImageGrid';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import axios from 'axios';
 import _ from 'lodash';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -16,22 +16,26 @@ import { Base64 } from 'js-base64';
 import { parseSelector } from '@/lib/types/SearchSelector';
 import { PostsResponse } from '@/lib/types/PostResponse';
 import { TagsResponse } from '@/lib/types/TagResponse';
+import { createQueryString } from '@/lib/util';
 
 const PAGINATION_LIMIT = 24;
 
-export default function SearchPage() {
-    const [page, setPage] = useState(1);
-    const [result, setResult] = useState<PostsResponse | null>(null);
-    const [inputValue, setInputValue] = useState<string[]>([]);
-    const [tags, setTags] = useState<string[]>([]);
-
+function SearchPage() {
     const router = useRouter();
     const searchParam = useSearchParams();
+
+    const [page, setPage] = useState(Number(searchParam.get('page') ?? 1));
+    const [result, setResult] = useState<PostsResponse | null>(null);
+    const [tags, setTags] = useState<string[]>([]);
+    const [inputValue, setInputValue] = useState<string[]>(
+        searchParam.has('s') ? JSON.parse(Base64.decode(searchParam.get("s")!)) : []
+    );
+
     const { enqueueSnackbar } = useSnackbar();
 
     function onPage(e: React.ChangeEvent<unknown>, val: number) {
-        setResult(null);
         setPage(val);
+        setResult(null);
         window.scroll({
             top: 0,
             left: 0,
@@ -42,21 +46,28 @@ export default function SearchPage() {
     useEffect(() => {
         if (!searchParam.has("s")) return;
 
-        var decoded = JSON.parse(Base64.decode(decodeURIComponent(searchParam.get("s") ?? '')));
+        var decoded = JSON.parse(Base64.decode(searchParam.get("s") ?? ''));
         var selector = JSON.stringify(parseSelector(decoded));
 
-        setInputValue(decoded);
-        axios.get('/api/search/?s=' + encodeURIComponent(Base64.encode(selector)) + '&offset=' + ((page - 1) * 24).toString())
+        axios.get(createQueryString('/api/search/', {
+            s: Base64.encode(selector),
+            offset: (Number(searchParam.get('page') ?? 1) - 1) * 24
+        }))
             .then(({ data }: { data: PostsResponse }) => setResult(data))
             .catch(_ => enqueueSnackbar('Failed when fetching data', { variant: 'error' }));
-    }, [searchParam, enqueueSnackbar, page]);
+    }, [searchParam, enqueueSnackbar]);
 
     useEffect(() => {
-        if (_.isEmpty(inputValue)) return;
-        var encoded = Base64.encode(JSON.stringify(inputValue));
-
-        router.push('/post/search?s=' + encodeURIComponent(encoded));
-    }, [inputValue, router]);
+        if (_.isEmpty(inputValue)) {
+            router.push('/post/search/');
+        }
+        else {
+            router.push(createQueryString('/post/search/', {
+                s: Base64.encode(JSON.stringify(inputValue)),
+                page: page
+            }));
+        }
+    }, [inputValue, page, router]);
 
     useEffect(() => {
         axios.get('/api/tag/')
@@ -135,5 +146,13 @@ export default function SearchPage() {
                     onChange={onPage} />
             </Stack>
         </>
+    );
+}
+
+export default function _wrapper() {
+    return (
+        <Suspense>
+            <SearchPage />
+        </Suspense>
     );
 }
