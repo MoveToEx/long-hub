@@ -68,7 +68,7 @@ export async function PUT(req: NextRequest, {
             });
         }
 
-        await post.removeTags();
+        await post.removeTags(await post.getTags());
 
         for (const tagName of meta.tags) {
             const [tag, _] = await Tag.findOrCreate({
@@ -79,7 +79,7 @@ export async function PUT(req: NextRequest, {
                     name: tagName
                 }
             });
-
+            
             await post.addTag(tag);
         }
     }
@@ -108,7 +108,7 @@ export async function DELETE(req: NextRequest, {
 
     fs.rmSync(post.imagePath);
 
-    await post.removeTags();
+    await post.removeTags(await post.getTags());
     await post.destroy();
 
     return NextResponse.json({
