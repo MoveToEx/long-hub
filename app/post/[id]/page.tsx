@@ -11,12 +11,12 @@ import _ from 'lodash';
 import TagRow from '@/components/TagRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useSnackbar, EnqueueSnackbar } from 'notistack';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import PostResponse from '@/lib/types/PostResponse';
 import Link from 'next/link';
 
-async function CopyImage(blob: Blob | null, enqueueSnackbar: EnqueueSnackbar) {
-    if (!blob) {
+async function CopyImage(img: HTMLImageElement | null, enqueueSnackbar: EnqueueSnackbar) {
+    if (!img) {
         enqueueSnackbar('Uncompressed image is still loading', { variant: 'info' });
         return;
     }
@@ -27,52 +27,37 @@ async function CopyImage(blob: Blob | null, enqueueSnackbar: EnqueueSnackbar) {
             .catch((e) => enqueueSnackbar('Failed when copying: ' + e, { variant: 'error' }));
     }
 
-    if (blob.type === 'image/gif') {
-        enqueueSnackbar('Only first frame of animated images will be copied.', { variant: 'warning' });
-    }
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (context === null) throw new Error('unable to get canvas context');
 
-    if (blob.type === 'image/png') {
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.drawImage(img, 0, 0);
+
+    canvas.toBlob((pngBlob) => {
+        if (pngBlob === null) throw new Error('unable to convert to png blob');
+
         write({
-            [blob.type]: blob
+            [pngBlob.type]: pngBlob
         });
-    }
-    else {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        const image = document.createElement('img');
-        if (context === null) throw new Error('unable to get canvas context');
 
-        image.onload = (e) => {
-            if (e === null || e.target === null) return;
-            const elem = e.target as HTMLImageElement;
-
-            canvas.width = elem.naturalWidth;
-            canvas.height = elem.naturalHeight;
-            context.drawImage(elem, 0, 0);
-            canvas.toBlob((pngBlob) => {
-                if (pngBlob === null) throw new Error('unable to convert to png blob');
-
-                write({
-                    [pngBlob.type]: pngBlob,
-                    // [`web ${blob.type}`]: blob
-                });
-
-            }, "image/png");
-        };
-        image.src = URL.createObjectURL(blob);
-    }
+    }, "image/png");
 }
 
 export default function Post({
     params
 }: {
     params: {
-        id: String
+        id: string
     }
 }) {
     const { enqueueSnackbar } = useSnackbar();
     const [post, setPost] = useState<PostResponse | null>(null);
-    const [imgBlob, setImgBlob] = useState<Blob | null>(null);
+    const image = useRef<HTMLImageElement>(null);
     let imgElement;
 
     useEffect(() => {
@@ -85,14 +70,6 @@ export default function Post({
             .then(x => setPost(x));
     }, [params.id]);
 
-    useEffect(() => {
-        if (!post?.imageURL) return;
-
-        fetch(post.imageURL)
-            .then(x => x.blob())
-            .then(x => setImgBlob(x));
-    }, [post]);
-
     if (post == null) {
         imgElement = (
             <Stack alignItems="center" sx={{ pt: 5 }}>
@@ -103,18 +80,20 @@ export default function Post({
     else {
         imgElement = (
             <Image
+                ref={image}
                 unoptimized
+                crossOrigin="anonymous"
                 src={post.imageURL}
                 width={300}
                 height={500}
-                alt={params.id as string}
+                alt={params.id}
                 style={{
                     width: '100%',
                     height: 'auto',
                     objectFit: 'contain'
                 }}
                 onClick={() => {
-                    CopyImage(imgBlob, enqueueSnackbar);
+                    CopyImage(image.current, enqueueSnackbar);
                 }}
             />
         );
@@ -128,14 +107,14 @@ export default function Post({
                 <Grid item xs={12} md={8} sx={{ marginTop: '16px' }}>
                     <Stack alignItems="right" spacing={1}>
                         <div>
-                            Text: {post?.text ? post.text : <i>No text</i>}
+                            Text: {post ? post.text : <i>No text</i>}
                         </div>
                         <div>
                             Uploaded at: {post?.createdAt ?? '...'}
                         </div>
                         <div>
                             Tags:
-                            <TagRow tags={post?.tags.map((e: any) => e.name) ?? []} />
+                            <TagRow tags={post?.tags.map(e => e.name) ?? []} />
                         </div>
                         <div>
                             <Typography component="legend">Aggressiveness</Typography>
