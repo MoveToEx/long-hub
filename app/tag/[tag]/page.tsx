@@ -1,40 +1,37 @@
-'use client';
-
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
 import TagIcon from '@mui/icons-material/Tag';
-import axios from 'axios';
 import _ from 'lodash';
 import LinkImageGrid from '@/components/LinkImageGrid';
-import { PostsResponse } from '@/lib/types/PostResponse';
+import { Tag } from '@/lib/db';
+import * as Constant from '@/lib/constants';
+import Pagination from '@/components/Pagination';
 
-const PAGINATION_LIMIT = 24;
-
-export default function SearchPage({
-    params
+export default async function SearchPage({
+    params,
+    searchParams
 }: {
     params: {
-        tag: String
+        tag: string
+    },
+    searchParams?: {
+        page?: string
     }
 }) {
-    const [page, setPage] = useState(1);
-    const [result, setResult] = useState<PostsResponse | null>(null);
+    const page = Number(searchParams?.page ?? 1);
+    const tag = await Tag.findOne({
+        where: {
+            name: params.tag
+        }
+    });
 
-    function onPage(e: React.ChangeEvent<unknown>, val: number) {
-        setResult(null);
-        setPage(val);
-        window.scroll({
-            top: 0,
-            left: 0
-        });
-    }
+    if (!tag) return <></>;
 
-    useEffect(() => {
-        axios.get('/api/tag/' + params.tag + '?offset=' + ((page - 1) * 24).toString())
-            .then(x => setResult(x.data));
-    }, [page, params.tag]);
+    const posts = await tag.getPosts({
+        limit: Constant.PAGINATION_LIMIT,
+        offset: (page - 1) * Constant.PAGINATION_LIMIT,
+        order: [['createdAt', 'DESC']]
+    });
+    const count = await tag.countPosts();
 
     return (
         <>
@@ -44,9 +41,9 @@ export default function SearchPage({
             </Typography>
 
             <LinkImageGrid
-                src={result?.data.map(x => ({
+                src={posts.map(x => ({
                     href: `/post/${x.id}`,
-                    src: x.imageURL
+                    src: x.imageURL!
                 }))}
                 gridContainerProps={{
                     spacing: 2
@@ -57,13 +54,7 @@ export default function SearchPage({
                     md: 3
                 }} />
 
-            <Stack alignItems="center">
-                <Pagination count={result === null ? 0 : Math.ceil(result.count / PAGINATION_LIMIT)}
-                    siblingCount={0}
-                    page={page}
-                    defaultPage={4}
-                    onChange={onPage} />
-            </Stack>
+            <Pagination total={Constant.pages(count)} />
         </>
     )
 }

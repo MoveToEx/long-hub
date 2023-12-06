@@ -36,6 +36,12 @@ const nextConfig = {
                 port: '3042',
                 pathname: '/**'
             },
+            {
+                protocol: 'http',
+                hostname: '192.168.110.16',
+                port: '3042',
+                pathname: '/**'
+            },
         ]
     },
 };

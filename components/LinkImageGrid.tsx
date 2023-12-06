@@ -15,21 +15,13 @@ export default function LinkImageGrid({
     gridContainerProps,
     linkProps
 }: {
-    src: LinkImage[] | Falsey,
+    src: LinkImage[],
     gridProps?: any,
     gridContainerProps?: any,
     linkProps?: any
 }) {
-    var elem;
-    if (!src) {
-        elem = _.range(24).map(() => (
-            <>
-                <Skeleton variant="rectangular" height={300} />
-            </>
-        ))
-    }
-    else {
-        elem = src.map((e: LinkImage) => (
+    var elem = src.map((e, i) => (
+        <Grid {...gridProps} key={i}>
             <Link {...linkProps} href={e.href} key={e.href}>
                 <Image
                     src={e.src}
@@ -45,17 +37,12 @@ export default function LinkImageGrid({
                     }}
                 />
             </Link>
-        ))
-    }
+        </Grid>
+    ));
+    
     return (
         <Grid {...gridContainerProps} container>
-            {
-                elem.map((e: any, i: number) => (
-                    <Grid {...gridProps} key={i}>
-                        {e}
-                    </Grid>
-                ))
-            }
+            {elem}
         </Grid>
     );
 }

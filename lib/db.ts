@@ -5,7 +5,7 @@ import {
     HasManyGetAssociationsMixin, HasManySetAssociationsMixin, HasManyAddAssociationMixin,
     HasManyAddAssociationsMixin, HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin,
     HasManyHasAssociationMixin, HasManyHasAssociationsMixin, HasManyCountAssociationsMixin,
-    HasManyCreateAssociationMixin, NonAttribute, Association
+    HasManyCreateAssociationMixin, NonAttribute, Association, CreationOptional
 } from 'sequelize';
 import _ from 'lodash';
 import path from 'node:path';
@@ -45,6 +45,9 @@ export class Post extends Model<InferAttributes<Post>, InferCreationAttributes<P
     declare hasTags: HasManyHasAssociationsMixin<Tag, number>;
     declare countTags: HasManyCountAssociationsMixin;
     declare createTag: HasManyCreateAssociationMixin<Tag>;
+
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
 
     declare tags: NonAttribute<Tag[]>;
 
@@ -132,7 +135,9 @@ Post.init({
     aggr: {
         type: DataTypes.FLOAT,
         defaultValue: 0.0
-    }
+    },
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE
 }, {
     sequelize: seq,
     tableName: 'post',

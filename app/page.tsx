@@ -1,44 +1,33 @@
-'use client';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
-import { useEffect, useState } from 'react';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import _ from 'lodash';
-import { useSearchParams, useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
-import { PostsResponse } from '@/lib/types/PostResponse';
+import * as Constant from '@/lib/constants';
+import { Post } from '@/lib/db';
+import Pagination from '@/components/Pagination';
 
-const PAGINATION_LIMIT = 24;
-
-export default function Home() {
-	const searchParam = useSearchParams();
-	const router = useRouter();
-	const [result, setResult] = useState<PostsResponse | null>(null);
-	const [page, setPage] = useState(Number(searchParam.get('page') ?? 1));
-
-	function onPage(e: React.ChangeEvent<unknown>, val: number) {
-		router.push('/?page=' + val);
-		setPage(val);
-		setResult(null);
-		window.scroll({
-			top: 0,
-			left: 0
-		});
+export default async function Home({
+	searchParams
+}: {
+	searchParams?: {
+		page?: string
 	}
+}) {
+	const page = Number(searchParams?.page ?? "1");
 
-	useEffect(() => {
-		fetch('/api/post/?offset=' + (page * PAGINATION_LIMIT - PAGINATION_LIMIT), { next: { revalidate: 120 } })
-			.then(res => res.json())
-			.then(x => setResult(x))
-			.catch(() => setResult(null));
-	}, [page]);
+	const posts = await Post.findAll({
+		attributes: ['id', 'image'],
+		order: [['createdAt', 'DESC']],
+		offset: (page - 1) * Constant.PAGINATION_LIMIT,
+		limit: Constant.PAGINATION_LIMIT
+	});
+	const count = await Post.count();
 
 	return (
 		<Box sx={{ m: 2 }}>
 			<LinkImageGrid
-				src={result?.data.map(x => ({
-					href: `/post/${x.id}`,
-					src: x.imageURL
+				src={posts.map(post => ({
+					href: `/post/${post.id}`,
+					src: post.imageURL!
 				}))}
 				gridContainerProps={{
 					spacing: 2
@@ -48,14 +37,8 @@ export default function Home() {
 					sm: 6,
 					md: 3
 				}} />
-			<Stack alignItems="center">
-				<Pagination
-					count={result === null ? 0 : Math.ceil(result.count / PAGINATION_LIMIT)}
-					siblingCount={0}
-					page={page}
-					onChange={onPage}
-				></Pagination>
-			</Stack>
+			
+			<Pagination total={Constant.pages(count)} />
 		</Box>
 	);
 }
