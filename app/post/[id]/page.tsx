@@ -54,7 +54,7 @@ async function CopyImage(blob: Blob | null, enqueueSnackbar: EnqueueSnackbar) {
 
                 write({
                     [pngBlob.type]: pngBlob,
-                    [`web ${blob.type}`]: blob
+                    // [`web ${blob.type}`]: blob
                 });
 
             }, "image/png");
@@ -103,6 +103,7 @@ export default function Post({
     else {
         imgElement = (
             <Image
+                unoptimized
                 src={post.imageURL}
                 width={300}
                 height={500}
