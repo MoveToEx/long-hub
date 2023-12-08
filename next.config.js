@@ -4,6 +4,7 @@ const withMDX = require('@next/mdx')();
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE == 'true'
 });
+const commitHash = require('child_process').execSync('git rev-parse --short HEAD').toString().trim();
 
 const nextConfig = {
     webpack: (
@@ -22,6 +23,9 @@ const nextConfig = {
         return config;
     },
     pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
+    env: {
+        GIT_COMMIT: commitHash
+    },
     images: {
         remotePatterns: [
             {

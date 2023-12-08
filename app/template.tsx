@@ -24,9 +24,11 @@ import TagIcon from '@mui/icons-material/Tag';
 import Search from '@mui/icons-material/Search';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ImageIcon from '@mui/icons-material/Image';
+import Stack from '@mui/material/Stack';
 import Menu from '@mui/icons-material/Menu';
 import Image from 'next/image';
 import Link from 'next/link';
+import CommitIcon from '@mui/icons-material/Commit';
 import { SnackbarProvider } from 'notistack';
 
 export default function RootTemplate({
@@ -86,8 +88,8 @@ export default function RootTemplate({
             </Box>
 
             <Drawer anchor="left" open={menuState} onClose={toggleMenu} disableScrollLock>
-                <Box sx={{ width: 256 }} role="presentation">
-                    <List>
+                <Box sx={{ width: 256, minHeight: '100%' }} role="presentation">
+                    <List sx={{ minHeight: '100%' }}>
                         <DrawerItem title="Home" href="/" icon={<Home />} />
                         <DrawerItem title="Tag" href="/tag" icon={<TagIcon />} />
                         <DrawerItem title="List" href="/post/list" icon={<FormatListBulletedIcon />} />
@@ -95,6 +97,14 @@ export default function RootTemplate({
                         <DrawerItem title="Search" href="/post/search" icon={<Search />} />
                         <DrawerItem title="Find similar" href="/post/similar" icon={<ImageIcon />} />
                         <DrawerItem title="Document" href="/doc" icon={<TextSnippetIcon />} />
+                        <Container sx={{ position: 'absolute', bottom: 0 }}>
+                            <Stack direction="row" alignItems="center" justifyContent="center">
+                                <CommitIcon fontSize="small" />
+                                <Typography color="text.secondary">
+                                    {process.env.GIT_COMMIT}
+                                </Typography>
+                            </Stack>
+                        </Container>
                     </List>
                 </Box>
             </Drawer>
