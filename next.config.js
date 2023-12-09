@@ -4,7 +4,12 @@ const withMDX = require('@next/mdx')();
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE == 'true'
 });
-const commitHash = require('child_process').execSync('git rev-parse --short HEAD').toString().trim();
+const childProcess = require('child_process');
+var commitHash = childProcess.execSync('git rev-parse --short HEAD').toString().trim();
+
+if (childProcess.execSync('git status -s').toString().trim().length != 0) {
+    commitHash = commitHash + '*';
+}
 
 const nextConfig = {
     webpack: (
