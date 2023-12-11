@@ -93,6 +93,28 @@ export class Tag extends Model<InferAttributes<Tag>, InferCreationAttributes<Tag
     declare posts: NonAttribute<Post[]>;
 }
 
+export class Template extends Model<InferAttributes<Template>, InferCreationAttributes<Template>> {
+    declare name: string;
+    declare offsetX: CreationOptional<number>;
+    declare offsetY: CreationOptional<number>;
+    declare rectWidth: CreationOptional<number>;
+    declare rectHeight: CreationOptional<number>;
+    declare style: CreationOptional<string>;
+    declare image: string;
+    declare imageURL: CreationOptional<string>;
+
+    get imagePath(): NonAttribute<string> {
+        if (process.env.MEDIA_ROOT === undefined) {
+            throw new Error('env MEDIA_ROOT not found');
+        }
+
+        const img = this.getDataValue('image');
+        if (img == null) return '';
+        // path.resolve(process.env.MEDIA_ROOT);
+        return path.join(process.env.MEDIA_ROOT, 'templates', img);
+    }
+}
+
 User.init({
     email: DataTypes.STRING,
     name: DataTypes.STRING,
@@ -159,6 +181,34 @@ Tag.init({
     timestamps: false
 });
 
+Template.init({
+    name: {
+        primaryKey: true,
+        type: DataTypes.STRING,
+    },
+    offsetX: DataTypes.INTEGER,
+    offsetY: DataTypes.INTEGER,
+    rectHeight: DataTypes.INTEGER,
+    rectWidth: DataTypes.INTEGER,
+    style: DataTypes.STRING,
+    image: DataTypes.STRING,
+    imageURL: {
+        type: DataTypes.VIRTUAL,
+        get: function () {
+            if (process.env.MEDIA_URL_PREFIX === undefined) throw new Error('env MEDIA_URL_PREFIX not found');
+
+            const img = this.getDataValue('image');
+            if (img == null) return '';
+            return `${_.trimEnd(process.env.MEDIA_URL_PREFIX, '/')}/templates/${img}`;
+        },
+        set: function (_) {
+            throw new Error("imageURL should not be set");
+        }
+    }
+}, {
+    sequelize: seq,
+    updatedAt: false
+});
 
 User.hasMany(Post, {
     foreignKey: 'uploaderId',

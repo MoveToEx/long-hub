@@ -28,7 +28,9 @@ import Stack from '@mui/material/Stack';
 import Menu from '@mui/icons-material/Menu';
 import Image from 'next/image';
 import Link from 'next/link';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CommitIcon from '@mui/icons-material/Commit';
+import Divider from '@mui/material/Divider';
 import { SnackbarProvider } from 'notistack';
 
 export default function RootTemplate({
@@ -92,11 +94,25 @@ export default function RootTemplate({
                     <List sx={{ minHeight: '100%' }}>
                         <DrawerItem title="Home" href="/" icon={<Home />} />
                         <DrawerItem title="Tag" href="/tag" icon={<TagIcon />} />
+                        <DrawerItem title="Document" href="/doc" icon={<TextSnippetIcon />} />
+                        <Divider component="li" />
+                        <li>
+                            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 2 }}>
+                                Image
+                            </Typography>
+                        </li>
                         <DrawerItem title="List" href="/post/list" icon={<FormatListBulletedIcon />} />
                         <DrawerItem title="Upload" href="/post/upload" icon={<FileUploadIcon />} />
                         <DrawerItem title="Search" href="/post/search" icon={<Search />} />
                         <DrawerItem title="Find similar" href="/post/similar" icon={<ImageIcon />} />
-                        <DrawerItem title="Document" href="/doc" icon={<TextSnippetIcon />} />
+                        <Divider component="li" />
+                        <li>
+                            <Typography component="div" variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 2 }}>
+                                Template
+                            </Typography>
+                        </li>
+                        <DrawerItem title="List" href="/template" icon={<AccountTreeIcon />} />
+                        <DrawerItem title="Upload" href="/template/upload" icon={<FileUploadIcon />} />
                         <Container sx={{ position: 'absolute', bottom: 0 }}>
                             <Stack direction="row" alignItems="center" justifyContent="center">
                                 <CommitIcon fontSize="small" />
