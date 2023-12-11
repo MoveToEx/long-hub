@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { Post, Tag, User, seq } from '../lib/db';
+import { Post, Tag, Template, User, seq } from '../lib/db';
 import tar from 'tar';
 import _ from 'lodash';
 import cp from 'cli-progress';
@@ -37,7 +37,22 @@ require('dotenv').config({
     });
 
     var posts = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'posts.json')).toString());
+    var templates = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'templates.json')).toString());
 
+
+    for (var t of templates) {
+        var template = await Template.create({
+            name: t.name,
+            offsetX: t.offsetX,
+            offsetY: t.offsetY,
+            rectHeight: t.rectHeight,
+            rectWidth: t.rectWidth,
+            image: t.image,
+            style: t.style
+        });
+
+        await template.save();
+    }
     // var archiver = await User.create({
     //     name: '__archiver'
     // });
@@ -88,4 +103,5 @@ require('dotenv').config({
     pb.stop();
 
     fs.rmSync(path.join(process.env.MEDIA_ROOT, 'posts.json'));
+    fs.rmSync(path.join(process.env.MEDIA_ROOT, 'templates.json'));
 })();
