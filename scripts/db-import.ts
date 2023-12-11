@@ -18,14 +18,20 @@ require('dotenv').config({
     }
     const afn = process.argv[2];
     const postsFolder = path.join(process.env.MEDIA_ROOT, 'posts');
+    const templateFolder = path.join(process.env.MEDIA_ROOT, 'templates');
 
     console.log('removing entries...');
     
     if (fs.existsSync(postsFolder)) {
         fs.rmSync(postsFolder, { recursive: true });
     }
+
+    if (fs.existsSync(templateFolder)) {
+        fs.rmSync(templateFolder, { recursive: true });
+    }
     
     fs.mkdirSync(postsFolder);
+    fs.mkdirSync(templateFolder);
     
     await seq.sync({ force: true });
 
@@ -37,22 +43,28 @@ require('dotenv').config({
     });
 
     var posts = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'posts.json')).toString());
-    var templates = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'templates.json')).toString());
 
+    if (fs.existsSync(path.join(process.env.MEDIA_ROOT, 'templates.json'))) {
+        var templates = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'templates.json')).toString());
 
-    for (var t of templates) {
-        var template = await Template.create({
-            name: t.name,
-            offsetX: t.offsetX,
-            offsetY: t.offsetY,
-            rectHeight: t.rectHeight,
-            rectWidth: t.rectWidth,
-            image: t.image,
-            style: t.style
-        });
+        for (var t of templates) {
+            var template = await Template.create({
+                name: t.name,
+                offsetX: t.offsetX,
+                offsetY: t.offsetY,
+                rectHeight: t.rectHeight,
+                rectWidth: t.rectWidth,
+                image: t.image,
+                style: t.style
+            });
+    
+            await template.save();
+        }
 
-        await template.save();
+        fs.rmSync(path.join(process.env.MEDIA_ROOT, 'templates.json'));
     }
+
+
     // var archiver = await User.create({
     //     name: '__archiver'
     // });
@@ -62,7 +74,6 @@ require('dotenv').config({
     const pb = new cp.SingleBar({}, cp.Presets.shades_classic);
     pb.start(posts.length, 0);
     var i = 0;
-
 
     for (var p of posts) {
         var post = await Post.create({
@@ -103,5 +114,4 @@ require('dotenv').config({
     pb.stop();
 
     fs.rmSync(path.join(process.env.MEDIA_ROOT, 'posts.json'));
-    fs.rmSync(path.join(process.env.MEDIA_ROOT, 'templates.json'));
 })();
