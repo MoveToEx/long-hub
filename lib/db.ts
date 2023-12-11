@@ -207,7 +207,12 @@ Template.init({
     }
 }, {
     sequelize: seq,
-    updatedAt: false
+    updatedAt: false,
+    tableName: 'template',
+    name: {
+        singular: 'template',
+        plural: 'templates'
+    },
 });
 
 User.hasMany(Post, {
