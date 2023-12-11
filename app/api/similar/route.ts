@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Post } from '@/lib/db';
+import sharp from 'sharp';
 
 // @ts-expect-error
 import phash from 'sharp-phash';
@@ -21,9 +22,12 @@ export async function POST(req: NextRequest) {
     const img = fd.get('image') as File;
     var result = [];
 
-    var buffer = Buffer.from(await img.arrayBuffer());
+    var buf = await sharp(await img.arrayBuffer()).trim({
+        background: 'rgba(255, 255, 255, 0)'
+    }).toBuffer();
 
-    const hash = await phash(buffer);
+    const hash = await phash(buf);
+
     const posts = await Post.findAll({
         attributes: ['id', 'image', 'imageURL', 'imageHash']
     });
