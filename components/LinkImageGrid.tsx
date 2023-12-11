@@ -30,9 +30,7 @@ export default function LinkImageGrid({
                     width={300}
                     style={{
                         width: '100%',
-                        height: 'auto',
                         maxHeight: '300px',
-                        margin: 'auto',
                         objectFit: 'contain'
                     }}
                 />
