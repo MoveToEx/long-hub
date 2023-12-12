@@ -19,8 +19,6 @@ export async function POST(req: NextRequest, {
         });
     }
 
-    console.log(data);
-
     const buf = await sharp(template.imagePath).composite([
         {
             input: {
