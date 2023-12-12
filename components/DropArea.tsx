@@ -22,7 +22,6 @@ export default function DropArea<Multiple extends true | false>({
     onChange: (param: ListenerParameter<Multiple>) => void
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
-    const boxRef = useRef<HTMLDivElement>(null);
 
     return (
         <Stack alignItems="center">
@@ -47,16 +46,37 @@ export default function DropArea<Multiple extends true | false>({
                 }}
             />
             <Box
-                ref={boxRef}
                 className={className}
                 alignItems="center"
-                justifyContent="center"
+                justifyContent="center" 
                 onClick={() => {
                     inputRef.current?.focus();
                     inputRef.current?.click();
                 }}
+                autoFocus
+                onLoad={(e) => {
+                    e.currentTarget.focus();
+                }}
+                onPaste={(e) => {
+                    const f = [...e.clipboardData.files];
+                    let res = [];
+
+                    for (var file of f) {
+                        if (file.type.match(accept.replace('*', '.*'))) {
+                            res.push(file);
+                        }
+                    }
+
+                    if (multiple) {
+                        onChange(res as ListenerParameter<Multiple>);
+                    }
+                    else {
+                        onChange(res[0] as ListenerParameter<Multiple>);
+                    }
+                }}
+                
                 onDrop={(e) => {
-                    boxRef.current?.classList.remove(dragClassName);
+                    e.currentTarget.classList.remove(dragClassName);
 
                     e.preventDefault();
                     var a: File[] = [];
@@ -82,11 +102,11 @@ export default function DropArea<Multiple extends true | false>({
                 }}
                 onDragEnter={(e) => {
                     e.preventDefault();
-                    boxRef.current?.classList.add(dragClassName);
+                    e.currentTarget.classList.add(dragClassName);
                 }}
                 onDragLeave={(e) => {
                     e.preventDefault();
-                    boxRef.current?.classList.remove(dragClassName);
+                    e.currentTarget.classList.remove(dragClassName);
                 }} >
                 {label}
             </Box>
