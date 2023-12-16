@@ -5,6 +5,8 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Link from 'next/link';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
+import { writeClipboard } from '@/lib/util';
+import styles from './components.module.css';
 
 interface LinkImage {
     href: string;
@@ -31,33 +33,25 @@ export default function LinkImageGrid({
                     alt={e.src}
                     height={300}
                     width={300}
-                    style={{
-                        width: '100%',
-                        maxHeight: '300px',
-                        objectFit: 'contain'
-                    }}
+                    className={styles['grid-image']}
                     onClick={(event) => {
                         if (!event.ctrlKey) {
                             return;
                         }
-
+                        const src = e.src;
+                        const element = event.currentTarget;
+                        element.classList.add(styles['grid-image-fetching']);
+                        if (src.endsWith('gif')) enqueueSnackbar('Only the first frame will be copied', { variant: 'info' });
+                        
                         event.preventDefault();
                         event.stopPropagation();
-
-                        const src = e.src;
-
-                        const write = (blobs: Record<string, Blob>) => {
-                            const item = new ClipboardItem(blobs);
-                            navigator.clipboard.write([item])
-                                .then(() => enqueueSnackbar('Copied to clipboard', { variant: 'success' }))
-                                .catch((e) => enqueueSnackbar('Failed when copying: ' + e, { variant: 'error' }));
-                        }
-
+                        
+                        
                         fetch(src).then(x => x.blob()).then(blob => {
                             if (blob.type === 'image/png') {
-                                write({
+                                writeClipboard({
                                     [blob.type]: blob
-                                });
+                                }, enqueueSnackbar);
                                 return;
                             }
                             const canvas = document.createElement('canvas');
@@ -70,19 +64,20 @@ export default function LinkImageGrid({
                                 canvas.height = image.naturalHeight;
                                 context.fillStyle = 'white';
                                 context.fillRect(0, 0, canvas.width, canvas.height);
-
+                                
                                 context.drawImage(image, 0, 0);
-
+                                
                                 canvas.toBlob(blob => {
                                     if (blob === null) throw new Error('unable to convert to png blob');
-
-                                    write({
+                                    element.classList.remove(styles['grid-image-fetching']);
+                                    
+                                    writeClipboard({
                                         [blob.type]: blob
-                                    });
-
+                                    }, enqueueSnackbar);
+                                    
                                 }, "image/png");
                             }
-
+                            
                             image.src = URL.createObjectURL(blob);
                         });
                     }}

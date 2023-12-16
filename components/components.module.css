@@ -1,0 +1,13 @@
+
+.grid-image {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    transition: opacity .02s linear;
+}
+
+.grid-image-fetching {
+    opacity: 50%;
+    transition: opacity .02s linear;
+    cursor: default;
+}
