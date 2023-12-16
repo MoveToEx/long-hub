@@ -52,6 +52,7 @@ export default function LinkImageGrid({
                                 writeClipboard({
                                     [blob.type]: blob
                                 }, enqueueSnackbar);
+                                element.classList.remove(styles['grid-image-fetching']);
                                 return;
                             }
                             const canvas = document.createElement('canvas');
