@@ -6,6 +6,8 @@ import Box from '@mui/material/Box';
 import Link from 'next/link';
 import { Tag } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Tags() {
     const tags = await Tag.findAll();
 
