@@ -16,8 +16,8 @@ export default async function Home({
 
     const templates = await Template.findAll({
         order: [['createdAt', 'DESC']],
-        offset: (page - 1) * Constant.PAGINATION_LIMIT,
-        limit: Constant.PAGINATION_LIMIT
+        offset: (page - 1) * Constant.pageLimit,
+        limit: Constant.pageLimit
     });
     const count = await Template.count();
 

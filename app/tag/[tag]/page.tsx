@@ -3,8 +3,13 @@ import TagIcon from '@mui/icons-material/Tag';
 import _ from 'lodash';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import { Tag } from '@/lib/db';
-import * as Constant from '@/lib/constants';
+import * as C from '@/lib/constants';
 import Pagination from '@/components/Pagination';
+import EditTag from './components';
+import Grid from '@mui/material/Unstable_Grid2';
+import Box from '@mui/material/Box';
+
+const pageLimit = C.pageLimit - 2;
 
 export default async function SearchPage({
     params,
@@ -27,34 +32,56 @@ export default async function SearchPage({
     if (!tag) return <></>;
 
     const posts = await tag.getPosts({
-        limit: Constant.PAGINATION_LIMIT,
-        offset: (page - 1) * Constant.PAGINATION_LIMIT,
+        limit: pageLimit,
+        offset: (page - 1) * pageLimit,
         order: [['createdAt', 'DESC']]
     });
     const count = await tag.countPosts();
 
     return (
         <>
-            <Typography variant="h3">
-                <TagIcon fontSize="large" />
-                {params.tag}
-            </Typography>
+            <Grid container spacing={2}>
+                <Grid xs={12} md={6}>
+                    <Box sx={{maxHeight: '300px', overflow: 'auto'}}>
+                        <Typography variant="h3">
+                            <TagIcon fontSize="large" />
+                            {params.tag}
+                        </Typography>
 
-            <LinkImageGrid
-                src={posts.map(x => ({
-                    href: `/post/${x.id}`,
-                    src: x.imageURL!
-                }))}
-                gridContainerProps={{
-                    spacing: 2
-                }}
-                gridProps={{
-                    xs: 12,
-                    sm: 6,
-                    md: 3
-                }} />
+                        <Typography variant="body1">
+                            Type: {tag.type || <i>Unset</i>}
+                        </Typography>
+                        <Typography variant="body1">
+                            Total: {count}
+                        </Typography>
+                        <Typography variant="body1">
+                            Summary: {tag.summary || <i>null</i>}
+                        </Typography>
+                        <Typography variant="body1">
+                            {tag.description ? 'Description: ' + tag.description : ''}
+                        </Typography>
 
-            <Pagination total={Constant.pages(count)} />
+                        <EditTag tag={params.tag} description={tag.description} summary={tag.summary} type={tag.type} />
+                    </Box>
+                </Grid>
+
+                <LinkImageGrid
+                    expand={true}
+                    src={posts.map(x => ({
+                        href: `/post/${x.id}`,
+                        src: x.imageURL!
+                    }))}
+                    gridContainerProps={{
+                        spacing: 2
+                    }}
+                    gridProps={{
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }} />
+
+            </Grid>
+            <Pagination total={Math.ceil(count / pageLimit)} />
         </>
     )
 }
