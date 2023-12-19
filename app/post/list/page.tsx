@@ -1,107 +1,80 @@
-'use client';
-
 import Stack from '@mui/material/Stack';
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React from 'react';
+import { Post, Tag } from '@/lib/db';
+import Pagination from '@/components/Pagination';
 import _ from 'lodash';
-import Skeleton from '@mui/material/Skeleton';
 import Grid from '@mui/material/Unstable_Grid2';
 import Image from 'next/image';
-import Pagination from '@mui/material/Pagination';
 import Link from 'next/link';
 import TagRow from '@/components/TagRow';
-import { PostsResponse } from '@/lib/types/PostResponse';
+import Typography from '@mui/material/Typography';
 
-const PAGINATION_LIMIT = 64;
+const pageLimit = 64;
 
-function toStack(data: PostsResponse | null) {
-    let res = [];
-    if (data === null) {
-        res = _.range(PAGINATION_LIMIT).map((x: number) => (
-            <Grid container key={x.toString()} spacing={2}>
-                <Grid xs={4} md={2} mdOffset={2}>
-                    <Skeleton variant='rectangular' height={200} />
-                </Grid>
-                <Grid xs={8} md={6}>
-                    <Skeleton variant='text' />
-                    <Skeleton variant='text' />
-                    <Skeleton variant='text' />
-                </Grid>
-            </Grid>
-        ));
+export default async function PostList({
+    searchParams
+}: {
+    searchParams?: {
+        page?: string
     }
-    else {
-        res = data.data.map(x => (
-            <Grid container key={x.id} spacing={2}>
-                <Grid xs={4} md={2} mdOffset={2} sx={{ minHeight: '128px' }}>
-                    <Link href={`/post/${x.id}`}>
-                        <Image
-                            src={x.imageURL}
-                            alt={x.id}
-                            height={200}
-                            width={200}
-                            style={{
-                                width: '100%',
-                                height: 'auto',
-                                maxHeight: '200px',
-                                margin: 'auto',
-                                objectFit: 'contain'
-                            }}
-                        />
-                    </Link>
-                </Grid>
-                <Grid xs={8} md={6}>
-                    <Stack spacing={1}>
-                        <div>
-                            {x.id}
-                        </div>
-                        <div>
-                            {x.text.length == 0 ? <i>Notext</i> : x.text}
-                        </div>
-                        <div>
-                            <TagRow tags={x.tags.map(e => e.name)} />
-                        </div>
-                    </Stack>
-                </Grid>
-            </Grid>
-        ))
-    }
-    return res;
-}
+}) {
+    const page = Number(searchParams?.page ?? 1);
 
-export default function PostList() {
-    const [page, setPage] = useState(1);
-    const [result, setResult] = useState<PostsResponse | null>(null);
-
-    function onPage(e: React.ChangeEvent<unknown>, val: number) {
-        setResult(null);
-        setPage(val);
-        window.scroll({
-            top: 0,
-            left: 0
-        });
-    }
-
-    useEffect(() => {
-        fetch('/api/post/?offset=' + (page - 1) * 64 + '&limit=' + PAGINATION_LIMIT)
-            .then(x => x.json())
-            .then(x => setResult(x));
-    }, [page]);
+    const posts = await Post.findAll({
+        limit: pageLimit,
+        offset: (page - 1) * pageLimit,
+        include: {
+            model: Tag,
+            attributes: ['name']
+        }
+    });
+    const count = await Post.count();
 
     return (
         <>
+            <Stack alignItems="center" sx={{m: 2}}>
+                <Typography variant="h4">
+                    {count} images in total
+                </Typography>
+            </Stack>
             <Stack spacing={1}>
-                {toStack(result)}
+                {
+                    posts.map(post => (
+                        <Grid container key={post.id} spacing={2}>
+                            <Grid xs={4} md={2} mdOffset={2} sx={{ minHeight: '128px' }}>
+                                <Link href={`/post/${post.id}`}>
+                                    <Image
+                                        src={post.imageURL!}
+                                        alt={post.id}
+                                        height={200}
+                                        width={200}
+                                        style={{
+                                            width: '100%',
+                                            height: '200px',
+                                            objectFit: 'contain'
+                                        }}
+                                    />
+                                </Link>
+                            </Grid>
+                            <Grid xs={8} md={6}>
+                                <Stack spacing={1} justifyItems="center">
+                                    <div>
+                                        {post.id}
+                                    </div>
+                                    <div>
+                                        {post.text ?? <i>Notext</i>}
+                                    </div>
+                                    <div>
+                                        <TagRow tags={post.tags.map(e => e.name)} />
+                                    </div>
+                                </Stack>
+                            </Grid>
+                        </Grid>
+                    ))
+                }
             </Stack>
 
-            <Stack alignItems="center">
-                <Pagination
-                    count={result === null ? 0 : Math.ceil(result.count / PAGINATION_LIMIT)}
-                    page={page}
-                    siblingCount={0}
-                    onChange={onPage}
-                ></Pagination>
-            </Stack>
+            <Pagination total={Math.ceil(count / pageLimit)} />
         </>
     );
 }
