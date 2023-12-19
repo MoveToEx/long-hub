@@ -15,6 +15,12 @@ require('dotenv').config({
     const posts = await Post.findAll({
         attributes: {
             exclude: ['imagePath', 'imageURL', 'imageHash']
+        },
+        include: {
+            model: Tag,
+            through: {
+                attributes: []
+            }
         }
     });
 
@@ -24,19 +30,8 @@ require('dotenv').config({
         }
     });
 
-    const tags = await Tag.findAll();
-
-    let _posts = [];
-    for (const post of posts) {
-        _posts.push({
-            ...post.toJSON(),
-            tags: (await post.getTags()).map(tag => tag.id)
-        });
-    }
-
-    fs.writeFileSync('./posts.json', JSON.stringify(_posts));
+    fs.writeFileSync('./posts.json', JSON.stringify(posts.map(x => x.toJSON())));
     fs.writeFileSync('./templates.json', JSON.stringify(templates.map(x => x.toJSON())));
-    fs.writeFileSync('./tags.json', JSON.stringify(tags.map(x => x.toJSON())));
 
     await tar.create({
         file: 'archive.tar',
@@ -45,9 +40,12 @@ require('dotenv').config({
 
     await tar.update({
         file: 'archive.tar',
-    }, ['posts.json', 'templates.json', 'tags.json']);
+    }, ['posts.json']);
+
+    await tar.update({
+        file: 'archive.tar',
+    }, ['templates.json']);
 
     fs.rmSync('./posts.json');
-    fs.rmSync('./tags.json');
     fs.rmSync('./templates.json');
 })();

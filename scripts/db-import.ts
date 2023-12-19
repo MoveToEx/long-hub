@@ -42,20 +42,6 @@ require('dotenv').config({
         cwd: process.env.MEDIA_ROOT
     });
 
-    var tags = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'tags.json')).toString());
-
-    for (var t of tags) {
-        await Tag.create({
-            id: t.id,
-            name: t.name,
-            summary: t.summary,
-            description: t.description,
-            type: t.type
-        });
-    }
-
-    fs.rmSync(path.join(process.env.MEDIA_ROOT, 'tags.json'));
-
     var posts = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'posts.json')).toString());
 
     if (fs.existsSync(path.join(process.env.MEDIA_ROOT, 'templates.json'))) {
@@ -87,6 +73,7 @@ require('dotenv').config({
 
     const pb = new cp.SingleBar({}, cp.Presets.shades_classic);
     pb.start(posts.length, 0);
+    var i = 0;
 
     for (var p of posts) {
         var post = await Post.create({
@@ -102,19 +89,26 @@ require('dotenv').config({
 
         // await archiver.addPost(post);
 
-        var ptags = [];
+        var tags = [];
 
-        for (var id of p.tags) {
-            var pt = await Tag.findByPk(id);
-            if (pt === null) {
-                throw new Error("Post tags are defective from tags.json");
-            }
-            ptags.push(pt);
+        for (var tagName of p.tags) {
+            var [tag, created] = await Tag.findOrCreate({
+                where: {
+                    name: tagName.name
+                },
+                defaults: {
+                    name: tagName.name
+                }
+            });
+
+            tags.push(tag);
         }
-        await post.setTags(ptags);
+
+        await post.setTags(tags);
+
         await post.save();
 
-        pb.increment();
+        pb.update(++i);
     }
 
     pb.stop();

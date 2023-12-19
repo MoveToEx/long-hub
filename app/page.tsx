@@ -17,8 +17,8 @@ export default async function Home({
 	const posts = await Post.findAll({
 		attributes: ['id', 'image'],
 		order: [['createdAt', 'DESC']],
-		offset: (page - 1) * Constant.pageLimit,
-		limit: Constant.pageLimit
+		offset: (page - 1) * Constant.PAGINATION_LIMIT,
+		limit: Constant.PAGINATION_LIMIT
 	});
 	const count = await Post.count();
 

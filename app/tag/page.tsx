@@ -16,13 +16,12 @@ export default async function Tags() {
                     <Badge
                         badgeContent={tag.countPosts()}
                         key={tag.name}
-                        color={(tag.description && tag.type && tag.summary) ? "primary" : "secondary"}
-                        sx={{ m: 1 }}>
-                        <Link href={"/tag/" + tag.name}>
-                            <Chip
-                                label={<Typography>{tag.name}</Typography>}
-                                icon={<TagIcon />}
-                                title={(tag.type ?? 'Uncategorized') + ' | ' + (tag.summary ?? 'No summary available')} />
+                        color="primary"
+                        sx={{
+                            m: 1
+                        }}>
+                        <Link href={"/tag/" + tag.name} prefetch={false}>
+                            <Chip label={<Typography>{tag.name}</Typography>} icon={<TagIcon />} />
                         </Link>
                     </Badge>
                 ))

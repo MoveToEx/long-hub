@@ -17,14 +17,12 @@ export default function LinkImageGrid({
     src,
     gridProps,
     gridContainerProps,
-    linkProps,
-    expand
+    linkProps
 }: {
     src: LinkImage[],
     gridProps?: any,
     gridContainerProps?: any,
-    linkProps?: any,
-    expand?: boolean
+    linkProps?: any
 }) {
     const { enqueueSnackbar } = useSnackbar();
     var elem = src.map((e, i) => (
@@ -44,11 +42,11 @@ export default function LinkImageGrid({
                         const element = event.currentTarget;
                         element.classList.add(styles['grid-image-fetching']);
                         if (src.endsWith('gif')) enqueueSnackbar('Only the first frame will be copied', { variant: 'info' });
-
+                        
                         event.preventDefault();
                         event.stopPropagation();
-
-
+                        
+                        
                         fetch(src).then(x => x.blob()).then(blob => {
                             if (blob.type === 'image/png') {
                                 writeClipboard({
@@ -61,26 +59,26 @@ export default function LinkImageGrid({
                             const context = canvas.getContext('2d');
                             const image = document.createElement('img');
                             if (context === null) throw new Error('unable to get canvas context');
-
+                            
                             image.onload = (e) => {
                                 canvas.width = image.naturalWidth;
                                 canvas.height = image.naturalHeight;
                                 context.fillStyle = 'white';
                                 context.fillRect(0, 0, canvas.width, canvas.height);
-
+                                
                                 context.drawImage(image, 0, 0);
-
+                                
                                 canvas.toBlob(blob => {
                                     if (blob === null) throw new Error('unable to convert to png blob');
                                     element.classList.remove(styles['grid-image-fetching']);
-
+                                    
                                     writeClipboard({
                                         [blob.type]: blob
                                     }, enqueueSnackbar);
-
+                                    
                                 }, "image/png");
                             }
-
+                            
                             image.src = URL.createObjectURL(blob);
                         });
                     }}
@@ -88,14 +86,6 @@ export default function LinkImageGrid({
             </Link>
         </Grid>
     ));
-
-    if (expand) {
-        return (
-            <>
-                {elem}
-            </>
-        );
-    }
 
     return (
         <Grid {...gridContainerProps} container>

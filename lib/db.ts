@@ -77,11 +77,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
 }
 
 export class Tag extends Model<InferAttributes<Tag>, InferCreationAttributes<Tag>> {
-    declare id: CreationOptional<number>;
     declare name: string;
-    declare summary: CreationOptional<string>;
-    declare type: CreationOptional<string>;
-    declare description: CreationOptional<string>;
 
     declare getPosts: HasManyGetAssociationsMixin<Post>;
     declare addPost: HasManyAddAssociationMixin<Post, number>;
@@ -174,15 +170,7 @@ Post.init({
 });
 
 Tag.init({
-    id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
-    },
-    name: DataTypes.STRING,
-    summary: DataTypes.STRING,
-    type: DataTypes.STRING,
-    description: DataTypes.TEXT
+    name: DataTypes.STRING
 }, {
     sequelize: seq,
     tableName: 'tag',
