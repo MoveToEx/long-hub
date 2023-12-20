@@ -21,6 +21,7 @@ export default async function PostList({
     const page = Number(searchParams?.page ?? 1);
 
     const posts = await Post.findAll({
+        order: [['createdAt', 'DESC']],
         limit: pageLimit,
         offset: (page - 1) * pageLimit,
         include: {
