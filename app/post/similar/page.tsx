@@ -26,7 +26,7 @@ export default function UploadPage() {
         var fd = new FormData();
         fd.append('image', file.file);
         axios
-            .post('/api/similar', fd)
+            .post('/api/post/similar', fd)
             .then(res => setSimilar(res.data))
             .catch(e => enqueueSnackbar('Failed when uploading: ' + e, { variant: 'error' }) );
     }, [file, enqueueSnackbar]);

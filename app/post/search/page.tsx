@@ -46,7 +46,7 @@ export default function SearchPage() {
         var selector = JSON.stringify(parseSelector(decoded));
 
         setInputValue(decoded);
-        axios.get('/api/search/?s=' + encodeURIComponent(Base64.encode(selector)) + '&offset=' + ((page - 1) * 24).toString())
+        axios.get('/api/post/search/?s=' + encodeURIComponent(Base64.encode(selector)) + '&offset=' + ((page - 1) * 24).toString())
             .then(({ data }: { data: PostsResponse }) => setResult(data))
             .catch(_ => enqueueSnackbar('Failed when fetching data', { variant: 'error' }));
     }, [searchParam, enqueueSnackbar, page]);
@@ -59,7 +59,7 @@ export default function SearchPage() {
     }, [inputValue, router]);
 
     useEffect(() => {
-        axios.get('/api/tag/')
+        axios.get('/api/post/tag/')
             .then(({ data }: { data: TagsResponse }) => setTags(data.map(i => i.name)));
     }, []);
 

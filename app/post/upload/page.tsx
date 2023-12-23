@@ -50,7 +50,7 @@ export default function UploadPage() {
     let elem;
 
     useEffect(() => {
-        axios.get('/api/tag')
+        axios.get('/api/post/tag')
             .then(x => setTagsLib(x.data.map((x: any) => x.name)));
     }, []);
 
@@ -59,7 +59,7 @@ export default function UploadPage() {
         var fd = new FormData();
         fd.append('image', files[0].file);
         axios
-            .post('/api/similar', fd)
+            .post('/api/post/similar', fd)
             .then(res => {
                 if (res.data.length && !ignoreSimilar) {
                     setSimilar(res.data);
@@ -91,7 +91,7 @@ export default function UploadPage() {
                 var fd = new FormData();
                 fd.append('image', file.file);
 
-                const res = await axios.post('/api/similar', fd);
+                const res = await axios.post('/api/post/similar', fd);
                 if (res.data.length) {
                     enqueueSnackbar('rejected for similar posts', { variant: 'error' });
                 }
