@@ -9,6 +9,7 @@ import TagRow from '@/components/TagRow';
 import CopiableImage from '@/components/CopiableImage';
 import { Post, Tag } from '@/lib/db';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 export default async function PostPage({
     params
@@ -26,7 +27,7 @@ export default async function PostPage({
     });
 
     if (post === null) {
-        return;
+        return notFound();
     }
 
     return (

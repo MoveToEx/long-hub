@@ -5,6 +5,7 @@ import LinkImageGrid from '@/components/LinkImageGrid';
 import { Tag } from '@/lib/db';
 import * as Constant from '@/lib/constants';
 import Pagination from '@/components/Pagination';
+import { notFound } from 'next/navigation';
 
 export default async function SearchPage({
     params,
@@ -24,7 +25,7 @@ export default async function SearchPage({
         }
     });
 
-    if (!tag) return <></>;
+    if (!tag) return notFound();
 
     const posts = await tag.getPosts({
         limit: Constant.PAGINATION_LIMIT,
