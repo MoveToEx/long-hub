@@ -19,15 +19,17 @@ export default function Page({
         <Stack alignItems="center">
             <Pagination
                 count={total}
-                siblingCount={1}
                 showFirstButton
                 showLastButton
                 page={Number(searchParams.get('page') ?? '1')}
-                onChange={(e, v) => {
+                onChange={(_, v) => {
                     router.push(createQueryString(pathname, {
-                        ...searchParams.entries(),
+                        ...[...searchParams.entries()].reduce((a, x) => ({
+                            ...a,
+                            [x[0]]: x[1]
+                        }), {}),
                         page: v
-                    }))
+                    }));
                 }}
             ></Pagination>
         </Stack>

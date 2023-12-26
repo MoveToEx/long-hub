@@ -1,139 +1,122 @@
-'use client';
-
-import TextField from '@mui/material/TextField';
-import Chip from '@mui/material/Chip';
-import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LinkImageGrid from '@/components/LinkImageGrid';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
 import _ from 'lodash';
-import Autocomplete from '@mui/material/Autocomplete';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useSnackbar } from 'notistack';
 import { Base64 } from 'js-base64';
-import { parseSelector } from '@/lib/types/SearchSelector';
-import { PostsResponse } from '@/lib/types/PostResponse';
-import { TagsResponse } from '@/lib/types/TagResponse';
+import { Tag, Post } from '@/lib/db';
+import { SearchInput } from './components';
+import { Op } from 'sequelize';
+import Box from '@mui/material/Box';
+import Pagination from '@/components/Pagination';
+import * as C from '@/lib/constants';
 
-const PAGINATION_LIMIT = 24;
+export default async function SearchPage({
+    searchParams
+}: {
+    searchParams?: {
+        s?: string,
+        page?: string
+    }
+}) {
+    const page = Number(searchParams?.page ?? 1);
+    const tags = await Tag.findAll({
+        attributes: ['name']
+    }).then(t => t.map(x => x.name));
+    var s: string[] = [], posts: Post[] = [], count = 0;
 
-export default function SearchPage() {
-    const [page, setPage] = useState(1);
-    const [result, setResult] = useState<PostsResponse | null>(null);
-    const [inputValue, setInputValue] = useState<string[]>([]);
-    const [tags, setTags] = useState<string[]>([]);
-
-    const router = useRouter();
-    const searchParam = useSearchParams();
-    const { enqueueSnackbar } = useSnackbar();
-
-    function onPage(e: React.ChangeEvent<unknown>, val: number) {
-        setResult(null);
-        setPage(val);
-        window.scroll({
-            top: 0,
-            left: 0,
-            behavior: 'smooth'
-        });
+    if (searchParams?.s) {
+        s = JSON.parse(Base64.decode(searchParams.s));
+    }
+    else {
+        s = [];
     }
 
-    useEffect(() => {
-        if (!searchParam.has("s")) return;
+    if (!_.isEmpty(s)) {
+        let where: any = {
+            [Op.and]: s.map(x => {
+                if (x.startsWith('+') || x.startsWith('-')) {
+                    return {};
+                }
+                else if (x.startsWith('@')) {
+                    return { id: { [Op.like]: _.trimStart(x, '@').replaceAll('*', '%') } };
+                }
+                else if (x.startsWith('<') || x.startsWith('>') || x.startsWith('=') || x.startsWith('!=')) {
+                    if (x.startsWith('<=')) {
+                        return { aggr: { [Op.lte]: Number(_.trimStart(x, '<=')) } };
+                    } else if (x.startsWith('>=')) {
+                        return { aggr: { [Op.gte]: Number(_.trimStart(x, '>=')) } };
+                    } else if (x.startsWith('<')) {
+                        return { aggr: { [Op.lt]: Number(_.trimStart(x, '<')) } };
+                    } else if (x.startsWith('>')) {
+                        return { aggr: { [Op.gt]: Number(_.trimStart(x, '>')) } };
+                    } else if (x.startsWith('=')) {
+                        return { aggr: { [Op.eq]: Number(_.trimStart(x, '=')) } };
+                    } else if (x.startsWith('!=')) {
+                        return { aggr: { [Op.ne]: Number(_.trimStart(x, '!=')) } };
+                    }
+                }
+                else {
+                    return { text: { [Op.like]: '%' + x + '%' } };
+                }
+            })
+        };
+        
+        console.log(where);
+        posts = await Post.findAll({
+            where: where,
+            include: {
+                model: Tag,
+                as: 'tags',
+                through: {
+                    attributes: []
+                }
+            }
+        });
 
-        var decoded = JSON.parse(Base64.decode(decodeURIComponent(searchParam.get("s") ?? '')));
-        var selector = JSON.stringify(parseSelector(decoded));
+        s.filter(x => x.startsWith('+') || x.startsWith('-')).forEach(x => {
+            const tag = _.trimStart(x, '+-');
+            if (x.startsWith('+')) {
+                posts = posts.filter(
+                    p => p.tags.find(t => t.name == tag) != undefined
+                );
+            }
+            else {
+                posts = posts.filter(
+                    post => post.tags.find(t => t.name == tag) == undefined
+                )
+            }
+        });
 
-        setInputValue(decoded);
-        axios.get('/api/post/search/?s=' + encodeURIComponent(Base64.encode(selector)) + '&offset=' + ((page - 1) * 24).toString())
-            .then(({ data }: { data: PostsResponse }) => setResult(data))
-            .catch(_ => enqueueSnackbar('Failed when fetching data', { variant: 'error' }));
-    }, [searchParam, enqueueSnackbar, page]);
-
-    useEffect(() => {
-        if (_.isEmpty(inputValue)) return;
-        var encoded = Base64.encode(JSON.stringify(inputValue));
-
-        router.push('/post/search?s=' + encodeURIComponent(encoded));
-    }, [inputValue, router]);
-
-    useEffect(() => {
-        axios.get('/api/post/tag/')
-            .then(({ data }: { data: TagsResponse }) => setTags(data.map(i => i.name)));
-    }, []);
+        count = posts.length;
+        posts = posts.slice((page - 1) * C.PAGINATION_LIMIT, page * C.PAGINATION_LIMIT);
+    }
 
     return (
-        <>
-            <Autocomplete
-                multiple
-                freeSolo
-                value={inputValue}
-                fullWidth
-                sx={{ mt: 2 }}
-                options={
-                    tags || []
-                }
-                renderTags={(value: readonly string[], getTagProps) =>
-                    value.map((option: string, index: number) => (
-                        <Chip variant="outlined" label={option} {...getTagProps({ index })} key={index} />
-                    ))
-                }
-                renderOption={(props, option) => {
-                    return <li {...props} key={option}>{option}</li>;
-                }}
-                filterOptions={(options, { inputValue }) => {
-                    if (inputValue.startsWith('+') || inputValue.startsWith('-')) {
-                        return options
-                            .filter(x => x.startsWith(_.trimStart(inputValue, '+-')))
-                            .map(x => inputValue[0] + x);
-                    }
-                    else {
-                        return [];
-                    }
-                }}
-                onChange={(_, newValue) => {
-                    setResult(null);
-                    setInputValue(newValue);
-                    setPage(1);
-                }}
-                renderInput={
-                    (params) => (
-                        <TextField
-                            {...params}
-                            sx={{ margin: '16px 0 16px 0' }}
-                            placeholder="Selector"
-                            label="Search"
-                            variant="outlined" />
-                    )
-                }
-            />
-
-            <Typography variant="h6" align="center">
-                {result === null ? <></> : 'Found ' + result.count + ' results'}
-            </Typography>
+        <Box sx={{mt: 2, mb: 2}}>
+            <SearchInput value={s} tags={tags} />
             {
-                <LinkImageGrid
-                    src={!result ? [] : result.data.map((x: any) => ({
-                        href: `/post/${x.id}`,
-                        src: x.imageURL
-                    }))}
-                    gridContainerProps={{
-                        spacing: 2
-                    }}
-                    gridProps={{
-                        xs: 12,
-                        sm: 6,
-                        md: 3
-                    }} />
+                !_.isEmpty(s) &&
+                <Typography variant="h6" align="center">
+                    Found {count} result{count > 1 ? 's' : ''}
+                </Typography>
+            }
+            {
+                !_.isEmpty(posts) && <LinkImageGrid
+                src={posts.map(x => ({
+                    href: `/post/${x.id}`,
+                    src: x.imageURL!
+                }))}
+                gridContainerProps={{
+                    spacing: 2
+                }}
+                gridProps={{
+                    xs: 12,
+                    sm: 6,
+                    md: 3
+                }} />
             }
 
-            <Stack alignItems="center" sx={{ marginTop: '24px' }}>
-                <Pagination count={!result ? 0 : Math.ceil(result.count / PAGINATION_LIMIT)}
-                    siblingCount={0}
-                    page={page}
-                    onChange={onPage} />
-            </Stack>
-        </>
+            <Pagination total={C.pages(count)} />
+        </Box>
     );
 }
