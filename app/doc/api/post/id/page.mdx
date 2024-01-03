@@ -1,0 +1,110 @@
+import Typography from '@mui/material/Typography';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
+import '@/public/styles/vs.min.css';
+
+<Breadcrumbs aria-label="breadcrumb">
+    <Link underline="hover" color="inherit" href="/doc/api">
+        API
+    </Link>
+    <Link underline="hover" color="inherit" href="/doc/api/post">
+        Post
+    </Link>
+    <Typography color="text.primary">\[post_id\]</Typography>
+</Breadcrumbs>
+
+## GET /api/post/\[post_id\]/
+
+Returns the information of post specified with `post_id`.
+
+Example request:
+
+```http
+GET /api/post/6c753c5e-baca-4f1b-a4ed-952dd402d36c
+```
+
+Example response:
+
+```json
+{
+    "imageURL": "http://localhost:3042/posts/6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
+    "id": "6c753c5e-baca-4f1b-a4ed-952dd402d36c",
+    "text": "我哭了我装的",
+    "image": "6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
+    "imageHash": "1110001011010101000110011010101011100110010110011011001010110111",
+    "aggr": 0,
+    "createdAt": "2023-12-19T06:50:28.871Z",
+    "updatedAt": "2023-12-19T06:50:28.906Z",
+    "uploaderId": null,
+    "tags": [
+        {
+            "id": 229,
+            "name": "cry"
+        }
+    ]
+}
+```
+
+## PUT /api/post/\[post_id\]/
+
+Modify the metadata of the given post.
+
+Accepts: application/json
+
+Body: New metadata to replace current one. Non-existent fields remain unchanged.  
+Response: Post metadata after replacement.
+
+Example request:
+
+```http
+PUT /api/post/6c753c5e-baca-4f1b-a4ed-952dd402d36c
+Content-Type: application/json
+
+{
+    "text": "你妈死了",
+    "aggr": 5.0
+}
+```
+
+Example response:
+
+```json
+{
+    "imageURL": "https://img.longhub.top/posts/6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
+    "id": "6c753c5e-baca-4f1b-a4ed-952dd402d36c",
+    "text": "你妈死了",
+    "image": "6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
+    "imageHash": "1110001011010101000110011010101011100110010110011011001010110111",
+    "aggr": 5,
+    "createdAt": "2023-12-19T06:50:28.871Z",
+    "updatedAt": "2023-12-19T07:50:92.505Z",
+    "uploaderId": null,
+    "tags": [
+        {
+            "id": 229,
+            "name": "cry"
+        }
+    ]
+}
+```
+
+
+## DELETE /api/post/\[post_id\]/
+
+Deletes the specified post.
+
+Response: Specified post ID.
+
+Example request:
+
+```http
+DELETE /api/post/6c753c5e-baca-4f1b-a4ed-952dd402d36c
+```
+
+Example response:
+
+```json
+{
+    "id": "6c753c5e-baca-4f1b-a4ed-952dd402d36c"
+}
+```

@@ -1,0 +1,87 @@
+import Typography from '@mui/material/Typography';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
+import '@/public/styles/vs.min.css';
+
+<Breadcrumbs aria-label="breadcrumb">
+    <Link underline="hover" color="inherit" href="/doc/api">
+        API
+    </Link>
+    <Link underline="hover" color="inherit" href="/doc/api/post">
+        Post
+    </Link>
+    <Typography color="text.primary">search</Typography>
+</Breadcrumbs>
+
+# GET /api/post/search
+
+Search for posts that match a group of selectors. 
+
+A group of selectors is an `Array` containing an arbitrary number of selectors. However, this api will return a 400 Bad Request when the length of selectors is greather than 24 or less than 1.  
+
+A selector is defined as an object containing constraints on post metadata.  
+A selector has a `type` and a `value` field, and an optional `op`(operator) field.  
+
+- `type="text"`: Applies to text metadata. Looks for posts that contains `%value` as a part of its text.  
+- `type="aggr"`: Applies to aggressiveness metadata. Looks for posts with aggressiveness that falls within a given range. Requires the `op` field present and the `value` field a number.  
+    - `op="gt"`: Looks for posts with `aggr > value`  
+    - `op="lt"`: Looks for posts with `aggr < value`  
+    - `op="gte"`: Looks for posts with `aggr >= value`  
+    - `op="lte"`: Looks for posts with `aggr <= value`  
+    - `op="eq"`: Looks for posts with `aggr == value`  
+    - `op="ne"`: Looks for posts with `aggr != value`  
+- `type="tag"`: Applies to tag metadata. Looks for posts that are tagged or not tagged with a tag. Requires `op` field.  
+    - `op="include"`: Looks for posts tagged with `value`  
+    - `op="exclude"`: Looks for posts not tagged with `value`  
+
+
+Example request:  
+
+```http
+POST /api/post/search?offset=0&limit=1
+Content-Type: application/json
+
+[
+    {
+        "type": "text",
+        "value": "我"
+    },
+    {
+        "type": "tag",
+        "op": "exclude",
+        "value": "monochrome"
+    },
+    {
+        "type": "aggr",
+        "op": "gt",
+        "value": 5
+    }
+]
+```
+
+Example response:
+
+```json
+{
+    "count": 31,
+    "data": [
+        {
+            "imageURL": "http://localhost:3042/posts/790b288d-960f-4e49-9b0e-606dd0cd6d50.jpg",
+            "id": "790b288d-960f-4e49-9b0e-606dd0cd6d50",
+            "text": "我是该叫你穹批呢还是星奴呢",
+            "image": "790b288d-960f-4e49-9b0e-606dd0cd6d50.jpg",
+            "imageHash": "1101101001000110110010010011011011001101001110010011100110111110",
+            "aggr": 7,
+            "createdAt": "2023-12-19T06:49:40.236Z",
+            "updatedAt": "2023-12-19T06:49:40.268Z",
+            "uploaderId": null,
+            "tags": [
+                {
+                    "id": 17,
+                    "name": "honkai_starrail"
+                }
+            ]
+        }
+    ]
+}
+```

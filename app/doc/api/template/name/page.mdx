@@ -1,0 +1,146 @@
+import Typography from '@mui/material/Typography';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
+import '@/public/styles/vs.min.css';
+
+<Breadcrumbs aria-label="breadcrumb">
+    <Link underline="hover" color="inherit" href="/doc/api">
+        API
+    </Link>
+    <Link underline="hover" color="inherit" href="/doc/api/template">
+        Template
+    </Link>
+    <Typography color="text.primary">\[name\]</Typography>
+</Breadcrumbs>
+
+# GET /api/template/\[name\]
+
+Get metadata of the specified template.  
+
+Example request:  
+
+```http
+GET /api/template/default
+```
+
+Example response:  
+
+```json
+{
+    "imageURL": "http://localhost:3042/templates/default.jpg",
+    "name": "default",
+    "offsetX": 0,
+    "offsetY": 204,
+    "rectHeight": 80,
+    "rectWidth": 300,
+    "style": null,
+    "image": "default.jpg",
+    "createdAt": "2023-12-11T08:36:18.565Z"
+}
+```
+
+# POST /api/template/\[name\]
+
+Create a blank template with given image.  
+
+Accepts: multipart/form-data
+
+Example request:  
+
+```http
+POST /api/template/pointing_up
+Content-Type: multipart/form-data; boundary=----NMSL
+
+----NMSL
+Content-Disposition: form-data; name="image"; filename="image.png"
+Content-Type: image/png
+
+< ./image.png
+----NMSL
+```
+
+Example response:  
+
+```json
+{
+    "name": "pointing_up"
+}
+```
+
+# PUT /api/template/\[name\]
+
+Modify metadata of an existing template.  
+
+Accepts: application/json  
+
+Body: A JSON object depicting the rectangle to plot text on, with the following fields:  
+
+- `height`, `width`: The height and width of the rectangle, in px.  
+- `x`, `y`: The position of the upper left corner of the rectangle relative to the upper left corner of the image, in px.
+
+Example request:  
+
+```http
+PUT /api/template/default
+Content-Type: application/json
+
+{
+    "height": 200,
+    "width": 100,
+    "x": "300",
+    "y": 100
+}
+```
+
+Example response:
+
+```json
+{
+    "imageURL": "http://localhost:3042/templates/default.jpg",
+    "name": "default",
+    "offsetX": 300,
+    "offsetY": 100,
+    "rectHeight": 200,
+    "rectWidth": 100,
+    "style": null,
+    "image": "default.jpg",
+    "createdAt": "2023-12-11T08:36:18.565Z"
+}
+```
+
+Errors:  
+
+- 404: Template %name could not be found.  
+- 401: There are missing fields in the request.  
+
+# POST /api/template/\[name\]/generate
+
+Generate image using the template.  
+
+Accepts: application/json
+
+Body: A series of data depicting how to plot text. Existing fields will override the template metadata.  
+
+- `text`: Text to plot. Required.  
+- `rect.height`, `rect.width`: Describes the rectangle. Overrides template metadata if exists.  
+- `rect.x`, `rect.y`: Describes the upper-left corner of the rectangle. Overrides template metadata if exists.  
+- `align`: Alignment to use. Defaults to `'center'`  
+
+Response: `image/jpeg` data.
+
+Example request:  
+
+```http
+POST /api/template/pointing_up/generate  
+Content-Type: application/json
+
+{
+    "text": "NMSL"
+}
+```
+
+Example response omitted.
+
+Errors:  
+
+- 404: Template %name could not be found.  

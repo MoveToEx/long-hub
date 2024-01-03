@@ -1,0 +1,92 @@
+import Typography from '@mui/material/Typography';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
+import '@/public/styles/vs.min.css';
+
+<Breadcrumbs aria-label="breadcrumb">
+    <Link underline="hover" color="inherit" href="/doc/api">
+        API
+    </Link>
+    <Typography color="text.primary">Post</Typography>
+</Breadcrumbs>
+
+Endpoints below /post:
+
+- <Link color="inherit" underline="hover" href="/doc/api/post/search">/api/post/search</Link>  
+- <Link color="inherit" underline="hover" href="/doc/api/post/similar">/api/post/similar</Link>  
+- <Link color="inherit" underline="hover" href="/doc/api/post/tag">/api/post/tag</Link>  
+- <Link color="inherit" underline="hover" href="/doc/api/post/id">/api/post/\[post_id\]</Link>  
+
+## GET /api/post/
+
+Get a list of posts within given range.  
+
+Search Parameters:
+
+- `offset`: Skip the first # posts. Defaults to 0.
+- `limit`: Controls maximum count of posts to return. Defaults to 24.  
+
+Example request:
+
+```http
+GET /api/post/?offset=0&limit=1
+```
+
+Example response:
+
+```json
+{
+    "count": 684,
+    "data": [
+        {
+            "imageURL": "https://img.longhub.top/posts/6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
+            "id": "6c753c5e-baca-4f1b-a4ed-952dd402d36c",
+            "text": "我哭了我装的",
+            "image": "6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
+            "imageHash": "1110001011010101000110011010101011100110010110011011001010110111",
+            "aggr": 0,
+            "createdAt": "2023-12-19T06:50:28.871Z",
+            "updatedAt": "2023-12-19T06:50:28.906Z",
+            "uploaderId": null,
+            "tags": [
+                {
+                    "id": 229,
+                    "name": "cry"
+                }
+            ]
+        }
+    ]
+}
+```
+
+## POST /api/post
+
+Create a new blank post with given image.  
+
+Formdata:
+
+- `image`: Image to upload
+
+Response: A JSON object containing the id of the new post.
+
+Example request:
+
+```http
+POST /api/post
+Content-Type: multipart/form-data; boundary=----NMSL
+
+----NMSL
+Content-Disposition: form-data; name="image"; filename="image.jpg"
+Content-Type: image/jpeg
+
+< ./image.jpg
+---NMSL
+```
+
+Example response:
+
+```json
+{
+    "id": "b1257c16-548c-4876-a31a-d4563df62723"
+}
+```

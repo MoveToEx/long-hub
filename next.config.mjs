@@ -1,13 +1,13 @@
 /** @type {import('next').NextConfig} */
 
-const withMDX = require('@next/mdx')();
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-    enabled: process.env.ANALYZE == 'true'
-});
-const childProcess = require('child_process');
-var commitHash = childProcess.execSync('git rev-parse --short HEAD').toString().trim();
+import rehypeHighlight from 'rehype-highlight';
+import json from 'highlight.js/lib/languages/json';
+import http from 'highlight.js/lib/languages/http';
+import nextMDX from '@next/mdx';
+import { execSync } from  'child_process';
+var commitHash = execSync('git rev-parse --short HEAD').toString().trim();
 
-if (childProcess.execSync('git status -s').toString().trim().length != 0) {
+if (execSync('git status -s').toString().trim().length != 0) {
     commitHash = commitHash + '*';
 }
 
@@ -55,4 +55,20 @@ const nextConfig = {
     },
 };
 
-module.exports = withBundleAnalyzer(withMDX(nextConfig));
+const withMDX = nextMDX({
+    options: {
+        rehypePlugins: [
+            [
+                rehypeHighlight,
+                {
+                    languages: {
+                        json: json,
+                        http: http
+                    }
+                }
+            ]
+        ]
+    }
+});
+
+export default withMDX(nextConfig);

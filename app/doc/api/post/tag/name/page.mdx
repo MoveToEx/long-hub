@@ -1,0 +1,56 @@
+import Typography from '@mui/material/Typography';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
+import '@/public/styles/vs.min.css';
+
+<Breadcrumbs aria-label="breadcrumb">
+    <Link underline="hover" color="inherit" href="/doc/api">
+        API
+    </Link>
+    <Link underline="hover" color="inherit" href="/doc/api/post">
+        Post
+    </Link>
+    <Link underline="hover" color="inherit" href="/doc/api/post/tag">
+        Tag
+    </Link>
+    <Typography color="text.primary">\[tag_name\]</Typography>
+</Breadcrumbs>
+
+List all posts tagged with _tag\_name_
+
+Search parameters:  
+- `limit`:  
+- `offset`: 
+
+Example request:
+
+```http
+GET /api/post/tag/monochrome?limit=1&offset=0
+```
+
+Example response:
+
+```json
+{
+    "count": 536,
+    "data": [
+        {
+            "imageURL": "http://localhost:3042/posts/c4b6b579-908f-463c-b363-3f53171f4a15.png",
+            "id": "c4b6b579-908f-463c-b363-3f53171f4a15",
+            "text": "",
+            "image": "c4b6b579-908f-463c-b363-3f53171f4a15.png",
+            "imageHash": "0001010100010101000101010001010101010101000101010101000100010101",
+            "aggr": 0,
+            "createdAt": "2023-12-19T06:49:37.989Z",
+            "updatedAt": "2023-12-19T06:49:38.143Z",
+            "uploaderId": null,
+            "taggedPost": {
+                "createdAt": "2023-12-19T06:49:38.098Z",
+                "updatedAt": "2023-12-19T06:49:38.098Z",
+                "postId": "c4b6b579-908f-463c-b363-3f53171f4a15",
+                "tagId": 1
+            }
+        }
+    ]
+}
+```
