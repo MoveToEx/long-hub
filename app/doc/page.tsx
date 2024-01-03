@@ -9,6 +9,15 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Search from '@mui/icons-material/Search';
 import Link from 'next/link';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: {
+        default: 'Document',
+        template: 'Document/%s'
+    }
+};
+
 
 function DocEntry({
     title, href, icon

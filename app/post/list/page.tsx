@@ -8,8 +8,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import TagRow from '@/components/TagRow';
 import Typography from '@mui/material/Typography';
+import { Metadata } from 'next';
 
 const pageLimit = 64;
+
+export const metadata: Metadata = {
+    title: 'Posts list'
+};
 
 export default async function PostList({
     searchParams

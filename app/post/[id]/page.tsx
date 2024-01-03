@@ -9,7 +9,17 @@ import TagRow from '@/components/TagRow';
 import CopiableImage from '@/components/CopiableImage';
 import { Post, Tag } from '@/lib/db';
 import Link from 'next/link';
+import { ResolvingMetadata, Metadata } from 'next';
 import { notFound } from 'next/navigation';
+
+export async function generateMetadata(
+    { params }: { params: { id: string } },
+    parent: ResolvingMetadata
+): Promise<Metadata> {
+    return {
+        title: 'Post ' + _.first(params.id.split('-'))
+    };
+}
 
 export default async function PostPage({
     params

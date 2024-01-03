@@ -4,6 +4,11 @@ import Box from '@mui/material/Box';
 import * as Constant from '@/lib/constants';
 import { Template } from '@/lib/db';
 import Pagination from '@/components/Pagination';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Template'
+}
 
 export default async function Home({
     searchParams

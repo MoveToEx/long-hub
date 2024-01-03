@@ -6,6 +6,19 @@ import { Tag } from '@/lib/db';
 import * as Constant from '@/lib/constants';
 import Pagination from '@/components/Pagination';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
+
+export async function generateMetadata({
+    params
+}: {
+    params: {
+        tag: string
+    }
+}): Promise<Metadata> {
+    return {
+        title: '#' + params.tag
+    };
+}
 
 export default async function SearchPage({
     params,

@@ -4,7 +4,10 @@ import './globals.css'
 import * as React from 'react';
 
 export const metadata: Metadata = {
-	title: 'LONG Hub',
+	title: {
+		absolute: 'LONG Hub',
+		template: '%s | LONG Hub'
+	},
 }
 
 const inter = Inter({ subsets: ['latin'] })

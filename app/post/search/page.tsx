@@ -9,6 +9,11 @@ import { Op } from 'sequelize';
 import Box from '@mui/material/Box';
 import Pagination from '@/components/Pagination';
 import * as C from '@/lib/constants';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Search'
+};
 
 export default async function SearchPage({
     searchParams
@@ -61,7 +66,6 @@ export default async function SearchPage({
             })
         };
         
-        console.log(where);
         posts = await Post.findAll({
             where: where,
             include: {

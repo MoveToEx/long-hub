@@ -5,6 +5,11 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
 import { Tag } from '@/lib/db';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Tag'
+};
 
 export default async function Tags() {
     const tags = await Tag.findAll();
