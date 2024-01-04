@@ -1,6 +1,7 @@
 
 .grid-image {
     width: 100%;
+    height: auto;
     max-height: 300px;
     object-fit: contain;
     transition: opacity .02s linear;
