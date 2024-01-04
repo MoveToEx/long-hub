@@ -1,18 +1,3 @@
-import Typography from '@mui/material/Typography';
-import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
-import '@/public/styles/vs.min.css';
-
-<Breadcrumbs aria-label="breadcrumb">
-    <Link underline="hover" color="inherit" href="/doc/api">
-        API
-    </Link>
-    <Link underline="hover" color="inherit" href="/doc/api/template">
-        Template
-    </Link>
-    <Typography color="text.primary">\[name\]</Typography>
-</Breadcrumbs>
-
 # GET /api/template/\[name\]
 
 Get metadata of the specified template.  
@@ -113,34 +98,3 @@ Errors:
 - 404: Template %name could not be found.  
 - 401: There are missing fields in the request.  
 
-# POST /api/template/\[name\]/generate
-
-Generate image using the template.  
-
-Accepts: application/json
-
-Body: A series of data depicting how to plot text. Existing fields will override the template metadata.  
-
-- `text`: Text to plot. Required.  
-- `rect.height`, `rect.width`: Describes the rectangle. Overrides template metadata if exists.  
-- `rect.x`, `rect.y`: Describes the upper-left corner of the rectangle. Overrides template metadata if exists.  
-- `align`: Alignment to use. Defaults to `'center'`  
-
-Response: `image/jpeg` data.
-
-Example request:  
-
-```http
-POST /api/template/pointing_up/generate  
-Content-Type: application/json
-
-{
-    "text": "NMSL"
-}
-```
-
-Example response omitted.
-
-Errors:  
-
-- 404: Template %name could not be found.  

@@ -52,13 +52,12 @@ export default async function PostPage({
                 <Grid item xs={12} md={8} sx={{ marginTop: '16px' }}>
                     <Stack alignItems="right" spacing={1}>
                         <div>
-                            Text: {post.text ? post.text : <i>No text</i>}
+                            {post.text ? post.text : <i>No text</i>}
                         </div>
                         <div>
-                            Uploaded at: {post.createdAt.toLocaleDateString() ?? '...'}
+                            Uploaded at {post.createdAt.toISOString()}
                         </div>
                         <div>
-                            Tags:
                             <TagRow tags={post.tags.map(e => e.name) ?? []} />
                         </div>
                         <div>
