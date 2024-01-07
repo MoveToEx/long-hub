@@ -33,7 +33,12 @@ export default function LinkImageGrid({
                     alt={e.src}
                     height={300}
                     width={300}
-                    className={styles['grid-image']}
+                    style={{
+                        height: '300px',
+                        width: 'auto',
+                        maxWidth: '100%',
+                        objectFit: 'contain'
+                    }}
                     onClick={(event) => {
                         if (!event.ctrlKey) {
                             return;
