@@ -1,0 +1,7 @@
+
+#### Why cannot I copy an entire GIF?
+
+Due to the limitation of Async Clipboard API, the only format available via browser clipboard api is `text/plain`, `text/html` and `image/png`.  
+This limitation helps improve security by forbidding some files that may be harmful to system, but also makes it impossible to copy other formats.  
+Chrome added custom format in Chrome 108 which allows for custom clipboard format by adding a `web` prefix, but this is only used for internal communication of a single application and does not lift the limitation when it comes to inter-application paste.
+

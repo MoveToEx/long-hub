@@ -35,19 +35,26 @@ export default function DocTemplate({
     children: React.ReactNode
 }) {
     return (
-        <>
-            <Drawer variant="permanent" anchor="right">
+        <Box sx={{ display: "flex" }}>
+            <Box sx={{ flexGlow: 1, p: 3 }}>
+                {children}
+            </Box>
+
+            <Drawer variant="permanent" anchor="right" sx={{
+                minWidth: '256px'
+            }}>
                 <Toolbar />
                 <Box sx={{ minWidth: '256px', m: 2 }}>
                     <List>
+                        <ContentLink href="/doc" title="Document" />
                         <ListItem disablePadding>
-                            Guideline
+                            Guide
                         </ListItem>
                         <ListItem sx={{ p: 0, pl: 2 }}>
                             <List disablePadding>
-                                <ContentLink href="/doc/tag" title="Tagging" />
-                                <ContentLink href="/doc/upload" title="Uploading" />
-                                <ContentLink href="/doc/search" title="Search" />
+                                <ContentLink href="/doc/guide/tag" title="Tagging" />
+                                <ContentLink href="/doc/guide/uploading" title="Uploading" />
+                                <ContentLink href="/doc/guide/search" title="Search" />
                             </List>
                         </ListItem>
                         <ListItem disablePadding>
@@ -83,11 +90,11 @@ export default function DocTemplate({
                                 </ListItem>
                             </List>
                         </ListItem>
+                        <ContentLink href="/doc/faq" title="FAQ" />
                     </List>
                 </Box>
 
             </Drawer>
-            {children}
-        </>
+        </Box>
     )
 }
