@@ -48,14 +48,14 @@ export default function Post({
                 setImage(x.data.imageURL);
             })
             .finally(() => setLoading(false));
-        axios.get('/api/tag')
+        axios.get('/api/post/tag')
             .then(x => setTagsLib(x.data.map((x: any) => x.name)));
     }, [params.id]);
 
     function submit() {
         setLoading(true);
         axios.put(`/api/post/${params.id}/`, meta)
-            .then(() => router.push(`/post/${params.id}/`));
+            .then(() => router.back());
     }
 
 
