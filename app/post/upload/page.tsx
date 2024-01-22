@@ -18,13 +18,10 @@ import Chip from '@mui/material/Chip';
 import styles from './page.module.css';
 import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
-import Tooltip from '@mui/material/Tooltip';
 import PostMetadata from '@/lib/types/PostMetadata';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import FastForwardIcon from '@mui/icons-material/FastForward';
-import async from 'async';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Image from 'next/image';
 import _ from 'lodash';
@@ -81,35 +78,6 @@ export default function UploadPage() {
             })
             .catch(e => enqueueSnackbar('Failed when uploading: ' + e, { variant: 'error' }))
             .finally(() => setLoading(false));
-    }
-
-    function all() {
-        setLoading(true);
-
-        async.waterfall(files.map(file => (
-            async () => {
-                var fd = new FormData();
-                fd.append('image', file.file);
-
-                const res = await axios.post('/api/post/similar', fd);
-                if (res.data.length) {
-                    enqueueSnackbar('rejected for similar posts', { variant: 'error' });
-                }
-                else {
-                    const post = await axios.post('/api/post', fd);
-
-                    await axios.put('/api/post/' + post.data.id, {
-                        text: '',
-                        tags: ['tagme'],
-                        aggr: 0
-                    });
-                }
-            }
-        ))).then(() => {
-            enqueueSnackbar('Batch upload complete', { variant: 'info' });
-            setFiles([]);
-            setLoading(false);
-        });
     }
 
     function skip() {
@@ -236,17 +204,15 @@ export default function UploadPage() {
                             />
                         </Box>
 
-                        <Box sx={{ p: 1, position: 'relative', width: '100%' }} >
-                            <Stack sx={{ m: 2 }} direction="row" alignItems="center" justifyContent="center">
-                                <FormControlLabel control={<Checkbox checked={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar" />
-                            </Stack>
-                            <Stack direction="row" spacing={3} alignItems="center" justifyContent="center">
+                        <FormControlLabel control={<Checkbox checked={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar" />
+
+                        <Box sx={{ p: 1, position: 'relative' }} >
+
+                            <Stack direction="row" spacing={2}>
                                 <Box sx={{ position: 'relative' }}>
-                                    <Tooltip title="Submit">
-                                        <Fab onClick={submit} color="primary" disabled={loading}>
-                                            <SendIcon />
-                                        </Fab>
-                                    </Tooltip>
+                                    <Fab onClick={submit} color="primary" disabled={loading}>
+                                        <SendIcon />
+                                    </Fab>
                                     {
                                         loading && (
                                             <CircularProgress
@@ -261,17 +227,10 @@ export default function UploadPage() {
                                         )
                                     }
                                 </Box>
-                                <Tooltip title="Skip current image">
-                                    <Fab onClick={skip} disabled={loading} color="error">
-                                        <DeleteIcon />
-                                    </Fab>
-                                </Tooltip>
 
-                                <Tooltip title="Upload and set all images to be blank">
-                                    <Fab onClick={all} disabled={loading} color="secondary">
-                                        <FastForwardIcon />
-                                    </Fab>
-                                </Tooltip>
+                                <Fab onClick={skip} color="error">
+                                    <DeleteIcon />
+                                </Fab>
                             </Stack>
                         </Box>
 
