@@ -16,7 +16,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import _ from 'lodash';
-import PostMetadata from '@/lib/types/PostMetadata';
 import { useSnackbar } from 'notistack';
 import { useUser } from '@/app/context';
 
@@ -28,10 +27,10 @@ export default function Post({
     }
 }) {
     const [loading, setLoading] = useState(true);
-    const [meta, setMeta] = useState<PostMetadata>({
+    const [meta, setMeta] = useState({
         text: '',
         aggr: 0,
-        tags: [],
+        tags: [] as string[],
     });
     const [image, setImage] = useState('');
     const [tags, setTags] = useState<string[]>([]);

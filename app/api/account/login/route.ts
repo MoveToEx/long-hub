@@ -3,9 +3,10 @@ import { Session } from '@/lib/types';
 import { getIronSession } from 'iron-session';
 import { User } from '@/lib/db';
 import bcrypt from 'bcrypt';
+import { cookies } from 'next/headers';
 
-export default async function POST(req: NextRequest, res: NextResponse) {
-    const session = await getIronSession<Session>(req, res, {
+export async function POST(req: NextRequest) {
+    const session = await getIronSession<Session>(cookies(), {
         password: process.env['COOKIE_SECRET'] as string,
         cookieName: process.env['COOKIE_NAME'] as string
     });
