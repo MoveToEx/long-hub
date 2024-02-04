@@ -7,7 +7,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import _ from 'lodash';
 import TagRow from '@/components/TagRow';
 import CopiableImage from '@/components/CopiableImage';
-import { Post, Tag } from '@/lib/db';
+import { Post, Tag, User } from '@/lib/db';
 import Link from 'next/link';
 import { ResolvingMetadata, Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -32,6 +32,10 @@ export default async function PostPage({
         include: [
             {
                 model: Tag
+            },
+            {
+                model: User,
+                as: 'uploader'
             }
         ]
     });
@@ -55,7 +59,7 @@ export default async function PostPage({
                             {post.text ? post.text : <i>No text</i>}
                         </div>
                         <div>
-                            Uploaded at {post.createdAt.toISOString()}
+                            Uploaded at {post.createdAt.toISOString()} {post.uploader ? ('by ' + post.uploader.name) : ''}
                         </div>
                         <div>
                             <TagRow tags={post.tags.map(e => e.name) ?? []} />

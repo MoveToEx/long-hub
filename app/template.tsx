@@ -14,11 +14,14 @@ import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemButton from '@mui/material/ListItemButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Divider from '@mui/material/Divider';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import Home from '@mui/icons-material/Home';
@@ -26,14 +29,20 @@ import TagIcon from '@mui/icons-material/Tag';
 import Search from '@mui/icons-material/Search';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ImageIcon from '@mui/icons-material/Image';
-import Menu from '@mui/icons-material/Menu';
-import Stack from '@mui/material/Stack';
+import Logout from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu';
+import WebIcon from '@mui/icons-material/Web';
+import LoginIcon from '@mui/icons-material/Login';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import CommitIcon from '@mui/icons-material/Commit';
+
 import { SnackbarProvider } from 'notistack';
+
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useUser } from './context';
 
 const drawerWidth = 256;
 
@@ -111,25 +120,16 @@ const Drawer = styled(MuiDrawer, {
     })
 }));
 
-
-
-export default function RootTemplate({
+function RootTemplate({
     children,
 }: {
     children: React.ReactNode
 }) {
     const [open, setOpen] = useState(true);
     const [expand, setExpand] = useState(false);
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const { user } = useUser();
     const pathname = usePathname();
-    const preferDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-    const currentTheme = React.useMemo(
-        () => createTheme({
-            palette: {
-                mode: preferDarkMode ? 'dark' : 'light',
-            },
-        }),
-        [preferDarkMode]
-    );
 
     function callExpand(state: boolean) {
         return () => { setExpand(state); };
@@ -186,37 +186,90 @@ export default function RootTemplate({
     )
 
     return (
-        <ThemeProvider theme={currentTheme}>
-
+        <>
             <CssBaseline />
-            <AppBar
-                position="fixed"
-                sx={theme => ({
-                    [theme.breakpoints.up('md')]: {
-                        zIndex: theme.zIndex.drawer + 1
-                    },
-                    [theme.breakpoints.down('sm')]: {
-                        zIndex: 'auto'
-                    }
-                })}>
-                <Toolbar>
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        onClick={callOpen(!open)}
-                        sx={{ mr: 2 }}>
-                        <Menu />
-                    </IconButton>
-                    <Link href="/">
+            <Box sx={{ display: 'flex' }}>
+
+                <AppBar>
+                    <Toolbar>
+                        <IconButton
+                            size="large"
+                            edge="start"
+                            color="inherit"
+                            onClick={callOpen(!open)}
+                            sx={{ mr: 2 }}>
+                            <MenuIcon />
+                        </IconButton>
                         <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
-                            L
-                            <Image height={18} width={18} src="/o.png" alt="o" />
-                            NG Hub
+                            <Link href="/">
+                                L
+                                <Image height={18} width={18} src="/o.png" alt="o" />
+                                NG Hub
+                            </Link>
                         </Typography>
-                    </Link>
-                </Toolbar>
-            </AppBar>
+
+                        <IconButton color="inherit" edge="end" onClick={e => {
+                            setAnchorEl(e.currentTarget);
+                        }}>
+                            <AccountCircle />
+                        </IconButton>
+
+                        <Menu
+                            disableScrollLock
+                            anchorEl={anchorEl}
+                            keepMounted
+                            open={!!anchorEl}
+                            anchorOrigin={{
+                                horizontal: 'right',
+                                vertical: 'bottom'
+                            }}
+                            transformOrigin={{
+                                horizontal: 'right',
+                                vertical: 'top'
+                            }}
+                            onClose={() => setAnchorEl(null)}
+                        >
+                            <div>
+                                {user?.username == null ||
+                                    <>
+                                        <MenuItem>
+                                            <ListItemIcon>
+                                                <AccountCircle fontSize="small" />
+                                            </ListItemIcon>
+                                            <b>{user.username}</b>
+                                        </MenuItem>
+                                        <MenuItem component="a" href="/account/logout">
+                                            <ListItemIcon>
+                                                <Logout fontSize="small" />
+                                            </ListItemIcon>
+                                            Logout
+                                        </MenuItem>
+                                    </>
+                                }
+                            </div>
+                            <div>
+                                {user?.username == null &&
+                                    <>
+                                        <MenuItem component="a" href="/account/login">
+                                            <ListItemIcon>
+                                                <AccountCircle fontSize="small" />
+                                            </ListItemIcon>
+                                            Log in
+                                        </MenuItem>
+                                        <MenuItem component="a" href="/account/signup">
+                                            <ListItemIcon>
+                                                <Logout fontSize="small" />
+                                            </ListItemIcon>
+                                            Sign up
+                                        </MenuItem>
+                                    </>
+                                }
+                            </div>
+                        </Menu>
+                    </Toolbar>
+                </AppBar>
+            </Box>
+
 
             <Drawer
                 variant="permanent"
@@ -256,34 +309,57 @@ export default function RootTemplate({
                 </Box>
             </MuiDrawer>
 
-            <SnackbarProvider maxSnack={5} autoHideDuration={3000}>
-                <Box
-                    component="main"
-                    sx={theme => ({
-                        [theme.breakpoints.up('md')]: {
-                            ml: open ? `calc(${theme.spacing(8)} + 1px)` : 0,
-                        },
-                        [theme.breakpoints.down('sm')]: {
-                            ml: 0
-                        },
+            <Box
+                component="main"
+                sx={theme => ({
+                    [theme.breakpoints.up('md')]: {
+                        ml: open ? `calc(${theme.spacing(8)} + 1px)` : 0,
+                    },
+                    [theme.breakpoints.down('sm')]: {
+                        ml: 0
+                    },
+                    transition: theme.transitions.create(['margin'], {
+                        easing: theme.transitions.easing.sharp,
+                        duration: theme.transitions.duration.leavingScreen,
+                    }),
+                    ...(open && {
                         transition: theme.transitions.create(['margin'], {
                             easing: theme.transitions.easing.sharp,
-                            duration: theme.transitions.duration.leavingScreen,
+                            duration: theme.transitions.duration.enteringScreen,
                         }),
-                        ...(open && {
-                            transition: theme.transitions.create(['margin'], {
-                                easing: theme.transitions.easing.sharp,
-                                duration: theme.transitions.duration.enteringScreen,
-                            }),
-                        })
-                    })}>
-                    <Container>
-                        <Toolbar sx={{ zIndex: -1 }} />
-                        {children}
-                    </Container>
-                </Box>
-            </SnackbarProvider>
+                    })
+                })}>
+                <Container>
+                    <Toolbar sx={{ zIndex: -1 }} />
+                    {children}
+                </Container>
+            </Box>
+        </>
+    )
+}
 
-        </ThemeProvider >
+export default function ProviderWrapper({
+    children
+}: {
+    children: React.ReactNode
+}) {
+    const preferDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const currentTheme = React.useMemo(
+        () => createTheme({
+            palette: {
+                mode: preferDarkMode ? 'dark' : 'light',
+            },
+        }),
+        [preferDarkMode]
+    );
+
+    return (
+        <ThemeProvider theme={currentTheme}>
+            <SnackbarProvider maxSnack={5} autoHideDuration={3000}>
+                <RootTemplate>
+                    {children}
+                </RootTemplate>
+            </SnackbarProvider>
+        </ThemeProvider>
     )
 }

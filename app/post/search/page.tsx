@@ -92,7 +92,7 @@ export default async function SearchPage({
         });
 
         count = posts.length;
-        posts = posts.slice((page - 1) * C.PAGINATION_LIMIT, page * C.PAGINATION_LIMIT);
+        posts = posts.slice((page - 1) * C.pageLimit, page * C.pageLimit);
     }
 
     return (

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Post, Tag } from "@/lib/db";
+import { Post, Tag, User } from "@/lib/db";
+import { cookies } from 'next/headers';
 import fs from 'fs';
+
+import { auth } from "@/lib/server-util";
+import * as C from '@/lib/constants';
 
 export async function GET(req: NextRequest, {
     params
@@ -21,7 +25,9 @@ export async function GET(req: NextRequest, {
     });
 
     if (!post) {
-        return NextResponse.json('post not found', { status: 404 });
+        return NextResponse.json('post not found', {
+            status: 404
+        });
     }
 
     return NextResponse.json(post.toJSON());
@@ -34,6 +40,20 @@ export async function PUT(req: NextRequest, {
         id: string
     }
 }) {
+    const user = await auth(req, cookies());
+
+    if (!user) {
+        return NextResponse.json('unauthorized', {
+            status: 401
+        });
+    }
+
+    if ((user.permission & C.Permission.write) == 0) {
+        return NextResponse.json('operation not permitted', {
+            status: 403
+        });
+    }
+
     var post = await Post.findByPk(params.id);
     const meta = await req.json();
 
@@ -79,16 +99,14 @@ export async function PUT(req: NextRequest, {
                     name: tagName
                 }
             });
-            
+
             await post.addTag(tag);
         }
     }
 
     await post.save();
 
-    return NextResponse.json(post.toJSON(), {
-        status: 200
-    });
+    return NextResponse.json(post.toJSON());
 }
 
 export async function DELETE(req: NextRequest, {
@@ -98,10 +116,24 @@ export async function DELETE(req: NextRequest, {
         id: string
     }
 }) {
-    var post = await Post.findByPk(params.id);
+    const user = await auth(req, cookies());
+
+    if (!user) {
+        return NextResponse.json('unauthorized', {
+            status: 401
+        });
+    }
+
+    if ((user.permission & C.Permission.delete) == 0) {
+        return NextResponse.json('operation not permitted', {
+            status: 403
+        });
+    }
+
+    const post = await Post.findByPk(params.id);
 
     if (!post) {
-        return NextResponse.json('post not found', {
+        return NextResponse.json('post ' + params.id + ' not found', {
             status: 404
         });
     }
@@ -111,7 +143,5 @@ export async function DELETE(req: NextRequest, {
     await post.removeTags(await post.getTags());
     await post.destroy();
 
-    return NextResponse.json({
-        id: params.id
-    });
+    return NextResponse.json('ok');
 }

@@ -41,8 +41,8 @@ export default async function SearchPage({
     if (!tag) return notFound();
 
     const posts = await tag.getPosts({
-        limit: Constant.PAGINATION_LIMIT,
-        offset: (page - 1) * Constant.PAGINATION_LIMIT,
+        limit: Constant.pageLimit,
+        offset: (page - 1) * Constant.pageLimit,
         order: [['createdAt', 'DESC']]
     });
     const count = await tag.countPosts();

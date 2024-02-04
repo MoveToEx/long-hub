@@ -5,15 +5,12 @@ import {
     HasManyGetAssociationsMixin, HasManySetAssociationsMixin, HasManyAddAssociationMixin,
     HasManyAddAssociationsMixin, HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin,
     HasManyHasAssociationMixin, HasManyHasAssociationsMixin, HasManyCountAssociationsMixin,
-    HasManyCreateAssociationMixin, NonAttribute, Association, CreationOptional
+    HasManyCreateAssociationMixin, NonAttribute, Association, CreationOptional, HasOneGetAssociationMixin, HasOneSetAssociationMixin
 } from 'sequelize';
 import _ from 'lodash';
 import path from 'node:path';
-import dotenv from 'dotenv';
-
-dotenv.config({
-    path: '.env.local'
-})
+import crypto from 'crypto';
+import { Base64 } from 'js-base64';
 
 if (process.env.MEDIA_ROOT === undefined) {
     throw Error();
@@ -27,7 +24,7 @@ export const seq = new Sequelize({
 });
 
 export class Post extends Model<InferAttributes<Post>, InferCreationAttributes<Post>> {
-    declare id: string;
+    declare id: CreationOptional<string>;
     declare text: string | null;
     declare image: string | null;
     declare imageURL: string | null;
@@ -46,10 +43,14 @@ export class Post extends Model<InferAttributes<Post>, InferCreationAttributes<P
     declare countTags: HasManyCountAssociationsMixin;
     declare createTag: HasManyCreateAssociationMixin<Tag>;
 
+    declare getUploader: HasOneGetAssociationMixin<User>;
+    declare setUploader: HasOneSetAssociationMixin<User, number>;
+
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
 
     declare tags: NonAttribute<Tag[]>;
+    declare uploader: NonAttribute<User | null>;
 
     get imagePath(): NonAttribute<string> {
         if (process.env.MEDIA_ROOT === undefined) {
@@ -58,7 +59,6 @@ export class Post extends Model<InferAttributes<Post>, InferCreationAttributes<P
 
         const img = this.getDataValue('image');
         if (img == null) return '';
-        // path.resolve(process.env.MEDIA_ROOT);
         return path.join(process.env.MEDIA_ROOT, 'posts', img);
     }
 
@@ -68,11 +68,11 @@ export class Post extends Model<InferAttributes<Post>, InferCreationAttributes<P
 }
 
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
-    declare email: string;
+    declare id: CreationOptional<number>;
+    declare email: CreationOptional<string>;
     declare name: string;
-    declare nickname: string;
     declare permission: number;
-    declare accessKey: string;
+    declare accessKey: CreationOptional<string>;
     declare passwordHash: string;
 }
 
@@ -116,11 +116,18 @@ export class Template extends Model<InferAttributes<Template>, InferCreationAttr
 }
 
 User.init({
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
     email: DataTypes.STRING,
     name: DataTypes.STRING,
-    nickname: DataTypes.STRING,
     permission: DataTypes.INTEGER,
-    accessKey: DataTypes.STRING,
+    accessKey: {
+        type: DataTypes.STRING,
+        defaultValue: () => crypto.randomBytes(32).toString('base64url')
+    },
     passwordHash: DataTypes.STRING,
 }, {
     sequelize: seq,
@@ -216,7 +223,10 @@ Template.init({
 });
 
 User.hasMany(Post, {
-    foreignKey: 'uploaderId',
+    as: 'uploader'
+});
+Post.belongsTo(User, {
+    as: 'uploader'
 });
 Post.belongsToMany(Tag, {
     through: 'taggedPost',
@@ -225,4 +235,4 @@ Tag.belongsToMany(Post, {
     through: 'taggedPost',
 });
 
-// seq.sync({ force: true });
+seq.sync();

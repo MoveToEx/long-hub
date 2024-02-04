@@ -1,47 +1,34 @@
 'use client';
 
 import TextField from '@mui/material/TextField';
-import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Unstable_Grid2';
-import { useState, useEffect } from 'react';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import { useFormState } from 'react-dom';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import { useRouter } from 'next/navigation';
-import signIn from './action';
 import _ from 'lodash';
 
+import login from './action';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/app/context';
 
 export default function SigninPage() {
-    const [signInState, signInAction] = useFormState(signIn, {} as any);
-    const [snackbar, setSnackbar] = useState<any>({ open: false });
+    const { user } = useUser();
+    const router = useRouter();
+    const [state, action] = useFormState(login, '');
 
     useEffect(() => {
-        if (_.isEmpty(signInState)) return;
-        
-        if (signInState.code != 0) {
-            setSnackbar({
-                open: true,
-                severity: 'error',
-                content: 'Failed: ' + signInState.info
-            });
+        if (user) {
+            router.push('/');
         }
-    }, [signInState]);
+    }, [user, router]);
 
     return (
         <>
-            <Snackbar
-                open={snackbar.open ?? false}
-                autoHideDuration={2000}
-                onClose={() => { setSnackbar({ ...snackbar, open: false }); }}>
-                <Alert variant="filled" severity={snackbar.severity}>
-                    {snackbar.content ?? ''}
-                </Alert>
-            </Snackbar>
             <Box
                 sx={{
                     marginTop: 8,
@@ -53,7 +40,7 @@ export default function SigninPage() {
                 <Typography component="h1" variant="h5">
                     Sign in as a Mother-Killer
                 </Typography>
-                <Box component="form" action={signInAction} noValidate sx={{ mt: 1 }}>
+                <Box component="form" action={action} sx={{ mt: 1 }}>
                     <TextField
                         margin="normal"
                         required
@@ -72,6 +59,7 @@ export default function SigninPage() {
                         type="password"
                         autoComplete="current-password"
                     />
+                    <FormControlLabel control={<Checkbox name='extend'/>} label="Keep me logged in for a month" />
                     <Button
                         type="submit"
                         fullWidth
@@ -80,6 +68,9 @@ export default function SigninPage() {
                     >
                         Sign In
                     </Button>
+                    <Typography color="error">
+                        {state}
+                    </Typography>
                     <Grid container justifyContent="flex-end">
                         <Grid>
                             <Link href="/account/signup" variant="body2">

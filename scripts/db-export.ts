@@ -1,7 +1,6 @@
 import fs from 'fs';
 import { Post, Tag, Template } from '@/lib/db';
 import tar from 'tar';
-import path from 'node:path';
 
 require('dotenv').config({
     path: '.env.local'

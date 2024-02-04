@@ -1,37 +1,32 @@
 'use server';
-/*
-import * as React from 'react';
-import { seq, User } from '@/lib/db';
-import { genAccessKey } from '@/lib/util';
+
+import { User } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import _ from 'lodash';
+import bcrypt from 'bcrypt';
+import * as C from '@/lib/constants';
 
-const bcrypt = require('bcrypt');
+export default async function signUp(_state: string, fd: FormData) {
+    const username = fd.get('username') as string;
+    const pswd = fd.get('password') as string;
 
-const saltRound = 10;
-
-export default async function signUp(state: any, fd: FormData) {
-    await User.sync();
-
-    var pswd = fd.get('password');
+    if (!username || !pswd) {
+        return 'missing required fields';
+    }
     
     if (await User.count({
-        where: { name: fd.get('username') }
+        where: { name: username }
     })) {
         return 'username taken';
     }
 
-    var hash = bcrypt.hashSync(pswd, saltRound);
+    const hash = bcrypt.hashSync(pswd, C.saltRound);
     
-    var user = await User.create({
-        name: fd.get('username'),
+    await User.create({
+        name: username,
         passwordHash: hash,
-        accessKey: genAccessKey()
+        permission: C.Permission.write
     });
 
-    redirect('/account/signin');
-}*/
-
-export default async function signUp(state: any, fd: FormData) {
-    return '';
+    redirect('/account/login');
 }

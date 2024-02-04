@@ -16,7 +16,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Chip from '@mui/material/Chip';
 import styles from './page.module.css';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import PostMetadata from '@/lib/types/PostMetadata';
 import LinkImageGrid from '@/components/LinkImageGrid';
@@ -29,66 +29,90 @@ import Link from '@mui/material/Link';
 import axios from 'axios';
 import DropArea from '@/components/DropArea';
 
+import { useUser } from '@/app/context';
+import { useRouter } from 'next/navigation';
+
+interface Preview {
+    file: File,
+    url: string
+};
+
 export default function UploadPage() {
     const [loading, setLoading] = useState(false);
-    const [files, setFiles] = useState<any[]>([]);
+    const [files, setFiles] = useState<Preview[]>([]);
     const [meta, setMeta] = useState<PostMetadata>({
         text: '',
         aggr: 0,
         tags: []
     });
-    const [tagsLib, setTagsLib] = useState<string[]>([]);
+    const [tags, setTags] = useState<string[]>([]);
     const [ignoreSimilar, setIgnoreSimilar] = useState(false);
-    const [dialogOpen, setDialogOpen] = useState(false);
     const [similar, setSimilar] = useState<string[]>([]);
+
+    const { user } = useUser();
+    const router = useRouter();
 
     const { enqueueSnackbar } = useSnackbar();
 
     let elem;
 
     useEffect(() => {
-        axios.get('/api/post/tag')
-            .then(x => setTagsLib(x.data.map((x: any) => x.name)));
+        if (user == null) {
+            router.push('/account/login');
+        }
+    }, [user, router]);
+
+    useEffect(() => {
+        fetch('/api/post/tag')
+            .then(val => val.json())
+            .then(x => setTags(x.map((x: any) => x.name)));
     }, []);
 
-    function submit() {
-        setLoading(true);
-        var fd = new FormData();
-        fd.append('image', files[0].file);
-        axios
-            .post('/api/post/similar', fd)
-            .then(res => {
-                if (res.data.length && !ignoreSimilar) {
-                    setSimilar(res.data);
-                    setDialogOpen(true);
-                    throw 'rejected for similar posts';
-                }
-            })
-            .then(() => axios.post('/api/post', fd))
-            .then(res => axios.put('/api/post/' + res.data.id, meta))
-            .then(() => {
-                setMeta({
-                    text: '',
-                    aggr: 0,
-                    tags: []
-                });
-                setIgnoreSimilar(false);
-                setFiles(_.slice(files, 1));
-                enqueueSnackbar('Uploaded successfully', { variant: 'success' });
-            })
-            .catch(e => enqueueSnackbar('Failed when uploading: ' + e, { variant: 'error' }))
-            .finally(() => setLoading(false));
-    }
-
-    function skip() {
-        setFiles([...files.slice(1)]);
+    function next() {
         setMeta({
             text: '',
             aggr: 0,
             tags: []
         });
         setIgnoreSimilar(false);
-        enqueueSnackbar('Skipped 1 image', { variant: 'info' });
+        setFiles(_.slice(files, 1));
+    }
+
+    function submit() {
+        setLoading(true);
+        var fd = new FormData();
+        fd.append('force', ignoreSimilar ? '1' : '0');
+        fd.append('image', files[0].file);
+        fd.append('metadata', JSON.stringify(meta));
+
+        fetch('/api/post', {
+            method: 'POST',
+            body: fd,
+        })
+            .then(response => {
+                if (response.ok) {
+                    next();
+                    enqueueSnackbar('Uploaded successfully', {
+                        variant: 'success'
+                    });
+                }
+                else if (response.status == 409) {
+                    response.json().then(data => setSimilar(data));
+                }
+                else {
+                    enqueueSnackbar('Failed when uploading: ' + response.statusText, {
+                        variant: 'error'
+                    });
+                }
+            })
+            .finally(() => setLoading(false));
+    }
+
+    function skip() {
+        next();
+        enqueueSnackbar('Skipped 1 image', {
+            variant: 'info'
+        });
     }
 
     if (files.length == 0) {
@@ -104,15 +128,10 @@ export default function UploadPage() {
                 className={styles.droparea}
                 dragClassName={styles.droparea_hover}
                 onChange={files => {
-                    if (!files) return;
-                    var a = [];
-                    for (var file of files) {
-                        a.push({
-                            file: file,
-                            url: URL.createObjectURL(file)
-                        });
-                    }
-                    setFiles(a);
+                    setFiles(files.map(file => ({
+                        file: file,
+                        url: URL.createObjectURL(file)
+                    })));
                 }}
             />
         )
@@ -136,7 +155,7 @@ export default function UploadPage() {
                 <Grid item xs={12} md={8}>
                     <Stack spacing={2} alignItems="center" sx={{ m: 2 }}>
                         <Typography variant="h6">
-                            {files.length.toString() + ' left'}
+                            {files.length.toString() + ' image' + (files.length > 1 ? 's' : '') + ' left'}
                         </Typography>
                         <TextField
                             label="Text"
@@ -159,7 +178,7 @@ export default function UploadPage() {
                             value={meta.tags}
                             fullWidth
                             options={
-                                tagsLib || []
+                                tags || []
                             }
                             onChange={(__, newValue) => {
                                 if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
@@ -195,7 +214,7 @@ export default function UploadPage() {
                                 precision={0.5}
                                 max={10}
                                 size="large"
-                                onChange={(event, newValue) => {
+                                onChange={(_event, newValue) => {
                                     setMeta({
                                         ...meta,
                                         aggr: newValue ?? 0
@@ -245,7 +264,7 @@ export default function UploadPage() {
 
     return (
         <>
-            <Dialog onClose={() => setDialogOpen(!dialogOpen)} open={dialogOpen} maxWidth="md" fullWidth>
+            <Dialog onClose={() => setSimilar([])} open={similar.length != 0} maxWidth="md" fullWidth>
                 <DialogTitle>Similar images</DialogTitle>
                 <DialogContent>
                     <DialogContentText>

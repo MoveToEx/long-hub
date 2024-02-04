@@ -18,6 +18,7 @@ import axios from 'axios';
 import _ from 'lodash';
 import PostMetadata from '@/lib/types/PostMetadata';
 import { useSnackbar } from 'notistack';
+import { useUser } from '@/app/context';
 
 export default function Post({
     params
@@ -33,24 +34,36 @@ export default function Post({
         tags: [],
     });
     const [image, setImage] = useState('');
-    const [tagsLib, setTagsLib] = useState<string[]>([]);
+    const [tags, setTags] = useState<string[]>([]);
+
     const { enqueueSnackbar } = useSnackbar();
     const router = useRouter();
+    const user = useUser();
 
     useEffect(() => {
-        axios.get('/api/post/' + params.id)
+        if (user === null) {
+            router.push('/account/login');
+        }
+    }, [user, router]);
+
+    useEffect(() => {
+        if (!user) return;
+
+        fetch('/api/post/' + params.id)
+            .then(response => response.json())
             .then((x: any) => {
                 setMeta({
-                    text: x.data.text,
-                    tags: x.data.tags.map((x: any) => x.name),
-                    aggr: x.data.aggr
+                    text: x.text,
+                    tags: x.tags.map((x: any) => x.name),
+                    aggr: x.aggr
                 });
-                setImage(x.data.imageURL);
+                setImage(x.imageURL);
             })
             .finally(() => setLoading(false));
-        axios.get('/api/post/tag')
-            .then(x => setTagsLib(x.data.map((x: any) => x.name)));
-    }, [params.id]);
+        fetch('/api/post/tag')
+            .then(response => response.json())
+            .then(x => setTags(x.map((x: any) => x.name)));
+    }, [params.id, user]);
 
     function submit() {
         setLoading(true);
@@ -95,9 +108,7 @@ export default function Post({
                         freeSolo
                         value={meta.tags}
                         fullWidth
-                        options={
-                            tagsLib || []
-                        }
+                        options={tags}
                         onChange={(__, newValue) => {
                             if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
                                 setMeta({

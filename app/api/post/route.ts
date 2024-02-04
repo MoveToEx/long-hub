@@ -9,6 +9,12 @@ import path from 'node:path';
 // @ts-expect-error
 import phash from 'sharp-phash';
 
+// @ts-expect-error
+import phashDistance from 'sharp-phash/distance';
+import { auth } from '@/lib/server-util';
+import { cookies } from 'next/headers';
+import { Permission } from '@/lib/constants';
+
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
 
@@ -37,20 +43,48 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     if (process.env.MEDIA_ROOT === undefined) {
-        return NextResponse.json('MEDIA_ROOT env not found', {
+        return NextResponse.json('MEDIA_ROOT env not found on server', {
             status: 500
         });
     }
+
+    const user = await auth(req, cookies());
+
+    if (user === null) {
+        return NextResponse.json('unauthorized', {
+            status: 401
+        });
+    }
+
+    if ((user.permission & Permission.write) == 0) {
+        return NextResponse.json('operation not permitted', {
+            status: 403
+        });
+    }
+    
     const fd = await req.formData();
 
     const img = fd.get('image') as File;
+    const _metadata = fd.get('metadata') as string;
+    const force = Number.parseInt(fd.get('force') as string);
 
-    if (!img) {
-        return NextResponse.json('image not present in form data', {
+    let metadata;
+
+    if (!_metadata || !img) {
+        return NextResponse.json('insufficient parameters', {
             status: 400
         });
     }
-    var post = Post.build();
+
+    try {
+        metadata = JSON.parse(_metadata);
+    }
+    catch (e) {
+        return NextResponse.json('failed to parse JSON', {
+            status: 400
+        });
+    }
+
     var buffer = Buffer.from(await img.arrayBuffer());
 
     if (img.type != 'image/gif') {
@@ -59,18 +93,48 @@ export async function POST(req: NextRequest) {
         }).toBuffer();
     }
 
-    const filename = post.getDataValue('id') + '.' + _.last(img.name.split('.'));
+    const hash: string = await phash(buffer);
+
+    const similar = await Post.findAll({
+        attributes: ['id', 'imageHash', 'image', 'imageURL']
+    }).then(posts => posts.filter(post => phashDistance(post.imageHash, hash) < 4));
+
+    if (similar.length && !force) {
+        return NextResponse.json(similar.map(post => post.toJSON()), {
+            status: 409
+        });
+    }
+
+    const post = Post.build({
+        text: metadata.text,
+        aggr: metadata.aggr,
+        imageHash: await phash(buffer)
+    });
+
+    const filename = post.id + '.' + _.last(img.name.split('.'));
 
     fs.writeFileSync(path.join(process.env.MEDIA_ROOT, 'posts', filename), buffer);
 
-    post.imageHash = await phash(buffer);
     post.image = filename;
 
-    post.save();
+    await post.save();
 
-    return NextResponse.json({
-        id: post.id
-    }, {
-        status: 201
-    });
+    await post.setUploader(user);
+
+    if (metadata.tags !== undefined) {
+        for (const _tag of metadata.tags) {
+            const [tag, _created] = await Tag.findOrCreate({
+                where: {
+                    name: _tag
+                },
+                defaults: {
+                    name: _tag
+                }
+            });
+
+            await post.addTag(tag);
+        }
+    }
+
+    return NextResponse.json(post.toJSON());
 }
