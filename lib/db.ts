@@ -12,6 +12,12 @@ import path from 'node:path';
 import crypto from 'crypto';
 import { Base64 } from 'js-base64';
 
+import { config } from 'dotenv';
+
+config({
+    path: '.env.local'
+});
+
 if (process.env.MEDIA_ROOT === undefined) {
     throw Error();
 }
@@ -223,9 +229,11 @@ Template.init({
 });
 
 User.hasMany(Post, {
+    foreignKey: 'uploaderId',
     as: 'uploader'
 });
 Post.belongsTo(User, {
+    foreignKey: 'uploaderId',
     as: 'uploader'
 });
 Post.belongsToMany(Tag, {
