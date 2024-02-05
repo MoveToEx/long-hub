@@ -37,13 +37,19 @@ export default function Post({
 
     const { enqueueSnackbar } = useSnackbar();
     const router = useRouter();
-    const user = useUser();
+    const { user } = useUser();
 
     useEffect(() => {
         if (user === null) {
             router.push('/account/login');
         }
     }, [user, router]);
+
+    useEffect(() => {
+        fetch('/api/post/tag')
+            .then(response => response.json())
+            .then(x => setTags(x.map((x: any) => x.name)));
+    }, []);
 
     useEffect(() => {
         if (!user) return;
@@ -59,9 +65,6 @@ export default function Post({
                 setImage(x.imageURL);
             })
             .finally(() => setLoading(false));
-        fetch('/api/post/tag')
-            .then(response => response.json())
-            .then(x => setTags(x.map((x: any) => x.name)));
     }, [params.id, user]);
 
     function submit() {
