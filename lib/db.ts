@@ -5,12 +5,12 @@ import {
     HasManyGetAssociationsMixin, HasManySetAssociationsMixin, HasManyAddAssociationMixin,
     HasManyAddAssociationsMixin, HasManyRemoveAssociationMixin, HasManyRemoveAssociationsMixin,
     HasManyHasAssociationMixin, HasManyHasAssociationsMixin, HasManyCountAssociationsMixin,
-    HasManyCreateAssociationMixin, NonAttribute, Association, CreationOptional, HasOneGetAssociationMixin, HasOneSetAssociationMixin
+    HasManyCreateAssociationMixin, NonAttribute, Association, CreationOptional, HasOneGetAssociationMixin, HasOneSetAssociationMixin, Dialect
 } from 'sequelize';
 import _ from 'lodash';
 import path from 'node:path';
 import crypto from 'crypto';
-import { Base64 } from 'js-base64';
+import mysql from 'mysql2';
 
 import { config } from 'dotenv';
 
@@ -22,12 +22,30 @@ if (process.env.MEDIA_ROOT === undefined) {
     throw Error();
 }
 
-export const seq = new Sequelize({
-    dialect: 'sqlite',
-    dialectModule: sqlite3,
-    storage: 'database.sqlite3',
-    logging: false
-});
+let seqOptions;
+
+if (process.env.DB_DIALECT === 'sqlite') {
+    seqOptions = {
+        dialect: 'sqlite' as Dialect,
+        dialectModule: sqlite3,
+        storage: process.env.DB_FILENAME as string,
+        logging: false
+    };
+}
+else if (process.env.DB_DIALECT === 'mysql') {
+    seqOptions = {
+        dialect: 'mysql' as Dialect,
+        dialectModule: mysql,
+        database: process.env.DB_NAME as string,
+        host: process.env.DB_HOST as string,
+        port: Number(process.env.DB_PORT as string),
+        username: process.env.DB_USERNAME as string,
+        password: process.env.DB_PASSWORD as string,
+        logging: false
+    }
+}
+
+export const seq = new Sequelize(seqOptions);
 
 export class Post extends Model<InferAttributes<Post>, InferCreationAttributes<Post>> {
     declare id: CreationOptional<string>;
@@ -145,6 +163,18 @@ User.init({
     }
 });
 
+Tag.init({
+    name: DataTypes.STRING
+}, {
+    sequelize: seq,
+    tableName: 'tag',
+    name: {
+        singular: 'tag',
+        plural: 'tags'
+    },
+    timestamps: false
+});
+
 Post.init({
     id: {
         primaryKey: true,
@@ -180,18 +210,6 @@ Post.init({
         singular: 'post',
         plural: 'posts'
     },
-});
-
-Tag.init({
-    name: DataTypes.STRING
-}, {
-    sequelize: seq,
-    tableName: 'tag',
-    name: {
-        singular: 'tag',
-        plural: 'tags'
-    },
-    timestamps: false
 });
 
 Template.init({
@@ -242,5 +260,3 @@ Post.belongsToMany(Tag, {
 Tag.belongsToMany(Post, {
     through: 'taggedPost',
 });
-
-seq.sync();

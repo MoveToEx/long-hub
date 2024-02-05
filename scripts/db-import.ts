@@ -64,16 +64,10 @@ require('dotenv').config({
         fs.rmSync(path.join(process.env.MEDIA_ROOT, 'templates.json'));
     }
 
-
-    // var archiver = await User.create({
-    //     name: '__archiver'
-    // });
-
     console.log('calculating hash & restoring tag relationship...');
 
     const pb = new cp.SingleBar({}, cp.Presets.shades_classic);
     pb.start(posts.length, 0);
-    var i = 0;
 
     for (var p of posts) {
         var post = await Post.create({
@@ -81,18 +75,20 @@ require('dotenv').config({
             text: p.text,
             image: _.last(p.image.split('/')),
             aggr: p.aggr,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt
         });
 
         const imgData = fs.readFileSync(post.imagePath);
 
         post.imageHash = await phash(imgData);
 
-        // await archiver.addPost(post);
+        await post.setUploader(p.uploaderId);
 
         var tags = [];
 
         for (var tagName of p.tags) {
-            var [tag, created] = await Tag.findOrCreate({
+            var [tag, _created] = await Tag.findOrCreate({
                 where: {
                     name: tagName.name
                 },
@@ -105,10 +101,8 @@ require('dotenv').config({
         }
 
         await post.setTags(tags);
-
         await post.save();
-
-        pb.update(++i);
+        pb.increment();
     }
 
     pb.stop();
