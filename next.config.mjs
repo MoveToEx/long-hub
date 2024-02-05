@@ -12,6 +12,11 @@ if (execSync('git status -s').toString().trim().length != 0) {
 }
 
 const nextConfig = {
+    experimental: {
+        serverActions: {
+            allowedOrigins: ['longhub.top', '*.longhub.top', 'localhost'],
+        },
+    },
     webpack: (
         config,
         { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
