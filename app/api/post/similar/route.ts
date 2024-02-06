@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
     if (!fd.has('image')) {
         return NextResponse.json('no image found', {
-            status: 204
+            status: 400
         });
     }
 
@@ -34,13 +34,18 @@ export async function POST(req: NextRequest) {
     let result = [];
     
     for (var post of posts) {
-        if (phashDistance(hash, post.imageHash) <= SIMILAR_THRESHOLD) {
+        const dist = phashDistance(hash, post.imageHash);
+        if (dist <= SIMILAR_THRESHOLD) {
             result.push({
                 id: post.id,
-                imageURL: post.imageURL
+                imageURL: post.imageURL,
+                diff: dist
             });
         }
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+        hash: hash,
+        similar: result
+    });
 }

@@ -1,21 +1,38 @@
 'use client';
 
+import styles from './page.module.css';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
-import styles from './page.module.css';
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import _ from 'lodash';
-import axios from 'axios';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import DropArea from '@/components/DropArea';
+import Skeleton from '@mui/material/Skeleton';
+import Button from '@mui/material/Button';
+import Image from 'next/image';
+import _ from 'lodash';
+import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
+import Box from '@mui/material/Box';
+
+interface Preview {
+    file: File;
+    url: string;
+}
+
+interface SimilarPost {
+    id: string;
+    imageURL: string;
+    diff: number;
+}
+
+interface SimilarResponse {
+    hash: string;
+    similar: SimilarPost[];
+}
+
 
 export default function UploadPage() {
-    const [file, setFile] = useState<any>(null);
-    const [similar, setSimilar] = useState<any>(null);
+    const [file, setFile] = useState<Preview | null>(null);
+    const [result, setResult] = useState<SimilarResponse | null>(null);
 
     const { enqueueSnackbar } = useSnackbar();
 
@@ -23,49 +40,79 @@ export default function UploadPage() {
 
     useEffect(() => {
         if (file === null) return;
+
         var fd = new FormData();
         fd.append('image', file.file);
-        axios
-            .post('/api/post/similar', fd)
-            .then(res => setSimilar(res.data))
-            .catch(e => enqueueSnackbar('Failed when uploading: ' + e, { variant: 'error' }) );
+
+        fetch('/api/post/similar', {
+            method: 'POST',
+            body: fd,
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(response.status + ' ' + response.statusText);
+            }
+            return response.json();
+        })
+            .then(res => setResult(res))
+            .catch(e => enqueueSnackbar('Failed when uploading: ' + e, { variant: 'error' }));
     }, [file, enqueueSnackbar]);
 
     if (file === null) {
         elem = (
-            <DropArea
-                accept="image/*"
-                multiple={false}
-                label={
-                    <Typography variant="button" fontSize="24px" display="block" gutterBottom>
-                        SELECT FILE
-                    </Typography>
-                }
-                className={styles.droparea}
-                dragClassName={styles.droparea_hover}
-                onChange={file => {
-                    if (!file) return;
+            <Box sx={{ m: 2 }}>
+                <Typography variant='h4'>Search by image</Typography>
+                <DropArea
+                    accept="image/*"
+                    multiple={false}
+                    label={
+                        <Typography variant="button" fontSize="24px" display="block" gutterBottom>
+                            SELECT FILE
+                        </Typography>
+                    }
+                    className={styles.droparea}
+                    dragClassName={styles.droparea_hover}
+                    onChange={file => {
+                        if (!file) return;
 
-                    setFile({
-                        file: file,
-                        url: URL.createObjectURL(file)
-                    });
-                }}
-            />
+                        setFile({
+                            file: file,
+                            url: URL.createObjectURL(file)
+                        });
+                    }}
+                />
+            </Box>
         )
     }
     else {
-        if (similar === null) {
+        if (result === null) {
             elem = (
-                <Backdrop
-                    sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                    open={similar === null}
-                >
-                    <CircularProgress color="inherit" />
-                </Backdrop>
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                        <Typography variant="h5"><Skeleton width="50%" /></Typography>
+                        <Typography variant="subtitle2"><Skeleton /></Typography>
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Skeleton height={300} variant='rounded' />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Skeleton height={300} variant='rounded' />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Skeleton height={300} variant='rounded' />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Skeleton height={300} variant='rounded' />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Skeleton height={300} variant='rounded' />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                        <Skeleton height={300} variant='rounded' />
+                    </Grid>
+                </Grid>
             )
         }
-        else if (similar.length === 0) {
+        else if (result.similar.length === 0) {
             elem = (
                 <Typography variant="h5">No similar images found</Typography>
             )
@@ -73,14 +120,19 @@ export default function UploadPage() {
         else {
             elem = (
                 <>
-                    <Typography variant="h5">{similar.length} similar images found</Typography>
+                    <Typography variant="h5">
+                        {result.similar.length} similar images found
+                    </Typography>
+                    <Typography variant="subtitle2">
+                        Image hash: {result.hash}
+                    </Typography>
                     <LinkImageGrid
-                        src={similar.map((post: any) => ({
+                        src={result.similar.map((post: any) => ({
                             href: `/post/${post.id}`,
                             src: post.imageURL
                         }))}
                         gridProps={{
-                            md: 6,
+                            md: 4,
                             xs: 12
                         }}
                         gridContainerProps={{
@@ -94,13 +146,21 @@ export default function UploadPage() {
         }
 
         elem = (
-            <Grid container sx={{ mt: 4 }}>
+            <Grid container spacing={2} sx={{ m: 2 }}>
+                <Grid xs={12}>
+                    <Button variant="text" onClick={() => {
+                        setFile(null);
+                        setResult(null);
+                    }}>
+                        ≪ BACK
+                    </Button>
+                </Grid>
                 <Grid item md={4} xs={12}>
                     <Image
                         src={file.url}
                         alt='preview'
-                        height={500}
-                        width={0}
+                        height={300}
+                        width={300}
                         style={{
                             width: '100%',
                             height: 'auto',
