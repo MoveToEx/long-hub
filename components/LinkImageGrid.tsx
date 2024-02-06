@@ -34,9 +34,8 @@ export default function LinkImageGrid({
                     height={300}
                     width={300}
                     style={{
-                        height: '300px',
-                        width: 'auto',
-                        maxWidth: '100%',
+                        width: '100%',
+                        height: 'auto',
                         objectFit: 'contain'
                     }}
                     onClick={(event) => {
