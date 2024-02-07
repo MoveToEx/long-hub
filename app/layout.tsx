@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import * as React from 'react';
+import UI from './ui';
 
 export const metadata: Metadata = {
 	title: {
@@ -23,7 +24,9 @@ export default function RootLayout({
 				<meta name="viewport" content="initial-scale=1, width=device-width" />
 			</head>
 			<body className={inter.className}>
-				{children}
+				<UI>
+					{children}
+				</UI>
 			</body>
 		</html>
 	)

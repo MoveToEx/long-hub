@@ -2,8 +2,7 @@
 
 import './globals.css'
 import { styled, Theme, CSSObject } from '@mui/material/styles';
-import { useState } from 'react';
-import * as React from 'react';
+import { useState, useMemo } from 'react';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -20,6 +19,7 @@ import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Divider from '@mui/material/Divider';
 import CssBaseline from '@mui/material/CssBaseline';
+import CircularProgress from '@mui/material/CircularProgress';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
@@ -31,10 +31,8 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ImageIcon from '@mui/icons-material/Image';
 import Logout from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
-import WebIcon from '@mui/icons-material/Web';
 import LoginIcon from '@mui/icons-material/Login';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 import { SnackbarProvider } from 'notistack';
@@ -127,17 +125,10 @@ function RootTemplate({
 }) {
     const [open, setOpen] = useState(true);
     const [expand, setExpand] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const { user } = useUser();
+    const { user, isLoading } = useUser();
     const pathname = usePathname();
-
-    function callExpand(state: boolean) {
-        return () => { setExpand(state); };
-    }
-
-    function callOpen(state: boolean) {
-        return () => { setOpen(state); };
-    }
 
     function DrawerItem({ title, href, icon }: { title: string, href: string, icon: React.ReactElement }) {
         return (
@@ -145,6 +136,7 @@ function RootTemplate({
                 href={href}
                 LinkComponent={Link}
                 selected={pathname == href}
+                onClick={() => setMobileOpen(false)}
             >
                 <ListItemIcon>{icon}</ListItemIcon>
                 <ListItemText
@@ -196,7 +188,10 @@ function RootTemplate({
                             size="large"
                             edge="start"
                             color="inherit"
-                            onClick={callOpen(!open)}
+                            onClick={() => {
+                                setOpen(!open);
+                                setMobileOpen(!mobileOpen);
+                            }}
                             sx={{ mr: 2 }}>
                             <MenuIcon />
                         </IconButton>
@@ -230,7 +225,15 @@ function RootTemplate({
                             onClose={() => setAnchorEl(null)}
                         >
                             <div>
-                                {user?.username == null ||
+                                {
+                                    isLoading &&
+                                    <MenuItem>
+                                            <CircularProgress />
+                                    </MenuItem>
+                                }
+                            </div>
+                            <div>
+                                {(!isLoading && user?.username != null) &&
                                     <>
                                         <MenuItem>
                                             <ListItemIcon>
@@ -248,11 +251,11 @@ function RootTemplate({
                                 }
                             </div>
                             <div>
-                                {user?.username == null &&
+                                {!isLoading && user?.username == null &&
                                     <>
                                         <MenuItem component="a" href="/account/login">
                                             <ListItemIcon>
-                                                <AccountCircle fontSize="small" />
+                                                <LoginIcon fontSize="small" />
                                             </ListItemIcon>
                                             Log in
                                         </MenuItem>
@@ -283,8 +286,8 @@ function RootTemplate({
                         display: 'none'
                     }
                 })}
-                onMouseEnter={callExpand(true)}
-                onMouseLeave={callExpand(false)}>
+                onMouseEnter={() => setExpand(true)}
+                onMouseLeave={() => setExpand(false)}>
                 <Toolbar />
 
                 {drawerContent}
@@ -294,9 +297,10 @@ function RootTemplate({
             <MuiDrawer
                 variant="temporary"
                 disableScrollLock
-                open={open}
-                onClose={callOpen(false)}
+                open={mobileOpen}
+                onClose={() => setMobileOpen(false)}
                 sx={theme => ({
+                    zIndex: theme.zIndex.drawer + 1,
                     [theme.breakpoints.up('md')]: {
                         display: 'none'
                     },
@@ -344,7 +348,7 @@ export default function ProviderWrapper({
     children: React.ReactNode
 }) {
     const preferDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-    const currentTheme = React.useMemo(
+    const currentTheme = useMemo(
         () => createTheme({
             palette: {
                 mode: preferDarkMode ? 'dark' : 'light',
