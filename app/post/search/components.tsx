@@ -15,25 +15,25 @@ function getLabel(s: string) {
     if (s.startsWith('+') || s.startsWith('-')) {
         return {
             label: _.trimStart(s, '+'),
-            avatar: <TagIcon />
+            avatar: <TagIcon fontSize='small' />
         };
     }
     else if (s.startsWith('@')) {
         return {
             label: _.trimStart(s, '@'),
-            avatar: <FingerprintIcon />
+            avatar: <FingerprintIcon fontSize='small' />
         };
     }
-    else if (s.startsWith('<') || s.startsWith('>') || s.startsWith('=') || s.startsWith('!=')) {
-        return {
-            label: _.trimStart(s, '<>!='),
-            avatar: <PercentIcon />
-        }
-    }
+    // else if (s.startsWith('<') || s.startsWith('>') || s.startsWith('=') || s.startsWith('!=')) {
+    //     return {
+    //         label: s,
+    //         avatar: <></>
+    //     }
+    // }
     else {
         return {
             label: s,
-            avatar: <LabelIcon />
+            avatar: <></>
         }
     }
 }
