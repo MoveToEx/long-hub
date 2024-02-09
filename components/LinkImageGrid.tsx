@@ -34,21 +34,24 @@ export default function LinkImageGrid({
                     height={300}
                     width={300}
                     style={{
-                        width: '100%',
-                        height: 'auto',
-                        objectFit: 'contain'
+                        maxWidth: '100%',
+                        maxHeight: '300px',
+                        width: 'auto',
+                        minWidth: '100%',
+                        minHeight: '100%',
+                        objectFit: 'contain',
                     }}
                     onClick={(event) => {
                         if (!event.ctrlKey) {
                             return;
                         }
+                        event.preventDefault();
+                        event.stopPropagation();
+
                         const src = e.src;
                         const element = event.currentTarget;
                         element.classList.add(styles['grid-image-fetching']);
                         if (src.endsWith('gif')) enqueueSnackbar('Only the first frame will be copied', { variant: 'info' });
-                        
-                        event.preventDefault();
-                        event.stopPropagation();
                         
                         
                         fetch(src).then(x => x.blob()).then(blob => {
