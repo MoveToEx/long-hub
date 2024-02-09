@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import { useFormState } from 'react-dom';
 
 import signUp from './action';
+import SubmitButton from '@/components/SubmitButton';
 
 
 export default function SignupPage() {
@@ -44,14 +45,7 @@ export default function SignupPage() {
                     type="password"
                     autoComplete="current-password"
                 />
-                <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
-                >
-                    Sign Up
-                </Button>
+                <SubmitButton label="Sign up" />
 
                 <Typography color="error">
                     {state}
