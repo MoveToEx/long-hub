@@ -2,7 +2,7 @@
 
 import './globals.css'
 import { styled, Theme, CSSObject } from '@mui/material/styles';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -127,8 +127,12 @@ function RootTemplate({
     const [expand, setExpand] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const { user, isLoading } = useUser();
+    const { user, isLoading, mutate } = useUser();
     const pathname = usePathname();
+
+    useEffect(() => {
+        mutate();
+    }, [pathname, mutate]);
 
     function DrawerItem({ title, href, icon }: { title: string, href: string, icon: React.ReactElement }) {
         return (
@@ -228,7 +232,7 @@ function RootTemplate({
                                 {
                                     isLoading &&
                                     <MenuItem>
-                                            <CircularProgress />
+                                        <CircularProgress />
                                     </MenuItem>
                                 }
                             </div>
@@ -253,13 +257,13 @@ function RootTemplate({
                             <div>
                                 {!isLoading && user?.username == null &&
                                     <>
-                                        <MenuItem component="a" href="/account/login">
+                                        <MenuItem component={Link} href="/account/login">
                                             <ListItemIcon>
                                                 <LoginIcon fontSize="small" />
                                             </ListItemIcon>
                                             Log in
                                         </MenuItem>
-                                        <MenuItem component="a" href="/account/signup">
+                                        <MenuItem component={Link} href="/account/signup">
                                             <ListItemIcon>
                                                 <Logout fontSize="small" />
                                             </ListItemIcon>
