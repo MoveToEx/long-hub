@@ -20,7 +20,7 @@ Example response:
     "aggr": 0,
     "createdAt": "2023-12-19T06:50:28.871Z",
     "updatedAt": "2023-12-19T06:50:28.906Z",
-    "uploaderId": null,
+    "uploaderId": 1,
     "tags": [
         {
             "id": 229,
@@ -33,6 +33,8 @@ Example response:
 ## PUT /api/post/\[post_id\]/
 
 Modify the metadata of the given post.
+
+Requires write permission(0x2).
 
 Accepts: application/json
 
@@ -55,7 +57,7 @@ Example response:
 
 ```json
 {
-    "imageURL": "https://img.longhub.top/posts/6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
+    "imageURL": "http://localhost:3042/posts/6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
     "id": "6c753c5e-baca-4f1b-a4ed-952dd402d36c",
     "text": "你妈死了",
     "image": "6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
@@ -63,7 +65,7 @@ Example response:
     "aggr": 5,
     "createdAt": "2023-12-19T06:50:28.871Z",
     "updatedAt": "2023-12-19T07:50:92.505Z",
-    "uploaderId": null,
+    "uploaderId": 1,
     "tags": [
         {
             "id": 229,
@@ -76,20 +78,21 @@ Example response:
 
 ## DELETE /api/post/\[post_id\]/
 
-Deletes the specified post.
+Deletes the specified post.  
 
-Response: Specified post ID.
+Requires delete permission(0x4).
+
+Response: Status string.
 
 Example request:
 
 ```http
 DELETE /api/post/6c753c5e-baca-4f1b-a4ed-952dd402d36c
+X-Access-Key: <KEY>
 ```
 
 Example response:
 
 ```json
-{
-    "id": "6c753c5e-baca-4f1b-a4ed-952dd402d36c"
-}
+"ok"
 ```

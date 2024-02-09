@@ -21,7 +21,7 @@ Example response:
     "count": 684,
     "data": [
         {
-            "imageURL": "https://img.longhub.top/posts/6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
+            "imageURL": "http://localhost:3042/posts/6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
             "id": "6c753c5e-baca-4f1b-a4ed-952dd402d36c",
             "text": "我哭了我装的",
             "image": "6c753c5e-baca-4f1b-a4ed-952dd402d36c.png",
@@ -29,7 +29,7 @@ Example response:
             "aggr": 0,
             "createdAt": "2023-12-19T06:50:28.871Z",
             "updatedAt": "2023-12-19T06:50:28.906Z",
-            "uploaderId": null,
+            "uploaderId": 1,
             "tags": [
                 {
                     "id": 229,
@@ -43,32 +43,89 @@ Example response:
 
 ## POST /api/post
 
-Create a new blank post with given image.  
+Create a new post.   
+
+Requires write permission (0x2).
 
 Formdata:
 
-- `image`: Image to upload
+- `image`: Image to upload  
+- `metadata`: A JSON string specifying the metadata
+- (_optional_)`force`: Whether to ignore similar images
 
-Response: A JSON object containing the id of the new post.
+Response: If succeeds, a JSON object containing the id of the new post.  
+    Otherwise, a JSON object or a string indicating the the cause of the failure.
 
 Example request:
 
 ```http
 POST /api/post
-Content-Type: multipart/form-data; boundary=----NMSL
+Content-Type: multipart/form-data; boundary=NMSL
+X-Access-Key: <KEY>
 
-----NMSL
+--NMSL
 Content-Disposition: form-data; name="image"; filename="image.jpg"
 Content-Type: image/jpeg
 
 < ./image.jpg
----NMSL
+--NMSL
+Content-Disposition: form-data; name="metadata"
+Content-Type: text/plain
+
+{
+    "text": "nmsl",
+    "aggr": 0.5,
+    "tags": [
+        "monochrome"
+    ]
+}
+--NMSL
+Content-Disposition: form-data; name="force"
+Content-Type: text/plain
+
+0
+--NMSL--
 ```
 
-Example response:
+Example response when succeeds:
 
-```json
+```http
+HTTP/1.1 200 OK
+vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Url
+content-type: application/json
+Date: Fri, 09 Feb 2024 01:07:23 GMT
+Connection: close
+Transfer-Encoding: chunked
+
 {
-    "id": "b1257c16-548c-4876-a31a-d4563df62723"
+    "imageURL": "http://localhost:3042/posts/494784be-70a8-4236-8879-67c229644d98.jpg",
+    "id": "494784be-70a8-4236-8879-67c229644d98",
+    "text": "nmsl",
+    "aggr": 0.5,
+    "imageHash": "1100001111000010010010100000101001101101011010001011011100101001",
+    "image": "494784be-70a8-4236-8879-67c229644d98.jpg",
+    "updatedAt": "2024-02-09T01:07:23.642Z",
+    "createdAt": "2024-02-09T01:07:23.638Z",
+    "uploaderId": 1
 }
+```
+
+Example response when conflicts:
+
+```http
+HTTP/1.1 409 Conflict
+vary: RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Url
+content-type: application/json
+Date: Fri, 09 Feb 2024 01:08:01 GMT
+Connection: close
+Transfer-Encoding: chunked
+
+[
+    {
+        "imageURL": "http://localhost:3042/posts/494784be-70a8-4236-8879-67c229644d98.jpg",
+        "id": "494784be-70a8-4236-8879-67c229644d98",
+        "imageHash": "1100001111000010010010100000101001101101011010001011011100101001",
+        "image": "494784be-70a8-4236-8879-67c229644d98.jpg"
+    }
+]
 ```

@@ -5,7 +5,7 @@ Search for posts that are similar to image given.
 
 Formdata:
 
-- `image`: Image to upload
+- `image`: Image to search
 
 Response: A JSON object containing the result.
 
@@ -13,23 +13,27 @@ Example request:
 
 ```http
 POST /api/post/similar
-Content-Type: multipart/form-data; boundary=----NMSL
+Content-Type: multipart/form-data; boundary=NMSL
 
-----NMSL
+--NMSL
 Content-Disposition: form-data; name="image"; filename="image.png"
 Content-Type: image/png
 
 < ./image.png
----NMSL
+--NMSL--
 ```
 
 Example response:  
 
 ```json
-[
-    {
-        "id": "b1257c16-548c-4876-a31a-d4563df62723",
-        "imageURL": "http://localhost:3042/posts/b1257c16-548c-4876-a31a-d4563df62723.png"
-    }
-]
+{
+    "hash": "1100001111000010010010100000101001101101011010001011011100101001",
+    "similar": [
+        {
+            "id": "fb852b83-71c7-4fb0-ab50-7e5eef044965",
+            "imageURL": "http://localhost:3042/posts/fb852b83-71c7-4fb0-ab50-7e5eef044965.jpg",
+            "diff": 0
+        }
+    ]
+}
 ```

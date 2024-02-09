@@ -58,11 +58,15 @@ export default function DocTemplate({
                                 <ContentLink href="/doc/guide/search" title="Search" />
                             </List>
                         </ListItem>
-                        <ListItem disablePadding>
-                            API
-                        </ListItem>
+                        <ContentLink href="/doc/api" title="API" useConsolas />
                         <ListItem sx={{ p: 0, pl: 2 }}>
                             <List disablePadding>
+                                <ContentLink title="/account" useConsolas />
+                                <ListItem sx={{ p: 0, pl: 2 }}>
+                                    <List disablePadding>
+                                        <ContentLink href="/doc/api/account/login" title="/login" useConsolas />
+                                    </List>
+                                </ListItem>
                                 <ContentLink href="/doc/api/post" title="/post" useConsolas />
                                 <ListItem sx={{ p: 0, pl: 2 }}>
                                     <List disablePadding>
