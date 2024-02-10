@@ -16,7 +16,7 @@ export default async function Home({
 
 	const posts = await Post.findAll({
 		attributes: ['id', 'image'],
-		order: [['createdAt', 'DESC']],
+		order: [['createdAt', 'DESC'], ['id', 'ASC']],
 		offset: (page - 1) * Constant.pageLimit,
 		limit: Constant.pageLimit
 	});
