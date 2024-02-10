@@ -3,8 +3,8 @@ import { getSession } from "@/lib/server-util";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export async function GET(req: NextRequest) {
-    const session = await getSession(req, cookies());
+export async function GET() {
+    const session = await getSession(cookies());
 
     session.destroy();
 

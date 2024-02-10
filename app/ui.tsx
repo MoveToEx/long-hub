@@ -239,7 +239,7 @@ function RootTemplate({
                             <div>
                                 {(!isLoading && user?.username != null) &&
                                     <>
-                                        <MenuItem>
+                                        <MenuItem component={Link} href="/account" onClick={() => setAnchorEl(null)}>
                                             <ListItemIcon>
                                                 <AccountCircle fontSize="small" />
                                             </ListItemIcon>
@@ -257,13 +257,13 @@ function RootTemplate({
                             <div>
                                 {!isLoading && user?.username == null &&
                                     <>
-                                        <MenuItem component={Link} href="/account/login">
+                                        <MenuItem component={Link} href="/account/login" onClick={() => setAnchorEl(null)}>
                                             <ListItemIcon>
                                                 <LoginIcon fontSize="small" />
                                             </ListItemIcon>
                                             Log in
                                         </MenuItem>
-                                        <MenuItem component={Link} href="/account/signup">
+                                        <MenuItem component={Link} href="/account/signup" onClick={() => setAnchorEl(null)}>
                                             <ListItemIcon>
                                                 <Logout fontSize="small" />
                                             </ListItemIcon>

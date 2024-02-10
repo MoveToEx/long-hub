@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
     const data = await req.json();
 
-    if (!data.email || !data.password) {
+    if (!data.username || !data.password) {
         return NextResponse.json('invalid request', {
             status: 400
         });
@@ -21,12 +21,12 @@ export async function POST(req: NextRequest) {
 
     const user = await User.findOne({
         where: {
-            email: data.email
+            name: data.username
         }
     });
 
     if (user == null) {
-        return NextResponse.json('invalid email/password', {
+        return NextResponse.json('invalid username/password', {
             status: 401
         });
     }
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
     }
 
     session.userId = user.id;
+    session.username = user.name;
 
     await session.save();
 

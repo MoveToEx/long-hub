@@ -98,6 +98,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     declare permission: number;
     declare accessKey: CreationOptional<string>;
     declare passwordHash: string;
+    declare createdAt: CreationOptional<Date>;
 }
 
 export class Tag extends Model<InferAttributes<Tag>, InferCreationAttributes<Tag>> {
@@ -153,6 +154,7 @@ User.init({
         defaultValue: () => crypto.randomBytes(32).toString('base64url')
     },
     passwordHash: DataTypes.STRING,
+    createdAt: DataTypes.DATE
 }, {
     sequelize: seq,
     updatedAt: false,
