@@ -35,11 +35,10 @@ With invalid access key, the server responds with a `401 Unauthorized`
 
 ### Login session
 
-This is also the way LONG Hub frontend gets authenticated when calling apis.  
+This is also the way you get authenticated when using client component pages on LONG Hub.  
+Refer to [/api/account/login](/doc/api/account/login) for details.  
+
+
 Sessions are identified by cookies.  
 
 The login process does not involve encryption, so make sure to use HTTPS in production.  
-
-Refer to [/api/account/login](/doc/api/account/login) for details.  
-
-With invalid username/password, the server responds with a `401 Unauthorized`.  
