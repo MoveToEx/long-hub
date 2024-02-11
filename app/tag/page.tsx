@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { Tag } from '@/lib/db';
 import { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: 'Tag'
 };
