@@ -79,22 +79,18 @@ export async function POST(req: NextRequest) {
         }
     });
 
-    if (query.some(x => x.type == 'tag' && x.op == 'include')) {
-        query.filter(x => x.type == 'tag' && x.op == 'include').forEach(x => {
-            posts = posts.filter(
-                post => post.tags.find(tag => tag.name == x.value) != undefined
-            );
-        });
-    }
+    query.filter(x => x.type == 'tag' && x.op == 'include').forEach(x => {
+        posts = posts.filter(
+            post => post.tags.find(tag => tag.name == x.value) != undefined
+        );
+    });
 
 
-    if (query.some(x => x.type == 'tag' && x.op == 'exclude')) {
-        query.filter(x => x.type == 'tag' && x.op == 'exclude').forEach(x => {
-            posts = posts.filter(
-                post => post.tags.find(tag => tag.name == x.value) == undefined
-            )
-        })
-    }
+    query.filter(x => x.type == 'tag' && x.op == 'exclude').forEach(x => {
+        posts = posts.filter(
+            post => post.tags.find(tag => tag.name == x.value) == undefined
+        )
+    });
 
     return NextResponse.json({
         count: posts.length,

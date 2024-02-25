@@ -12,3 +12,7 @@
     transition: opacity .02s linear;
     cursor: default;
 }
+
+.grid-image-disabled {
+    opacity: 80%;
+}

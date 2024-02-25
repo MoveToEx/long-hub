@@ -9,7 +9,15 @@ import _ from 'lodash';
 import TagIcon from '@mui/icons-material/Tag';
 import LabelIcon from '@mui/icons-material/Label';
 import PercentIcon from '@mui/icons-material/Percent';
+import { SyntheticEvent } from 'react';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import { useEffect, useState } from 'react';
+
+interface Tag {
+    id: number;
+    name: string;
+    count: number;
+}
 
 function getLabel(s: string) {
     if (s.startsWith('+') || s.startsWith('-')) {
@@ -40,21 +48,30 @@ function getLabel(s: string) {
 
 export function SearchInput({
     value,
-    tags
+    onChange
 }: {
     value: string[],
-    tags: string[]
+    onChange: (_: any, val: string[]) => void
 }) {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const pathname = usePathname();
+    const [tags, setTags] = useState<string[]>([]);
+
+    useEffect(() => {
+        fetch('/api/post/tag').then(response => {
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            return response.json();
+        }).then((data: Tag[]) => {
+            setTags(data.map(tag => tag.name));
+        });
+    }, []);
 
     return (
         <>
             <Autocomplete
                 multiple
                 freeSolo
-                defaultValue={value}
+                value={value}
                 fullWidth
                 sx={{ mt: 2 }}
                 options={tags}
@@ -80,12 +97,7 @@ export function SearchInput({
                         return [];
                     }
                 }}
-                onChange={(_, newValue) => {
-                    router.push(createQueryString(pathname, {
-                        ...searchParams.entries(),
-                        's': Base64.encodeURI(JSON.stringify(newValue))
-                    }));
-                }}
+                onChange={onChange}
                 renderInput={
                     (params) => (
                         <TextField
