@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
     const img = fd.get('image') as File;
     const _metadata = fd.get('metadata') as string;
-    const force = Number.parseInt(fd.get('force') as string | null ?? '2');
+    const force = Number.parseInt(fd.get('force') as string | null ?? '0');
 
     let metadata;
 
