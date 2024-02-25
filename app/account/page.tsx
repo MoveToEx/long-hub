@@ -16,7 +16,6 @@ import { useUser } from "../context";
 import { useRouter } from "next/navigation";
 import Skeleton from '@mui/material/Skeleton';
 
-import { resetAccessKey } from "./actions";
 import { useSnackbar } from "notistack";
 
 import style from './page.module.css';
@@ -62,6 +61,7 @@ function CopiableText({
 export default function AccountPage() {
     const { user, isLoading, mutate } = useUser();
     const router = useRouter();
+    const [resetDisabled, setResetDisabled] = useState(false);
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
     useEffect(() => {
@@ -112,11 +112,17 @@ export default function AccountPage() {
                             </Typography>
 
 
-                            <form action={resetAccessKey} onSubmit={() => window.location.reload()}>
-                                <Button type="submit">
-                                    <AutorenewIcon /> reset access key
-                                </Button>
-                            </form>
+                            <Button
+                                onClick={function (e) {
+                                    setResetDisabled(true);
+                                    fetch('/api/account/reset-key').then(() => {
+                                        window.location.reload();
+                                    });
+                                }}
+                                disabled={resetDisabled}
+                            >
+                                <AutorenewIcon /> reset access key
+                            </Button>
                         </Box>
                     </Paper>
                 </Grid>
