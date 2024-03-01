@@ -2,7 +2,7 @@
 
 import './globals.css'
 import { styled, Theme, CSSObject } from '@mui/material/styles';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -365,7 +365,9 @@ export default function ProviderWrapper({
         <ThemeProvider theme={currentTheme}>
             <SnackbarProvider maxSnack={5} autoHideDuration={3000}>
                 <RootTemplate>
-                    {children}
+                    <Suspense>
+                        {children}
+                    </Suspense>
                 </RootTemplate>
             </SnackbarProvider>
         </ThemeProvider>
