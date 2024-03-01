@@ -4,7 +4,7 @@ import { seq, User } from '@/lib/db';
 import _ from 'lodash';
 import { cookies } from 'next/headers';
 import { getIronSession } from 'iron-session';
-import { Session } from '@/lib/types';
+import { Session } from '@/lib/server-types';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcrypt'; 

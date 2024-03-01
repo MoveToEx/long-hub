@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Session } from '@/lib/types';
+import { Session } from '@/lib/server-types';
 import { getIronSession } from 'iron-session';
 import { User } from '@/lib/db';
 import bcrypt from 'bcrypt';

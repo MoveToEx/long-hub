@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Session } from "@/lib/types";
 import { cookies } from "next/headers";
 import crypto from 'crypto';
 import { auth } from "@/lib/server-util";

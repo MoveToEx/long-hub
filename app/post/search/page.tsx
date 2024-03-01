@@ -10,23 +10,11 @@ import Skeleton from '@mui/material/Skeleton';
 import { SearchInput } from './components';
 import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
-import { useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
-
-interface Post {
-    id: string;
-    text: string;
-    image: string;
-    imageHash: string;
-    imageURL: string;
-}
-
-interface PostResponse {
-    count: number;
-    data: Post[]
-}
+import { PostResponse } from '@/lib/types';
 
 function toOperator(s: string) {
     if (s.startsWith('=')) return 'eq';
@@ -77,9 +65,12 @@ export default function SearchPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
+    const [loading, setLoading] = useState(searchParams.has('s'));
     const [result, setResult] = useState<PostResponse | null>(null);
     const [query, setQuery] = useState<string[]>(searchParams?.get('s')?.split(' ') ?? []);
-    const [page, setPage] = useState<number>(1);
+    const [page, setPage] = useState<number>(Number(searchParams?.get('page') ?? '1'));
+    
+    const totalPages = useDeferredValue(C.pages(result?.count ?? 0));
 
     const { enqueueSnackbar } = useSnackbar();
 
@@ -88,6 +79,8 @@ export default function SearchPage() {
             setResult(null);
             return;
         }
+        setLoading(true);
+        console.log('fetch')
         const data = JSON.stringify(transformat(query));
         fetch('/api/post/search?limit=24&offset=' + (page - 1) * 24, {
             method: 'POST',
@@ -103,7 +96,9 @@ export default function SearchPage() {
         }).then(data => {
             setResult(data);
         }).catch(reason => {
-            enqueueSnackbar(reason as string, { variant: 'error' });
+            enqueueSnackbar('Failed when fetching data: ' + reason, { variant: 'error' });
+        }).finally(() => {
+            setLoading(false);
         });
     }, [query, enqueueSnackbar, page]);
 
@@ -113,9 +108,8 @@ export default function SearchPage() {
                 router.replace(createQueryString('/post/search', {
                     s: val.join(' ')
                 }));
-                setPage(1);
                 setQuery(val);
-                setResult(null);
+                setPage(1);
             }} />
             <Typography variant="h6" align="center">
                 {
@@ -127,10 +121,10 @@ export default function SearchPage() {
             {
                 !_.isEmpty(query) &&
                 <LinkImageGrid
-                    skeleton={result === null ? 24 : 0}
-                    src={result === null ? [] : result.data.map(x => ({
+                    skeleton={loading ? 24 : 0}
+                    src={!result ? [] : result.data.map(x => ({
                         href: `/post/${x.id}`,
-                        src: x.imageURL!
+                        src: x.imageURL
                     }))}
                     gridContainerProps={{
                         spacing: 2
@@ -142,14 +136,17 @@ export default function SearchPage() {
                     }} />
             }
 
-            <Stack alignItems="center">
+            <Stack alignItems="center" sx={{m: 4}}>
                 <Pagination
-                    disabled={result === null}
-                    count={result === null ? 0 : C.pages(result.count)}
+                    disabled={loading}
+                    count={totalPages}
                     page={page}
                     onChange={(_, val) => {
+                        router.replace(createQueryString('/post/search', {
+                            s: query,
+                            page: val
+                        }), { scroll: false });
                         setPage(val);
-                        setResult(null);
                     }}
                 />
             </Stack>
