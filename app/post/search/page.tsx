@@ -80,7 +80,6 @@ export default function SearchPage() {
             return;
         }
         setLoading(true);
-        console.log('fetch')
         const data = JSON.stringify(transformat(query));
         fetch('/api/post/search?limit=24&offset=' + (page - 1) * 24, {
             method: 'POST',
@@ -143,7 +142,7 @@ export default function SearchPage() {
                     page={page}
                     onChange={(_, val) => {
                         router.replace(createQueryString('/post/search', {
-                            s: query,
+                            s: query.join(' '),
                             page: val
                         }), { scroll: false });
                         setPage(val);
