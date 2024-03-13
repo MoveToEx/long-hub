@@ -254,7 +254,7 @@ export default function UploadPage() {
                         </Box>
 
                         <Typography variant="subtitle2">
-                            Make sure to read <Link href="/doc/uploading" target="_blank">upload docs</Link> first.
+                            Make sure to read <Link href="/doc/guide/uploading" target="_blank">upload docs</Link> first.
                         </Typography>
                     </Stack>
                 </Grid>
