@@ -4,12 +4,6 @@ import rehypeHighlight from 'rehype-highlight';
 import json from 'highlight.js/lib/languages/json';
 import http from 'highlight.js/lib/languages/http';
 import nextMDX from '@next/mdx';
-import { execSync } from  'child_process';
-var commitHash = execSync('git rev-parse --short HEAD').toString().trim();
-
-if (execSync('git status -s').toString().trim().length != 0) {
-    commitHash = commitHash + '*';
-}
 
 const nextConfig = {
     experimental: {
@@ -33,9 +27,6 @@ const nextConfig = {
         return config;
     },
     pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
-    env: {
-        GIT_COMMIT: commitHash
-    },
     images: {
         remotePatterns: [
             {
