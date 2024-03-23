@@ -20,7 +20,11 @@ export default function Home() {
 	const [loading, setLoading] = useState(true);
 	const [post, setPost] = useState<PostResponse | null>(null);
 	const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
-	const totalPages = useDeferredValue(C.pages(post?.count ?? 0));
+	const deferredPage = useDeferredValue(C.pages(post?.count ?? 0));
+
+	useEffect(() => {
+		setPage(Number(searchParams.get('page') ?? '1'));
+	}, [searchParams]);
 
 	useEffect(() => {
 		setLoading(true);
@@ -36,7 +40,7 @@ export default function Home() {
 				setPost(data);
 			})
 			.catch(reason => {
-				enqueueSnackbar('Failed when fetching posts: ' + reason);
+				enqueueSnackbar('Failed: ' + reason);
 			}).finally(() => {
 				setLoading(false);
 			});
@@ -62,7 +66,7 @@ export default function Home() {
 			<Stack alignItems="center" sx={{ m: 4 }}>
 				<Pagination
 					disabled={loading}
-					count={totalPages}
+					count={deferredPage}
 					page={page}
 					onChange={(_, val) => {
 						router.push(createQueryString('/', {
