@@ -67,7 +67,9 @@ export default function SearchPage() {
 
     const [loading, setLoading] = useState(searchParams.has('s'));
     const [result, setResult] = useState<PostResponse | null>(null);
-    const [query, setQuery] = useState<string[]>(searchParams?.get('s')?.split(' ') ?? []);
+
+    const _s = searchParams?.get('s');
+    const [query, setQuery] = useState<string[]>(_s ? _s.split(' ') : []);
     const [page, setPage] = useState<number>(Number(searchParams?.get('page') ?? '1'));
     
     const totalPages = useDeferredValue(C.pages(result?.count ?? 0));
