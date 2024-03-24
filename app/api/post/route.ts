@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    if ((user.permission & Permission.write) == 0) {
+    if ((user.permission & Permission.Post.new) == 0) {
         return NextResponse.json('operation not permitted', {
             status: 403
         });

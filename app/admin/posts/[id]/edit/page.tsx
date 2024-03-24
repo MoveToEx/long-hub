@@ -1,0 +1,70 @@
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { notFound } from "next/navigation";
+import Rating from '@mui/material/Rating';
+
+
+import { Post } from "@/lib/db";
+import _ from 'lodash';
+import { EditPost } from './actions';
+import Link from 'next/link';
+
+export default async function EditUserPage({
+    params
+}: {
+    params: {
+        id: string
+    }
+}) {
+    const post = await Post.findByPk(params.id);
+
+    if (!post) {
+        return notFound();
+    }
+
+    return (
+        <Box sx={{ m: 2 }}>
+            <Typography variant="h5">
+                Editing post #{post.id}
+            </Typography>
+            <Box sx={{ p: 2, m: 2 }} component="form" action={EditPost}>
+                <Box sx={{ mt: 2, mb: 4 }}>
+                    <Stack direction="column" spacing={2}>
+                        <TextField label="ID" name="id" defaultValue={post.id} fullWidth inputProps={{
+                            readOnly: true
+                        }} />
+                        <TextField label="Text" name="text" defaultValue={post.text} fullWidth />
+                        <TextField label="Upload ID" name="uploaderId" defaultValue={post.uploaderId} fullWidth />
+                        <Box alignItems="center">
+                            <Typography component="legend">Aggressiveness</Typography>
+                            <Rating
+                                defaultValue={post.aggr ?? 0}
+                                precision={0.5}
+                                max={10}
+                                size="large"
+                                name="aggr"
+                            />
+                        </Box>
+                    </Stack>
+
+                </Box>
+                <Stack direction="row" alignSelf="center" justifyContent="center" spacing={2}>
+                    <Button variant="contained" type="submit" startIcon={<CheckIcon />}>
+                        Submit
+                    </Button>
+
+                    <Button startIcon={<CloseIcon />} LinkComponent={Link} href="/admin/posts/">
+                        Cancel
+                    </Button>
+                </Stack>
+            </Box>
+        </Box>
+    )
+}

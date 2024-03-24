@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest, {
         });
     }
 
-    if ((user.permission & C.Permission.write) == 0) {
+    if ((user.permission & C.Permission.Post.edit) == 0) {
         return NextResponse.json('operation not permitted', {
             status: 403
         });
@@ -63,22 +63,16 @@ export async function PUT(req: NextRequest, {
         });
     }
 
-    if (meta.aggr !== undefined) {
-        if (typeof meta.aggr !== 'number') {
-            return NextResponse.json('ill-typed aggr', {
-                status: 400
-            });
-        }
-        post.aggr = meta.aggr;
+    if (meta.aggr !== undefined && typeof meta.aggr !== 'number') {
+        return NextResponse.json('ill-typed aggr', {
+            status: 400
+        });
     }
-
-    if (meta.text !== undefined) {
-        if (typeof meta.text !== 'string') {
-            return NextResponse.json('ill-typed text', {
-                status: 400
-            });
-        }
-        post.text = meta.text;
+    
+    if (meta.text !== undefined && typeof meta.text !== 'string') {
+        return NextResponse.json('ill-typed text', {
+            status: 400
+        });
     }
 
     if (meta.tags) {
@@ -104,6 +98,9 @@ export async function PUT(req: NextRequest, {
         }
     }
 
+    post.aggr = meta.aggr ?? 0;
+    post.text = meta.text ?? '';
+
     await post.save();
 
     return NextResponse.json(post.toJSON());
@@ -124,7 +121,7 @@ export async function DELETE(req: NextRequest, {
         });
     }
 
-    if ((user.permission & C.Permission.delete) == 0) {
+    if ((user.permission & C.Permission.Post.delete) == 0) {
         return NextResponse.json('operation not permitted', {
             status: 403
         });

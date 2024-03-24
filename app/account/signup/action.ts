@@ -25,7 +25,7 @@ export default async function signUp(_state: string, fd: FormData) {
     await User.create({
         name: username,
         passwordHash: hash,
-        permission: C.Permission.write
+        permission: C.Permission.Post.edit | C.Permission.Post.new
     });
 
     redirect('/account/login');

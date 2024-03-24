@@ -6,8 +6,9 @@ import { cookies } from 'next/headers';
 import { getIronSession } from 'iron-session';
 import { Session } from '@/lib/server-types';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcrypt'; 
+
+import { cookieSettings } from '@/lib/server-util';
 
 export default async function login(state: any, fd: FormData) {
     const username = fd.get('username') as string;
@@ -28,12 +29,10 @@ export default async function login(state: any, fd: FormData) {
         return 'username/password does not match';
     }
     
-    const session = await getIronSession<Session>(cookies(), {
-        cookieName: process.env['COOKIE_NAME'] as string,
-        password: process.env['COOKIE_SECRET'] as string
-    });
+    const session = await getIronSession<Session>(cookies(), cookieSettings);
 
     const date = new Date();
+
     if (expire) date.setMonth(date.getMonth() + 1);
     else date.setDate(date.getDate() + 1);
 
@@ -44,6 +43,5 @@ export default async function login(state: any, fd: FormData) {
 
     await session.save();
 
-    revalidatePath('/');
     redirect('/');
 }

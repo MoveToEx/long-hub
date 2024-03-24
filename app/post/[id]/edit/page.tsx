@@ -14,7 +14,6 @@ import SendIcon from '@mui/icons-material/Send';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
 import { useUser } from '@/app/context';
@@ -69,8 +68,24 @@ export default function Post({
 
     function submit() {
         setLoading(true);
-        axios.put(`/api/post/${params.id}/`, meta)
-            .then(() => router.back());
+        fetch('/api/post/' + params.id, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(meta)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    enqueueSnackbar('Failed: ' + response.statusText, { variant: 'error' });
+                    throw new Error(response.status.toString());
+                }
+                router.back();
+            })
+            .catch(() => { })
+            .finally(() => {
+                setLoading(false);
+            });
     }
 
 

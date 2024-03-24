@@ -100,7 +100,7 @@ export default function UploadPage() {
                     response.json().then(data => setSimilar(data));
                 }
                 else {
-                    enqueueSnackbar('Failed when uploading: ' + response.statusText, {
+                    enqueueSnackbar('Failed: ' + response.statusText, {
                         variant: 'error'
                     });
                 }

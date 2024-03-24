@@ -23,6 +23,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import SecurityIcon from '@mui/icons-material/Security';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import Home from '@mui/icons-material/Home';
 import TagIcon from '@mui/icons-material/Tag';
@@ -37,6 +38,7 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 import { SnackbarProvider } from 'notistack';
 
+import * as C from '@/lib/constants';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -178,6 +180,17 @@ function RootTemplate({
             </li>
             <DrawerItem title="List" href="/template" icon={<AccountTreeIcon />} />
             <DrawerItem title="Upload" href="/template/upload" icon={<FileUploadIcon />} />
+            {(!isLoading && ((user?.permission ?? 0) & C.Permission.Admin.base) != 0) &&
+                <>
+                    <Divider component="li" />
+                    <li>
+                        <Typography component="div" variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 2 }}>
+                            Admin
+                        </Typography>
+                    </li>
+                    <DrawerItem title="Admin" href="/admin" icon={<SecurityIcon />} />
+
+                </>}
         </List>
     )
 
@@ -237,13 +250,13 @@ function RootTemplate({
                                 }
                             </div>
                             <div>
-                                {(!isLoading && user?.username != null) &&
+                                {(!isLoading && user?.name) &&
                                     <>
                                         <MenuItem component={Link} href="/account" onClick={() => setAnchorEl(null)}>
                                             <ListItemIcon>
                                                 <AccountCircle fontSize="small" />
                                             </ListItemIcon>
-                                            <b>{user.username}</b>
+                                            <b>{user.name}</b>
                                         </MenuItem>
                                         <MenuItem component="a" href="/account/logout">
                                             <ListItemIcon>
@@ -255,7 +268,7 @@ function RootTemplate({
                                 }
                             </div>
                             <div>
-                                {!isLoading && user?.username == null &&
+                                {!isLoading && user?.name == null &&
                                     <>
                                         <MenuItem component={Link} href="/account/login" onClick={() => setAnchorEl(null)}>
                                             <ListItemIcon>
