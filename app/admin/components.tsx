@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
 import { LineChart } from '@mui/x-charts/LineChart';
+import { PieChart } from '@mui/x-charts/PieChart';
 import _ from 'lodash';
 
 
@@ -22,6 +23,28 @@ export function NewPostChart({ count }: { count: number[] }) {
             ]}
             series={[{ data: count }]}
             width={1000}
+            height={300}
+        />
+    )
+}
+
+export function PostContributionChart({
+    data,
+    labels
+}: {
+    data: number[],
+    labels: string[]
+}) {
+    return (
+        <PieChart
+            series={[
+                {
+                    data: data.map((val, idx) => ({ value: val, label: labels[idx] })),
+                    innerRadius: 75,
+                    outerRadius: 100
+                }
+            ]}
+            width={600}
             height={300}
         />
     )

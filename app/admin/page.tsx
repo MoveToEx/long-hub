@@ -31,13 +31,16 @@ import { Op } from "sequelize";
 
 import { DeletePost } from "./posts/actions";
 import { DeleteUser, ResetAccessKey } from "./users/actions";
-import { NewPostChart } from './components';
+import { NewPostChart, PostContributionChart } from './components';
 import _ from "lodash";
 import Link from "next/link";
 import Image from "next/image";
 
 const MAX_DATE_DIF = 28;
 
+type Contribution = Record<string, number>;
+
+    
 export default async function AdminPage() {
     const user = await authByCookies(cookies());
 
@@ -53,19 +56,28 @@ export default async function AdminPage() {
     begin.setMilliseconds(0);
 
     const posts = await Post.findAll({
-        attributes: ['createdAt'],
+        attributes: ['createdAt', 'uploaderId'],
+        include: {
+            model: User,
+            as: 'uploader'
+        },
         where: {
             createdAt: {
                 [Op.gt]: begin
             }
-        }
+        },
     });
 
     const data: number[] = _.range(MAX_DATE_DIF + 1).map(x => 0);
+    const contribution: Contribution = {};
 
     posts.forEach(post => {
         const dd = Math.floor((post.createdAt.getTime() - begin.getTime()) / 1000 / 60 / 60 / 24);
         data[dd]++;
+
+        if (!post.uploader) return;
+
+        contribution[post.uploader.name] = (contribution[post.uploader.name] ?? 0) + 1;
     });
 
     const postCount = await Post.count();
@@ -94,6 +106,7 @@ export default async function AdminPage() {
                     New post trend for 4 weeks
                 </Typography>
                 <NewPostChart count={data} />
+                <PostContributionChart data={Object.values(contribution)} labels={Object.keys(contribution)} />
             </Paper>
 
             <Grid container>
