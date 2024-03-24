@@ -47,6 +47,10 @@ export default async function AdminPage() {
 
     const begin = new Date();
     begin.setDate(begin.getDate() - MAX_DATE_DIF);
+    begin.setHours(0);
+    begin.setMinutes(0);
+    begin.setSeconds(0);
+    begin.setMilliseconds(0);
 
     const posts = await Post.findAll({
         attributes: ['createdAt'],
@@ -57,7 +61,7 @@ export default async function AdminPage() {
         }
     });
 
-    const data: number[] = _.range(MAX_DATE_DIF).map(x => 0);
+    const data: number[] = _.range(MAX_DATE_DIF + 1).map(x => 0);
 
     posts.forEach(post => {
         const dd = Math.floor((post.createdAt.getTime() - begin.getTime()) / 1000 / 60 / 60 / 24);
