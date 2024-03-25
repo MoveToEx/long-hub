@@ -2,8 +2,7 @@
 
 export interface Session {
     userId: number;
-    username: string; 
-    accessKey: string;
+    username: string;
     expire: Date;
 }
 

@@ -43,7 +43,16 @@ export default function SignupPage() {
                     name="password"
                     label="Password"
                     type="password"
-                    autoComplete="current-password"
+                    autoComplete="new-password"
+                />
+                <TextField
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="password-confirm"
+                    label="Confirm Password"
+                    type="password"
+                    autoComplete="new-password"
                 />
                 <SubmitButton label="Sign up" />
 

@@ -22,24 +22,23 @@ export default async function login(state: any, fd: FormData) {
     });
     
     if (user == null) {
-        return 'username/password does not match';
+        return 'Invalid credential';
     }
     
     if (!bcrypt.compareSync(pswd, user.passwordHash)) {
-        return 'username/password does not match';
+        return 'Invalid credential';
     }
     
     const session = await getIronSession<Session>(cookies(), cookieSettings);
 
-    const date = new Date();
+    const expireDate = new Date();
 
-    if (expire) date.setMonth(date.getMonth() + 1);
-    else date.setDate(date.getDate() + 1);
+    if (expire) expireDate.setMonth(expireDate.getMonth() + 1);
+    else expireDate.setDate(expireDate.getDate() + 1);
 
     session.userId = user.id;
     session.username = user.name;
-    session.accessKey = user.accessKey;
-    session.expire = date;
+    session.expire = expireDate;
 
     await session.save();
 

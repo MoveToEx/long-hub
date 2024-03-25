@@ -3,11 +3,11 @@ import { IronSession, getIronSession } from "iron-session";
 import { Session } from "@/lib/server-types";
 import { NextRequest, NextResponse } from "next/server";
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
-import { RequestCookies } from 'next/dist/compiled/@edge-runtime/cookies';
 
 export const cookieSettings = {
     password: process.env['COOKIE_SECRET'] as string,
-    cookieName: process.env['COOKIE_NAME'] as string
+    cookieName: process.env['COOKIE_NAME'] as string,
+    ttl: 60 * 24 * 60 * 60,
 }
 
 export async function getSession(req: NextRequest, res: NextResponse): Promise<IronSession<Session>>;
