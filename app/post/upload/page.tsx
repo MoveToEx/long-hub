@@ -8,33 +8,43 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
-import SendIcon from '@mui/icons-material/Send';
 import Rating from '@mui/material/Rating';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
+import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
-import styles from './page.module.css';
-import { useContext, useEffect, useState } from 'react';
-import { useSnackbar } from 'notistack';
-import PostMetadata from '@/lib/types/PostMetadata';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Image from 'next/image';
-import _ from 'lodash';
 import Link from '@mui/material/Link';
-import axios from 'axios';
-import DropArea from '@/components/DropArea';
+
+import { ReactNode, useEffect, useState } from 'react';
+import { useSnackbar } from 'notistack';
+import _ from 'lodash';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import PostMetadata from '@/lib/types/PostMetadata';
+
+import SendIcon from '@mui/icons-material/Send';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SearchIcon from '@mui/icons-material/Search';
 
 import { useUser } from '@/app/context';
-import { useRouter } from 'next/navigation';
+import DropArea from '@/components/DropArea';
 
+import styles from './page.module.css';
 interface Preview {
     file: File,
     url: string
+};
+
+interface DialogInfo {
+    open: boolean;
+    title?: string;
+    subtitle?: string;
+    content?: ReactNode;
 };
 
 export default function UploadPage() {
@@ -45,9 +55,11 @@ export default function UploadPage() {
         aggr: 0,
         tags: []
     });
+    const [dialog, setDialog] = useState<DialogInfo>({
+        open: false
+    });
     const [tags, setTags] = useState<string[]>([]);
     const [ignoreSimilar, setIgnoreSimilar] = useState(false);
-    const [similar, setSimilar] = useState<string[]>([]);
 
     const { user } = useUser();
     const router = useRouter();
@@ -97,7 +109,30 @@ export default function UploadPage() {
                     });
                 }
                 else if (response.status == 409) {
-                    response.json().then(data => setSimilar(data));
+                    response.json().then(data => {
+                        setDialog({
+                            open: true,
+                            title: 'Similar images',
+                            subtitle: 'These images are similar to yours. Make sure not to upload duplicates',
+                            content: (
+                                <LinkImageGrid
+                                    src={data.map((post: any) => ({
+                                        href: `/post/${post.id}`,
+                                        src: post.imageURL
+                                    }))}
+                                    gridProps={{
+                                        md: 6,
+                                        xs: 12
+                                    }}
+                                    gridContainerProps={{
+                                        spacing: 2
+                                    }}
+                                    linkProps={{
+                                        target: '_blank'
+                                    }} />
+                            )
+                        });
+                    });
                 }
                 else {
                     enqueueSnackbar('Failed: ' + response.statusText, {
@@ -112,6 +147,67 @@ export default function UploadPage() {
         next();
         enqueueSnackbar('Skipped 1 image', {
             variant: 'info'
+        });
+    }
+
+    function search() {
+        if (!meta.text && meta.tags.length == 0) {
+            enqueueSnackbar('No text given', { variant: 'info' });
+            return;
+        }
+        setLoading(true);
+        const selector = meta.tags.map(val => ({
+            type: 'tag',
+            op: 'include',
+            value: val
+        }));
+
+        if (meta.text) {
+            selector.push({
+                type: 'text',
+                op: 'include',
+                value: meta.text
+            });
+        }
+
+        fetch('/api/post/search?offset=0&limit=24', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(selector)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            return response.json();
+        }).then(data => {
+            setDialog({
+                open: true,
+                title: 'Search result',
+                subtitle: `${data.count} result(s) in total` + (data.count > 24 ? `, ${data.count - 24} result(s) omitted` : ''),
+                content: (
+                    <LinkImageGrid
+                        src={data.data.map((post: any) => ({
+                            href: `/post/${post.id}`,
+                            src: post.imageURL
+                        }))}
+                        gridProps={{
+                            md: 6,
+                            xs: 12
+                        }}
+                        gridContainerProps={{
+                            spacing: 2
+                        }}
+                        linkProps={{
+                            target: '_blank'
+                        }} />
+                )
+            });
+        }).catch((reason) => {
+            enqueueSnackbar('Failed: ' + reason, { variant: 'error' });
+        }).finally(() => {
+            setLoading(false);
         });
     }
 
@@ -228,28 +324,24 @@ export default function UploadPage() {
                         <Box sx={{ p: 1, position: 'relative' }} >
 
                             <Stack direction="row" spacing={2}>
-                                <Box sx={{ position: 'relative' }}>
+                                
+                                <Tooltip title="Submit">
                                     <Fab onClick={submit} color="primary" disabled={loading}>
                                         <SendIcon />
                                     </Fab>
-                                    {
-                                        loading && (
-                                            <CircularProgress
-                                                size={68}
-                                                sx={{
-                                                    position: 'absolute',
-                                                    top: -6,
-                                                    left: -6,
-                                                    zIndex: 1
-                                                }}
-                                            />
-                                        )
-                                    }
-                                </Box>
+                                </Tooltip>
 
-                                <Fab onClick={skip} color="error">
-                                    <DeleteIcon />
-                                </Fab>
+                                <Tooltip title="Skip current image">
+                                    <Fab onClick={skip} color="error" disabled={loading}>
+                                        <DeleteIcon />
+                                    </Fab>
+                                </Tooltip>
+
+                                <Tooltip title="Search with given conditions">
+                                    <Fab onClick={search} color="secondary" disabled={loading}>
+                                        <SearchIcon />
+                                    </Fab>
+                                </Tooltip>
                             </Stack>
                         </Box>
 
@@ -264,28 +356,17 @@ export default function UploadPage() {
 
     return (
         <>
-            <Dialog onClose={() => setSimilar([])} open={similar.length != 0} maxWidth="md" fullWidth>
-                <DialogTitle>Similar images</DialogTitle>
+            <Dialog onClose={() => setDialog({
+                ...dialog,
+                open: false
+            })} open={dialog.open} maxWidth="md" fullWidth>
+                <DialogTitle>{dialog.title}</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        {"The following posts have a similar image to yours. To upload anyway, check the ignore checkbox and submit again."}
+                        {dialog.subtitle}
                     </DialogContentText>
-                    <Box>
-                        <LinkImageGrid
-                            src={similar.map((post: any) => ({
-                                href: `/post/${post.id}`,
-                                src: post.imageURL
-                            }))}
-                            gridProps={{
-                                md: 6,
-                                xs: 12
-                            }}
-                            gridContainerProps={{
-                                spacing: 2
-                            }}
-                            linkProps={{
-                                target: '_blank'
-                            }} />
+                    <Box sx={{ m: 2 }}>
+                        {dialog.content}
                     </Box>
                 </DialogContent>
             </Dialog >
