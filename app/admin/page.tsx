@@ -40,7 +40,7 @@ const MAX_DATE_DIF = 28;
 
 type Contribution = Record<string, number>;
 
-    
+
 export default async function AdminPage() {
     const user = await authByCookies(cookies());
 
@@ -97,22 +97,35 @@ export default async function AdminPage() {
         <Box sx={{
             m: 2
         }}>
-            <Paper sx={{
-                m: 2,
-                p: 2,
+            <Box sx={{
+                m: {
+                    md: 2,
+                    xs: 0,
+                },
+                p: {
+                    md: 2,
+                    xs: 0
+                },
                 overflowX: 'auto'
             }}>
-                <Typography variant='h6'>
+                <Typography variant='h5'>
                     New post trend for 4 weeks
                 </Typography>
                 <NewPostChart count={data} />
                 <PostContributionChart data={Object.values(contribution)} labels={Object.keys(contribution)} />
-            </Paper>
+            </Box>
 
             <Grid container>
                 <Grid xs={12} md={6}>
-                    <Paper sx={{ m: 2, p: 2 }}>
-                        <Typography variant='h6'>
+                    <Box sx={{
+                        m: {
+                            md: 2
+                        },
+                        p: {
+                            md: 2
+                        }
+                    }}>
+                        <Typography variant='h5'>
                             Posts
                         </Typography>
                         <Typography>
@@ -128,7 +141,6 @@ export default async function AdminPage() {
                                     <TableRow>
                                         <TableCell align="center">#</TableCell>
                                         <TableCell align="center">Image</TableCell>
-                                        <TableCell align="center">Text</TableCell>
                                         <TableCell align="center">Actions</TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -148,7 +160,6 @@ export default async function AdminPage() {
                                                         }}
                                                     />
                                                 </TableCell>
-                                                <TableCell align="center">{post.text}</TableCell>
                                                 <TableCell align="center">
                                                     <Tooltip title="Edit">
                                                         <IconButton LinkComponent={Link} href={"/admin/posts/" + post.id + '/edit'} size="small">
@@ -182,14 +193,26 @@ export default async function AdminPage() {
                                 </Button>
                             </Grid>
                         </Grid>
-                    </Paper>
+                    </Box>
                 </Grid>
                 <Grid xs={12} md={6}>
-                    <Paper sx={{ m: 2, p: 2 }}>
-                        <Typography variant='h6'>
+                    <Box sx={{
+                        m: {
+                            md: 2
+                        },
+                        p: {
+                            md: 2
+                        }
+                    }}>
+                        <Typography variant='h5'>
                             Users
                         </Typography>
-                        {userCount} users in total.
+                        <Typography >
+                            {userCount} users in total.
+                        </Typography>
+                        <Typography >
+                            Latest 3 users:
+                        </Typography>
 
                         <TableContainer sx={{ mb: 2 }}>
                             <Table>
@@ -249,7 +272,7 @@ export default async function AdminPage() {
                                 </Button>
                             </Grid>
                         </Grid>
-                    </Paper>
+                    </Box>
                 </Grid>
             </Grid>
         </Box>
