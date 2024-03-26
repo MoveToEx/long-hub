@@ -8,7 +8,7 @@ import nextMDX from '@next/mdx';
 const nextConfig = {
     experimental: {
         serverActions: {
-            allowedOrigins: ['longhub.top', '*.longhub.top', 'localhost'],
+            allowedOrigins: ['longhub.top', '*.longhub.top', 'localhost', 'nextjs'],
         },
     },
     webpack: (
