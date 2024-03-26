@@ -27,7 +27,12 @@ export default function CopiableImage({
                 height: 'auto',
                 objectFit: 'contain'
             }}
-            onClick={(e) => {
+            onClick={async (e) => {
+                if (!navigator.clipboard) {
+                    enqueueSnackbar('navigator.clipboard is undefined', { variant: 'error' });
+                    return;
+                }
+
                 if (src.endsWith('gif')) enqueueSnackbar('Only the first frame will be copied', { variant: 'info' });
                 const img = e.currentTarget;
                 
@@ -41,15 +46,27 @@ export default function CopiableImage({
                 context.fillRect(0, 0, canvas.width, canvas.height);
                 
                 context.drawImage(img, 0, 0);
-                
-                canvas.toBlob(blob => {
-                    if (blob === null) throw new Error('unable to convert to png blob');
 
-                    writeClipboard({
-                        [blob.type]: blob
-                    }, enqueueSnackbar);
+                const blob: Blob | null = await new Promise((resolve, reject) => {
+                    canvas.toBlob(res => {
+                        if (res === null) reject('Failed when converting to blob');
 
-                }, "image/png");
+                        resolve(res);
+                    }, 'image/png');
+                });
+
+                if (blob === null) {
+                    enqueueSnackbar('Failed: Cannot convert image to blob', { variant: 'error' });
+                    return;
+                }
+
+                const item = new ClipboardItem({
+                    [blob.type]: blob
+                });
+
+                await navigator.clipboard.write([item]);
+
+                enqueueSnackbar('Copied to clipboard', { variant: 'success' });
             }}
         />
         );
