@@ -66,13 +66,16 @@ export async function POST(req: NextRequest, {
     }
 
     const fd = await req.formData();
-    const img = fd.get('image') as File;
 
-    if (!img) {
-        return NextResponse.json('image not present in form data', {
+    if (!fd.has('image') || !fd.has('metadata')) {
+        return NextResponse.json('insufficient parameters', {
             status: 400
         });
     }
+
+    const img = fd.get('image') as File;
+    const metadata = JSON.parse(fd.get('metadata') as string);
+
     if (img.type == 'image/gif') {
         return NextResponse.json('gif not supported for templates', {
             status: 400
@@ -85,7 +88,11 @@ export async function POST(req: NextRequest, {
             name: params.name,
             image: filename,
             createdAt: new Date(),
-            uploaderId: user.id
+            uploaderId: user.id,
+            rectHeight: metadata.height,
+            rectWidth: metadata.width,
+            offsetX: metadata.x,
+            offsetY: metadata.y,
         },
     });
 

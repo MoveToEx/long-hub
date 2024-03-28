@@ -45,10 +45,18 @@ export default function UploadPage() {
         setLoading(true);
         var fd = new FormData();
         fd.append('image', files[0].file);
-        axios
-            .post('/api/template/' + meta.name, fd)
-            .then(res => axios.put('/api/template/' + meta.name, meta))
-            .then(() => {
+        fd.append('metadata', JSON.stringify(meta));
+
+        fetch('/api/template/' + meta.name, {
+            method: 'POST',
+            body: fd
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    enqueueSnackbar(response.statusText, { variant: 'error' });
+                    return;
+                }
+
                 setMeta({
                     name: '',
                     x: 0,
@@ -59,7 +67,6 @@ export default function UploadPage() {
                 setFiles(_.slice(files, 1));
                 enqueueSnackbar('Uploaded successfully', { variant: 'success' });
             })
-            .catch(e => enqueueSnackbar('Failed when uploading: ' + e, { variant: 'error' }))
             .finally(() => setLoading(false));
     }
 
