@@ -26,7 +26,6 @@ import TableRow from '@mui/material/TableRow';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 import * as C from '@/lib/constants';
-import { Op } from "sequelize";
 
 import { DeletePost } from "./posts/actions";
 import { DeleteUser, ResetAccessKey } from "./users/actions";
