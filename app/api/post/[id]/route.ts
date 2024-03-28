@@ -92,15 +92,31 @@ export async function PUT(req: NextRequest, {
             });
         }
 
-        data.tags = {
-            connectOrCreate: meta.tags.map((tag: string) => ({
+        const tags = [];
+
+        for (const tagName of meta.tags) {
+            const tag = await prisma.tag.findFirst({
                 where: {
-                    name: tag
-                },
-                create: {
-                    name: tag
+                    name: tagName
                 }
-            }))
+            });
+
+            if (tag) {
+                tags.push({
+                    id: tag.id
+                });
+            }
+            else {
+                tags.push(await prisma.tag.create({
+                    data: {
+                        name: tagName
+                    }
+                }));
+            }
+        }
+
+        data.tags = {
+            connect: tags
         };
     }
     
