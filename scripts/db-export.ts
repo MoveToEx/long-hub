@@ -1,11 +1,11 @@
 import fs from 'fs';
-import { Post, Tag, Template } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import tar from 'tar';
 
 require('dotenv').config({
     path: '.env.local'
 });
-
+/*
 (async () => {
     if (fs.existsSync('archive.tar')) {
         fs.rmSync('archive.tar');
@@ -47,4 +47,4 @@ require('dotenv').config({
 
     fs.rmSync('./posts.json');
     fs.rmSync('./templates.json');
-})();
+})();*/

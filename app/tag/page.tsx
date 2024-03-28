@@ -4,7 +4,7 @@ import TagIcon from '@mui/icons-material/Tag';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
-import { Tag } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -14,14 +14,23 @@ export const metadata: Metadata = {
 };
 
 export default async function Tags() {
-    const tags = await Tag.findAll();
+    const tags = await prisma.tag.findMany({
+        select: {
+            _count: {
+                select: {
+                    posts: true
+                }
+            },
+            name: true
+        }
+    });
 
     return (
         <Box sx={{ mt: '12px' }}>
             {
                 tags.map(tag => (
                     <Badge
-                        badgeContent={tag.countPosts()}
+                        badgeContent={tag._count.posts}
                         key={tag.name}
                         color="primary"
                         sx={{

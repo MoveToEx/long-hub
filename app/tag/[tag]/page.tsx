@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import TagIcon from '@mui/icons-material/Tag';
 import _ from 'lodash';
 import LinkImageGrid from '@/components/LinkImageGrid';
-import { Tag } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import * as Constant from '@/lib/constants';
 import Pagination from '@/components/Pagination';
 import { notFound } from 'next/navigation';
@@ -32,20 +32,30 @@ export default async function SearchPage({
     }
 }) {
     const page = Number(searchParams?.page ?? 1);
-    const tag = await Tag.findOne({
+    const tag = await prisma.tag.findFirst({
         where: {
             name: params.tag
+        },
+        select: {
+            _count: {
+                select: {
+                    posts: true
+                }
+            }
         }
     });
 
     if (!tag) return notFound();
 
-    const posts = await tag.getPosts({
-        limit: Constant.pageLimit,
-        offset: (page - 1) * Constant.pageLimit,
-        order: [['createdAt', 'DESC']]
+    const posts = await prisma.post.findMany({
+        where: {
+            tags: {
+                some: {
+                    name: params.tag
+                }
+            }
+        }
     });
-    const count = await tag.countPosts();
 
     return (
         <>
@@ -68,7 +78,7 @@ export default async function SearchPage({
                     md: 3
                 }} />
 
-            <Pagination total={Constant.pages(count)} />
+            <Pagination total={Constant.pages(tag._count.posts)} />
         </>
     )
 }

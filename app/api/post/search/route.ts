@@ -1,27 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Post, Tag } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import _ from 'lodash';
-import { Op } from 'sequelize';
 
-const operators = {
-    'gt': Op.gt,
-    'lt': Op.lt,
-    'lte': Op.lte,
-    'gte': Op.gte,
-    'eq': Op.eq,
-    'ne': Op.ne,
+const operatorMapping = {
+    'gt': 'gt',
+    'lt': 'lt',
+    'le': 'lte',
+    'lte': 'lte',
+    'ge': 'gte',
+    'gte': 'gte',
+    'eq': 'equal',
+    'ne': 'not',
 };
 
-function parseOperator(s: keyof typeof operators) {
-    return operators[s];
+function parseOperator(s: keyof typeof operatorMapping, val: number) {
+    return {
+        [operatorMapping[s]]: val
+    };
 }
+
+interface AggrSelector {
+    type: 'aggr';
+    op: 'gt' | 'lt' | 'lte' | 'gte' | 'eq' | 'ne';
+    value: number;
+}
+
+interface TagSelector {
+    type: 'tag';
+    op: 'include' | 'exclude';
+    value: string;
+}
+
+interface TextSelector {
+    type: 'text';
+    op: unknown;
+    value: string;
+}
+
+interface IDSelector {
+    type: 'id';
+    op: unknown;
+    value: string;
+}
+
+type Selector = AggrSelector | TagSelector | TextSelector | IDSelector;
 
 export async function POST(req: NextRequest) {
     const { searchParams } = new URL(req.url);
 
     const offset = Number(searchParams.get('offset') ?? '0');
     const limit = Number(searchParams.get('limit') ?? '24');
-    let query;
+    let query: Selector[];
     try {
         query = await req.json();
     }
@@ -37,63 +66,70 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    let where: any = {};
-
     if (typeof query !== 'object' || !Array.isArray(query)) {
         return NextResponse.json('ill-formed request body', {
             status: 400
         });
     }
+    
+    let where = [];
 
-    if (query.some(item => item.type == 'text')) {
-        where.text = {
-            [Op.and]: query.filter(x => x.type == 'text').map(x => ({
-                [Op.like]: '%' + x.value + '%'
-            }))
+    for (const sel of query) {
+        if (sel.type == 'text') {
+            where.push({
+                text: {
+                    contains: sel.value
+                }
+            });
         }
-    }
-
-    if (query.some(item => item.type == 'aggr')) {
-        where.aggr = query.filter(x => x.type == 'aggr').reduce((a, x) => ({
-            ...a,
-            [parseOperator(x.op)]: x.value
-        }), {});
-    }
-
-    if (query.some(item => item.type == 'id')) {
-        where.id = {
-            [Op.and]: query.filter(x => x.type == 'id').map(x => ({
-                [Op.like]: x.value.replaceAll('*', '%')
-            }))
+        else if (sel.type == 'aggr') {
+            where.push({
+                aggr: parseOperator(sel.op, sel.value)
+            });
         }
-    }
-
-    var posts = await Post.findAll({
-        where: where,
-        include: {
-            model: Tag,
-            as: 'tags',
-            through: {
-                attributes: []
+        else if (sel.type == 'tag') {
+            if (sel.op == 'include') {
+                where.push({
+                    tags: {
+                        some: {
+                            name: sel.value
+                        }
+                    }
+                });
+            }
+            else if (sel.op == 'exclude') {
+                where.push({
+                    tags: {
+                        none: {
+                            name: sel.value
+                        }
+                    }
+                });
             }
         }
+        else if (sel.type == 'id') {
+            where.push({
+
+            })
+        }
+    }
+    
+    const posts = await prisma.post.findMany({
+        where: {
+            AND: where
+        },
+        skip: offset,
+        take: limit
     });
 
-    query.filter(x => x.type == 'tag' && x.op == 'include').forEach(x => {
-        posts = posts.filter(
-            post => post.tags.find(tag => tag.name == x.value) != undefined
-        );
-    });
-
-
-    query.filter(x => x.type == 'tag' && x.op == 'exclude').forEach(x => {
-        posts = posts.filter(
-            post => post.tags.find(tag => tag.name == x.value) == undefined
-        )
+    const count = await prisma.post.count({
+        where: {
+            AND: where
+        }
     });
 
     return NextResponse.json({
-        count: posts.length,
-        data: posts.slice(offset, offset + limit)
+        count: count,
+        data: posts
     });
 }

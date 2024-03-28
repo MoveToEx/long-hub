@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 import { TruncatedCopiableText } from "./components";
 import { Pagination } from '../components';
 
-import { User } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import Link from 'next/link';
 import { DeleteUser, ResetAccessKey as ResetAccessKey } from './actions';
 import React from 'react';
@@ -35,11 +35,11 @@ export default async function UserPage({
 }) {
     const page = Number(searchParams?.page ?? '1');
     const offset = pageLimit * (page - 1);
-    const users = await User.findAll({
-        offset: offset,
-        limit: pageLimit
+    const users = await prisma.user.findMany({
+        skip: offset,
+        take: pageLimit
     });
-    const total = await User.count();
+    const total = await prisma.user.count();
 
     return (
         <Box>

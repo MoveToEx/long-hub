@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Session } from '@/lib/server-types';
 import { getIronSession } from 'iron-session';
-import { User } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import bcrypt from 'bcrypt';
 import { cookies } from 'next/headers';
+import { cookieSettings } from '@/lib/server-util';
 
 export async function POST(req: NextRequest) {
-    const session = await getIronSession<Session>(cookies(), {
-        password: process.env['COOKIE_SECRET'] as string,
-        cookieName: process.env['COOKIE_NAME'] as string
-    });
+    const session = await getIronSession<Session>(cookies(), cookieSettings);
 
     const data = await req.json();
 
@@ -19,7 +17,7 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    const user = await User.findOne({
+    const user = await prisma.user.findFirst({
         where: {
             name: data.username
         }

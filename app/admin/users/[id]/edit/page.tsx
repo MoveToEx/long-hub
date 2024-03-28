@@ -9,7 +9,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { notFound } from "next/navigation";
 
-import { User } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { PermissionDescription } from '@/lib/constants';
 import { BitBoard } from './components';
 import _ from 'lodash';
@@ -22,8 +22,12 @@ export default async function EditUserPage({
     params: {
         id: string
     }
-}) {
-    const user = await User.findByPk(Number(params.id));
+    }) {
+    const user = await prisma.user.findFirst({
+        where: {
+            id: Number(params.id)
+        }
+    });
 
     if (!user) {
         return notFound();

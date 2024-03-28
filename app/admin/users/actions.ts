@@ -1,6 +1,6 @@
 'use server';
 
-import { User } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { authByCookies } from "@/lib/server-util";
 import crypto from 'crypto';
 import { revalidatePath } from "next/cache";
@@ -17,13 +17,21 @@ export async function DeleteUser(fd: FormData) {
     }
 
     const id = Number(fd.get('id'));
-    const user = await User.findByPk(id);
+    const user = await prisma.user.findFirst({
+        where: {
+            id: id
+        }
+    });
 
     if (!user) {
         return;
     }
 
-    await user.destroy();
+    await prisma.user.delete({
+        where: {
+            id: id
+        }
+    });
 
     revalidatePath('/admin/users');
 }
@@ -38,15 +46,24 @@ export async function ResetAccessKey(fd: FormData) {
     }
 
     const id = Number(fd.get('id'));
-    const user = await User.findByPk(id);
+    const user = await prisma.user.findFirst({
+        where: {
+            id: id
+        }
+    });
     
     if (!user) {
         return;
     }
-    
-    user.accessKey = crypto.randomBytes(32).toString('base64url');
-    
-    await user.save();
+
+    await prisma.user.update({
+        where: {
+            id: id
+        },
+        data: {
+            accessKey: crypto.randomBytes(32).toString('base64url')
+        }
+    });
 
     revalidatePath('/admin');
     revalidatePath('/admin/users');

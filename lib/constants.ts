@@ -7,29 +7,42 @@ export const pages = (total: number) => Math.ceil(total / pageLimit);
 export const PermissionDescription = {
     1: 'Create new post',
     2: 'Edit post',
-    3: 'Delete post',
+    3: 'Create new template',
+    4: 'Edit template',
     8: 'Enter admin panel',
     9: 'Edit user',
     10: 'Delete user',
     11: 'Assign new permission to a user',
-    12: 'Transfer a post to a user'
+    12: 'Edit post',
+    13: 'Delete post',
+    14: 'Edit template',
+    15: 'Delete template'
 };
 
 export const Permission = {
-    Post: {         // Permissions related to posts
+    super_user: 0x1,
+    Post: {
         new: 0x2,
         edit: 0x4,
-        delete: 0x8,
+    },
+    Template: {
+        new: 0x8,
+        edit: 0x10,
     },
     Admin: {
         base: 0x100,
-        User: {         // Permission related to modifying user info
+        User: {
             edit: 0x200,
             delete: 0x400,
             assign: 0x800,
         },
         Post: {
-            transfer: 0x1000,
+            edit: 0x1000,
+            delete: 0x2000
         },
+        Template: {
+            edit: 0x4000,
+            delete: 0x8000,
+        }
     }
 }

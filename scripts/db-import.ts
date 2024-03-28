@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { Post, Tag, Template, User, seq } from '../lib/db';
+import { prisma } from '../lib/db';
 import tar from 'tar';
 import _ from 'lodash';
 import cp from 'cli-progress';
@@ -21,6 +21,11 @@ require('dotenv').config({
     const templateFolder = path.join(process.env.MEDIA_ROOT, 'templates');
 
     console.log('removing entries...');
+
+    await prisma.post.deleteMany();
+    await prisma.user.deleteMany();
+    await prisma.template.deleteMany();
+    await prisma.tag.deleteMany();
     
     if (fs.existsSync(postsFolder)) {
         fs.rmSync(postsFolder, { recursive: true });
@@ -32,8 +37,6 @@ require('dotenv').config({
     
     fs.mkdirSync(postsFolder);
     fs.mkdirSync(templateFolder);
-    
-    await seq.sync({ force: true });
 
     console.log('extracting archive...');
 
@@ -42,23 +45,42 @@ require('dotenv').config({
         cwd: process.env.MEDIA_ROOT
     });
 
+    const users = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'users.json')).toString());
+
+    for (const user of users) {
+        await prisma.user.create({
+            data: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                permission: user.permission,
+                accessKey: user.accessKey,
+                passwordHash: user.passwordHash,
+                createdAt: new Date(user.createdAt)
+            }
+        });
+    }
+
+    fs.rmSync(path.join(process.env.MEDIA_ROOT, 'users.json'));
+
     var posts = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'posts.json')).toString());
 
     if (fs.existsSync(path.join(process.env.MEDIA_ROOT, 'templates.json'))) {
         var templates = JSON.parse(fs.readFileSync(path.join(process.env.MEDIA_ROOT, 'templates.json')).toString());
 
         for (var t of templates) {
-            var template = await Template.create({
-                name: t.name,
-                offsetX: t.offsetX,
-                offsetY: t.offsetY,
-                rectHeight: t.rectHeight,
-                rectWidth: t.rectWidth,
-                image: t.image,
-                style: t.style
+            await prisma.template.create({
+                data: {
+                    name: t.name,
+                    offsetX: t.offsetX,
+                    offsetY: t.offsetY,
+                    rectHeight: t.rectHeight,
+                    rectWidth: t.rectWidth,
+                    image: t.image,
+                    style: t.style,
+                    createdAt: new Date()
+                }
             });
-    
-            await template.save();
         }
 
         fs.rmSync(path.join(process.env.MEDIA_ROOT, 'templates.json'));
@@ -70,38 +92,55 @@ require('dotenv').config({
     pb.start(posts.length, 0);
 
     for (var p of posts) {
-        var post = await Post.create({
-            id: p.id,
-            text: p.text,
-            image: _.last(p.image.split('/')),
-            aggr: p.aggr,
-            createdAt: p.createdAt,
-            updatedAt: p.updatedAt
+
+        const tags = [];
+
+        for (const _tag of p.tags) {
+            const tag = await prisma.tag.findFirst({
+                where: {
+                    name: _tag.name
+                }
+            });
+
+            if (tag) {
+                tags.push({
+                    id: tag.id
+                });
+            }
+            else {
+                tags.push(await prisma.tag.create({
+                    data: {
+                        name: _tag.name
+                    }
+                }));
+            }
+        }
+        const post = await prisma.post.create({
+            data: {
+                id: p.id,
+                text: p.text,
+                image: _.last(p.image.split('/')),
+                aggr: p.aggr,
+                createdAt: p.createdAt,
+                updatedAt: p.updatedAt,
+                uploaderId: p.uploaderId,
+                tags: {
+                    connect: tags
+                }
+            }
         });
 
         const imgData = fs.readFileSync(post.imagePath);
 
-        post.imageHash = await phash(imgData);
+        await prisma.post.update({
+            where: {
+                id: post.id
+            },
+            data: {
+                imageHash: await phash(imgData)
+            }
+        });
 
-        await post.setUploader(p.uploaderId);
-
-        var tags = [];
-
-        for (var tagName of p.tags) {
-            var [tag, _created] = await Tag.findOrCreate({
-                where: {
-                    name: tagName.name
-                },
-                defaults: {
-                    name: tagName.name
-                }
-            });
-
-            tags.push(tag);
-        }
-
-        await post.setTags(tags);
-        await post.save();
         pb.increment();
     }
 

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Post, Tag, User } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { cookies } from 'next/headers';
 import fs from 'fs';
 
 import { auth } from "@/lib/server-util";
 import * as C from '@/lib/constants';
+import { revalidatePath } from "next/cache";
 
 export async function GET(req: NextRequest, {
     params
@@ -13,15 +14,13 @@ export async function GET(req: NextRequest, {
         id: string
     }
 }) {
-    var post = await Post.findByPk(params.id, {
-        include: [
-            {
-                model: Tag,
-                through: {
-                    attributes: []
-                }
-            }
-        ]
+    const post = await prisma.post.findFirst({
+        where: {
+            id: params.id
+        },
+        include: {
+            tags: true
+        }
     });
 
     if (!post) {
@@ -30,7 +29,7 @@ export async function GET(req: NextRequest, {
         });
     }
 
-    return NextResponse.json(post.toJSON());
+    return NextResponse.json(post);
 }
 
 export async function PUT(req: NextRequest, {
@@ -54,8 +53,13 @@ export async function PUT(req: NextRequest, {
         });
     }
 
-    var post = await Post.findByPk(params.id);
+    var post = await prisma.post.findFirst({
+        where: {
+            id: params.id
+        }
+    });
     const meta = await req.json();
+    const data: Record<string, any> = {};
 
     if (!post) {
         return NextResponse.json('post not found', {
@@ -68,11 +72,17 @@ export async function PUT(req: NextRequest, {
             status: 400
         });
     }
-    
+    else {
+        data.aggr = meta.aggr;
+    }
+
     if (meta.text !== undefined && typeof meta.text !== 'string') {
         return NextResponse.json('ill-typed text', {
             status: 400
         });
+    }
+    else {
+        data.text = meta.text;
     }
 
     if (meta.tags) {
@@ -82,28 +92,34 @@ export async function PUT(req: NextRequest, {
             });
         }
 
-        await post.removeTags(await post.getTags());
-
-        for (const tagName of meta.tags) {
-            const [tag, _] = await Tag.findOrCreate({
+        data.tags = {
+            connectOrCreate: meta.tags.map((tag: string) => ({
                 where: {
-                    name: tagName
+                    name: tag
                 },
-                defaults: {
-                    name: tagName
+                create: {
+                    name: tag
                 }
-            });
-
-            await post.addTag(tag);
-        }
+            }))
+        };
     }
+    
+    await prisma.post.update({
+        where: {
+            id: params.id
+        },
+        data: data
+    });
 
-    post.aggr = meta.aggr ?? 0;
-    post.text = meta.text ?? '';
+    revalidatePath('/post/' + params.id);
+    revalidatePath('/admin');
+    revalidatePath('/admin/post');
 
-    await post.save();
-
-    return NextResponse.json(post.toJSON());
+    return NextResponse.json(await prisma.post.findFirst({
+        where: {
+            id: params.id
+        }
+    }));
 }
 
 export async function DELETE(req: NextRequest, {
@@ -121,13 +137,17 @@ export async function DELETE(req: NextRequest, {
         });
     }
 
-    if ((user.permission & C.Permission.Post.delete) == 0) {
+    if ((user.permission & C.Permission.Admin.Post.delete) == 0) {
         return NextResponse.json('operation not permitted', {
             status: 403
         });
     }
 
-    const post = await Post.findByPk(params.id);
+    const post = await prisma.post.findFirst({
+        where: {
+            id: params.id
+        }
+    });
 
     if (!post) {
         return NextResponse.json('post ' + params.id + ' not found', {
@@ -137,8 +157,11 @@ export async function DELETE(req: NextRequest, {
 
     fs.rmSync(post.imagePath);
 
-    await post.removeTags(await post.getTags());
-    await post.destroy();
+    await prisma.post.delete({
+        where: {
+            id: params.id
+        }
+    });
 
     return NextResponse.json('ok');
 }

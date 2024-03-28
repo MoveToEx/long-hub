@@ -1,10 +1,11 @@
-import { Post, Tag } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { NextRequest, NextResponse } from "next/server";
 import sharp from 'sharp';
 import Color from 'color';
 import _ from 'lodash';
 import fs from 'fs';
 import path from 'node:path';
+import crypto from 'crypto';
 
 // @ts-expect-error
 import phash from 'sharp-phash';
@@ -14,6 +15,7 @@ import phashDistance from 'sharp-phash/distance';
 import { auth } from '@/lib/server-util';
 import { cookies } from 'next/headers';
 import { Permission } from '@/lib/constants';
+import { revalidatePath } from 'next/cache';
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -21,22 +23,26 @@ export async function GET(req: NextRequest) {
     const offset = Number(searchParams.get('offset') ?? 0);
     const limit = Number(searchParams.get('limit') ?? 24);
 
-    const posts = await Post.findAll({
-        order: [
-            ['createdAt', 'DESC']
+    const posts = await prisma.post.findMany({
+        orderBy: [
+            {
+                createdAt: 'desc',
+            },
+            {
+                id: 'asc'
+            }
         ],
         include: {
-            model: Tag,
-            through: {
-                attributes: []
-            }
+            tags: true
         },
-        offset: offset,
-        limit: limit
+        skip: offset,
+        take: limit
     });
 
+    const count = await prisma.post.count();
+
     return NextResponse.json({
-        count: await Post.count(),
+        count: count,
         data: posts
     });
 }
@@ -61,7 +67,7 @@ export async function POST(req: NextRequest) {
             status: 403
         });
     }
-    
+
     const fd = await req.formData();
 
     const img = fd.get('image') as File;
@@ -95,46 +101,67 @@ export async function POST(req: NextRequest) {
 
     const hash: string = await phash(buffer);
 
-    const similar = await Post.findAll({
-        attributes: ['id', 'imageHash', 'image', 'imageURL']
+    const similar = await prisma.post.findMany({
+        select: {
+            id: true,
+            imageHash: true,
+            image: true,
+            imageURL: true
+        }
     }).then(posts => posts.filter(post => phashDistance(post.imageHash, hash) < 4));
 
     if (similar.length && !force) {
-        return NextResponse.json(similar.map(post => post.toJSON()), {
+        return NextResponse.json(similar, {
             status: 409
         });
     }
 
-    const post = Post.build({
-        text: metadata.text,
-        aggr: metadata.aggr,
-        imageHash: await phash(buffer)
-    });
+    const id = crypto.randomUUID();
+    const filename = id + '.' + _.last(img.name.split('.'));
 
-    const filename = post.id + '.' + _.last(img.name.split('.'));
+    const tags = [];
 
-    fs.writeFileSync(path.join(process.env.MEDIA_ROOT, 'posts', filename), buffer);
+    for (const tagName of metadata.tags) {
+        const tag = await prisma.tag.findFirst({
+            where: {
+                name: tagName
+            }
+        });
 
-    post.image = filename;
-
-    await post.save();
-
-    await post.setUploader(user);
-
-    if (metadata.tags !== undefined) {
-        for (const _tag of metadata.tags) {
-            const [tag, _created] = await Tag.findOrCreate({
-                where: {
-                    name: _tag
-                },
-                defaults: {
-                    name: _tag
-                }
+        if (tag) {
+            tags.push({
+                id: tag.id
             });
-
-            await post.addTag(tag);
+        }
+        else {
+            tags.push(await prisma.tag.create({
+                data: {
+                    name: tagName
+                }
+            }));
         }
     }
 
-    return NextResponse.json(post.toJSON());
+    const post = await prisma.post.create({
+        data: {
+            id: id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            text: metadata.text,
+            aggr: metadata.aggr,
+            image: filename,
+            imageHash: await phash(buffer),
+            uploaderId: user.id,
+            tags: {
+                connect: tags
+            }
+        }
+    });
+
+    fs.writeFileSync(path.join(process.env.MEDIA_ROOT, 'posts', filename), buffer);
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/post');
+
+    return NextResponse.json(post);
 }

@@ -7,14 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:drop": "npx ts-node ./scripts/db-drop.ts",
     "db:import": "npx ts-node ./scripts/db-import.ts",
     "db:export": "npx ts-node ./scripts/db-export.ts",
-    "dev:start-image-host": "npx ts-node ./scripts/dev-start-img-host.ts",
-    "init": "npx ts-node ./scripts/init.ts",
-    "create-archive": "npx ts-node ./scripts/create-archive.ts",
-    "load-legacy-archive": "npx ts-node ./scripts/load-legacy-archive.ts",
-    "load-archive": "npx ts-node ./scripts/load-archive.ts"
+    "dev:start-image-host": "npx ts-node ./scripts/dev-start-img-host.ts"
   },
   "dependencies": {
     "@azure/msal-node": "^2.5.1",
@@ -26,6 +21,7 @@
     "@mui/material": "^5.14.17",
     "@mui/x-charts": "^7.0.0",
     "@next/mdx": "^14.0.2",
+    "@prisma/client": "^5.11.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cli-progress": "^3.11.5",
     "@types/color": "^3.0.6",
@@ -37,7 +33,6 @@
     "@uppy/drag-drop": "^3.0.3",
     "axios": "^1.6.0",
     "bcrypt": "^5.1.1",
-    "blockhash-core": "^0.1.0",
     "cli-progress": "^3.12.0",
     "csstype": "^3.1.2",
     "dotenv": "^16.3.1",
@@ -56,7 +51,6 @@
     "react-router-dom": "^6.18.0",
     "react-syntax-highlighter": "^15.5.0",
     "rehype-highlight": "^7.0.0",
-    "sequelize": "^6.34.0",
     "sharp": "^0.32.6",
     "sharp-phash": "^2.1.0",
     "sqlite3": "^5.1.6",
@@ -75,6 +69,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.0.1",
     "express": "^4.18.2",
+    "prisma": "^5.11.0",
     "typescript": "^5"
   }
 }

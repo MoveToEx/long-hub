@@ -1,10 +1,11 @@
 'use server';
 
-import { User } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import _ from 'lodash';
 import bcrypt from 'bcrypt';
 import * as C from '@/lib/constants';
+import crypto from 'crypto';
 
 export default async function signUp(_state: string, fd: FormData) {
     const username = fd.get('username') as string;
@@ -27,18 +28,22 @@ export default async function signUp(_state: string, fd: FormData) {
         return 'Password too short';
     }
     
-    if (await User.count({
+    if (await prisma.user.count({
         where: { name: username }
     })) {
         return 'Username already taken';
     }
 
     const hash = bcrypt.hashSync(password, C.saltRound);
-    
-    await User.create({
-        name: username,
-        passwordHash: hash,
-        permission: C.Permission.Post.edit | C.Permission.Post.new
+
+    await prisma.user.create({
+        data: {
+            name: username,
+            passwordHash: hash,
+            accessKey: crypto.randomBytes(32).toString('base64url'),
+            permission: C.Permission.Post.edit | C.Permission.Post.new,
+            createdAt: new Date()
+        }
     });
 
     redirect('/account/login');

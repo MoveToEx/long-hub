@@ -1,6 +1,6 @@
 'use server';
 
-import { Post, User } from "@/lib/db";
+import { prisma } from "@/lib/db";
 
 import { authByCookies } from "@/lib/server-util";
 import { cookies } from "next/headers";
@@ -14,7 +14,7 @@ export async function DeletePost(fd: FormData) {
 
     if (!op) return;
 
-    if ((op.permission & C.Permission.Post.delete) == 0) {
+    if ((op.permission & C.Permission.Admin.Post.delete) == 0) {
         return;
     }
 
@@ -22,11 +22,19 @@ export async function DeletePost(fd: FormData) {
 
     if (!id) return;
 
-    const post = await Post.findByPk(id);
+    const post = await prisma.post.findFirst({
+        where: {
+            id: id
+        }
+    });
 
     if (!post) return;
 
-    await post.destroy();
-
+    await prisma.post.delete({
+        where: {
+            id: id
+        }
+    });
+    
     revalidatePath('/admin/posts');
 }

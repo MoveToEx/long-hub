@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Post } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import sharp from 'sharp';
 
 // @ts-expect-error
@@ -8,7 +8,7 @@ import phash from 'sharp-phash';
 // @ts-expect-error
 import phashDistance from 'sharp-phash/distance';
 
-const SIMILAR_THRESHOLD = 4;
+const SIMILAR_THRESHOLD = 8;
 
 export async function POST(req: NextRequest) {
     const fd = await req.formData();
@@ -27,8 +27,13 @@ export async function POST(req: NextRequest) {
 
     const hash = await phash(buf);
 
-    const posts = await Post.findAll({
-        attributes: ['id', 'image', 'imageURL', 'imageHash']
+    const posts = await prisma.post.findMany({
+        select: {
+            id: true,
+            image: true,
+            imageURL: true,
+            imageHash: true
+        }
     });
     
     let result = [];

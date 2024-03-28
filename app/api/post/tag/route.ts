@@ -1,16 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Tag } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
-    const tags = await Tag.findAll();
+export async function GET() {
+    const tags = await prisma.tag.findMany({
+        select: {
+            id: true,
+            name: true,
+            _count: {
+                select: {
+                    posts: true
+                }
+            }
+        }
+    });
     let result = [];
 
     for (var tag of tags) {
+        
         result.push({
-            ...tag.toJSON(),
-            count: await tag.countPosts()
+            id: tag.id,
+            name: tag.name,
+            count: tag._count.posts
         });
     }
 

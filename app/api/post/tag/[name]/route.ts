@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Tag } from '@/lib/db';
-
-
+import { prisma } from '@/lib/db';
 
 export async function GET(req: NextRequest, {
     params
@@ -10,14 +8,34 @@ export async function GET(req: NextRequest, {
         name: string
     }
 }) {
-    const tag = await Tag.findOne({
-        where: {
-            name: params.name
-        }
-    });
     const { searchParams } = new URL(req.url);
     const offset = Number(searchParams.get('offset') ?? 0);
     const limit = Number(searchParams.get('limit') ?? 24);
+
+    const tag = await prisma.tag.findFirst({
+        where: {
+            name: params.name
+        },
+        include: {
+            posts: {
+                take: limit,
+                skip: offset
+            }
+        }
+    });
+
+    const count = await prisma.tag.findFirst({
+        where: {
+            name: params.name
+        },
+        select: {
+            _count: {
+                select: {
+                    posts: true
+                }
+            }
+        }
+    });
 
     if (tag === null) {
         return NextResponse.json('tag not found', {
@@ -25,13 +43,8 @@ export async function GET(req: NextRequest, {
         });
     }
 
-    const posts = await tag.getPosts({
-        offset: offset,
-        limit: limit
-    });
-
     return NextResponse.json({
-        "count": await tag.countPosts(),
-        "data": posts.map(x => x.toJSON())
+        "count": count?._count.posts,
+        "data": tag
     });
 }

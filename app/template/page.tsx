@@ -1,37 +1,73 @@
+'use client';
+
 import LinkImageGrid from '@/components/LinkImageGrid';
 import _ from 'lodash';
 import Box from '@mui/material/Box';
-import * as Constant from '@/lib/constants';
-import { Template } from '@/lib/db';
-import Pagination from '@/components/Pagination';
-import { Metadata } from 'next';
+import * as C from '@/lib/constants';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
+import { useState, useEffect, useDeferredValue } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useSnackbar } from 'notistack';
+import { useRouter } from 'next/navigation';
+import { createQueryString } from '@/lib/util';
 
-export const metadata: Metadata = {
-    title: 'Template'
-}
+interface Template {
+    imageURL: string;
+    name: string;
+    offsetX: number;
+    offsetY: number;
+    rectHeight: number;
+    rectWidth: number;
+    style: string | null;
+    createdAt: Date
+};
 
-export default async function Home({
-    searchParams
-}: {
-    searchParams?: {
-        page?: string
-    }
-}) {
-    const page = Number(searchParams?.page ?? "1");
+interface TemplateResponse {
+    count: number;
+    data: Template[]
+};
 
-    const templates = await Template.findAll({
-        order: [['createdAt', 'DESC']],
-        offset: (page - 1) * Constant.pageLimit,
-        limit: Constant.pageLimit
-    });
-    const count = await Template.count();
+export default function Home() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const { enqueueSnackbar } = useSnackbar();
+    const [loading, setLoading] = useState(true);
+    const [templates, setTemplates] = useState<TemplateResponse | null>(null);
+    const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
+    const deferredPage = useDeferredValue(C.pages(templates?.count ?? 0));
+
+    useEffect(() => {
+        setPage(Number(searchParams.get('page') ?? '1'));
+    }, [searchParams]);
+
+    useEffect(() => {
+        setLoading(true);
+
+        fetch('/api/template?limit=24&offset=' + (page - 1) * 24)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                setTemplates(data);
+            })
+            .catch(reason => {
+                enqueueSnackbar('Failed: ' + reason);
+            }).finally(() => {
+                setLoading(false);
+            });
+    }, [page, enqueueSnackbar]);
 
     return (
         <Box sx={{ m: 2 }}>
             <LinkImageGrid
-                src={templates.map(post => ({
-                    href: `/template/${post.name}`,
-                    src: post.imageURL!
+                skeleton={loading ? 24 : 0}
+                src={templates === null ? [] : templates.data.map(template => ({
+                    href: `/template/${template.name}`,
+                    src: template.imageURL
                 }))}
                 gridContainerProps={{
                     spacing: 2
@@ -42,7 +78,21 @@ export default async function Home({
                     md: 3
                 }} />
 
-            <Pagination total={Constant.pages(count)} />
+            <Stack alignItems="center" sx={{ m: 4 }}>
+                <Pagination
+                    disabled={loading}
+                    count={deferredPage}
+                    page={page}
+                    onChange={(_, val) => {
+                        router.push(createQueryString('/template', {
+                            page: val
+                        }), {
+                            scroll: false
+                        });
+                        setPage(val);
+                    }}
+                />
+            </Stack>
         </Box>
     );
 }

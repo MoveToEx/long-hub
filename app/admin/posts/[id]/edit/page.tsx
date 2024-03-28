@@ -11,7 +11,7 @@ import { notFound } from "next/navigation";
 import Rating from '@mui/material/Rating';
 import Grid from '@mui/material/Unstable_Grid2';
 
-import { Post } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import _ from 'lodash';
 import { EditPost } from './actions';
 import Link from 'next/link';
@@ -24,7 +24,11 @@ export default async function EditUserPage({
         id: string
     }
 }) {
-    const post = await Post.findByPk(params.id);
+    const post = await prisma.post.findFirst({
+        where: {
+            id: params.id
+        }
+    });
 
     if (!post) {
         return notFound();
@@ -38,7 +42,7 @@ export default async function EditUserPage({
             <Grid container>
                 <Grid xs={12} md={4}>
                     <Image
-                        src={post.imageURL!}
+                        src={post.imageURL}
                         alt={post.id}
                         width={300}
                         height={300}

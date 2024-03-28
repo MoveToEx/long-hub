@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Template } from '@/lib/db';
-import sharp from 'sharp';
-import Color from 'color';
+import { prisma } from '@/lib/db';
 import _ from 'lodash';
 import fs from 'fs';
-import path from 'node:path';
+
+import { auth } from "@/lib/server-util";
+import * as C from '@/lib/constants';
+import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest, {
     params
@@ -12,8 +13,12 @@ export async function GET(req: NextRequest, {
     params: {
         name: string
     }
-    }) {
-    const template = await Template.findByPk(params.name);
+}) {
+    const template = await prisma.template.findFirst({
+        where: {
+            name: params.name
+        }
+    });
 
     if (!template) {
         return NextResponse.json(params.name + ' not found', {
@@ -21,7 +26,7 @@ export async function GET(req: NextRequest, {
         });
     }
 
-    return NextResponse.json(template.toJSON());
+    return NextResponse.json(template);
 }
 
 export async function POST(req: NextRequest, {
@@ -36,9 +41,27 @@ export async function POST(req: NextRequest, {
             status: 500
         });
     }
-    if (await Template.findByPk(params.name)) {
+    if (await prisma.template.count({
+        where: {
+            name: params.name
+        }
+    })) {
         return NextResponse.json(params.name + ' already exists', {
             status: 409
+        });
+    }
+
+    const user = await auth(req, cookies());
+
+    if (user == null) {
+        return NextResponse.json('unauthorized', {
+            status: 401
+        });
+    }
+
+    if ((user.permission & C.Permission.Template.new) == 0) {
+        return NextResponse.json('forbidden', {
+            status: 403
         });
     }
 
@@ -57,16 +80,18 @@ export async function POST(req: NextRequest, {
     }
 
     const filename = params.name + '.' + _.last(img.name.split('.'));
-    var template = Template.build({
-        name: params.name,
-        image: filename
+    const template = await prisma.template.create({
+        data: {
+            name: params.name,
+            image: filename,
+            createdAt: new Date(),
+            uploaderId: user.id
+        },
     });
 
     var buffer = Buffer.from(await img.arrayBuffer());
 
     fs.writeFileSync(template.imagePath, buffer);
-
-    template.save();
 
     return NextResponse.json({
         name: template.name
@@ -82,7 +107,11 @@ export async function PUT(req: NextRequest, {
         name: string
     }
 }) {
-    const template = await Template.findByPk(params.name);
+    const template = await prisma.template.findFirst({
+        where: {
+            name: params.name
+        }
+    });
     const data = await req.json();
 
     if (!template) {
@@ -97,14 +126,38 @@ export async function PUT(req: NextRequest, {
         });
     }
 
-    template.rectHeight = data.height;
-    template.rectWidth = data.width;
-    template.offsetX = data.x;
-    template.offsetY = data.y;
+    const user = await auth(req, cookies());
 
-    await template.save();
+    if (user == null) {
+        return NextResponse.json('unauthorized', {
+            status: 401
+        });
+    }
 
-    return NextResponse.json(template.toJSON(), {
+    if ((user.permission & C.Permission.Template.edit) == 0) {
+        return NextResponse.json('forbidden', {
+            status: 403
+        });
+    }
+
+    const tmp: Record<string, any> = {};
+
+    tmp.rectHeight = data.height;
+    tmp.rectWidth = data.width;
+    tmp.offsetX = data.x;
+    tmp.offsetY = data.y;
+
+    await prisma.template.update({
+        where: {
+            name: params.name
+        },
+        data: tmp
+    });
+
+    return NextResponse.json({
+        ...template,
+        ...tmp
+    }, {
         status: 200
     });
 }

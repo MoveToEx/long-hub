@@ -7,7 +7,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import _ from 'lodash';
 import TagRow from '@/components/TagRow';
 import CopiableImage from '@/components/CopiableImage';
-import { Post, Tag, User } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import Link from 'next/link';
 import { ResolvingMetadata, Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -27,17 +27,15 @@ export default async function PostPage({
     params: {
         id: string
     }
-}) {
-    const post = await Post.findByPk(params.id, {
-        include: [
-            {
-                model: Tag
-            },
-            {
-                model: User,
-                as: 'uploader'
-            }
-        ]
+    }) {
+    const post = await prisma.post.findFirst({
+        where: {
+            id: params.id
+        },
+        include: {
+            tags: true,
+            uploader: true
+        }
     });
 
     if (post === null) {
@@ -59,10 +57,10 @@ export default async function PostPage({
                             {post.text ? post.text : <i>No text</i>}
                         </div>
                         <div>
-                            Uploaded at {post.createdAt.toISOString()} {post.uploader ? ('by ' + post.uploader.name) : ''}
+                            Uploaded at {post.createdAt.toISOString()} {post.uploader ? ('by ' + post.uploader.name) : <i style={{ fontSize: '16px', color: 'darkgray'}}>(Disowned)</i>}
                         </div>
                         <div>
-                            <TagRow tags={post.tags.map(e => e.name) ?? []} />
+                            <TagRow tags={post.tags.map(e => e.name!) ?? []} />
                         </div>
                         <div>
                             <Typography component="legend">Aggressiveness</Typography>

@@ -11,21 +11,6 @@ const nextConfig = {
             allowedOrigins: ['longhub.top', 'www.longhub.top', 'localhost', 'nextjs'],
         },
     },
-    webpack: (
-        config,
-        { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }
-    ) => {
-        config.externals = [
-            ...(config.externals ?? []),
-            'sequelize'
-        ];
-        if (!isServer) {
-            config.resolve.fallback = {
-                child_process: false
-            };
-        }
-        return config;
-    },
     pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
     images: {
         remotePatterns: [

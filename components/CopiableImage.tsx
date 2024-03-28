@@ -38,7 +38,10 @@ export default function CopiableImage({
                 
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
-                if (context === null) throw new Error('unable to get canvas context');
+                if (context === null) {
+                    enqueueSnackbar('Unable to get canvas context', { variant: 'error'} );
+                    return;
+                }
                 
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
@@ -55,8 +58,8 @@ export default function CopiableImage({
                     }, 'image/png');
                 });
 
-                if (blob === null) {
-                    enqueueSnackbar('Failed: Cannot convert image to blob', { variant: 'error' });
+                if (!blob) {
+                    enqueueSnackbar('Cannot convert image to blob', { variant: 'error' });
                     return;
                 }
 

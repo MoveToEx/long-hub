@@ -77,7 +77,6 @@ export default function TemplatePage({
             .then(res => {
                 const blob = res.data as Blob;
                 setResult(URL.createObjectURL(blob));
-                console.log(blob.type);
                 write({
                     'image/png': blob
                 });

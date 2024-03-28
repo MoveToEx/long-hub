@@ -16,7 +16,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import { Pagination } from '../components';
 
-import { Post, Tag } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import Link from 'next/link';
 import React from 'react';
 import _ from 'lodash';
@@ -34,20 +34,16 @@ export default async function UserPage({
 }) {
     const page = Number(searchParams?.page ?? '1');
     const offset = pageLimit * (page - 1);
-    const posts = await Post.findAll({
-        include: [
+    const posts = await prisma.post.findMany({
+        orderBy: [
             {
-                model: Tag,
-                through: {
-                    attributes: []
-                }
+                createdAt: 'desc'
             }
         ],
-        offset: offset,
-        limit: pageLimit,
-        order: [['createdAt', 'DESC'], ['id', 'ASC']]
+        skip: offset,
+        take: pageLimit
     });
-    const total = await Post.count();
+    const total = await prisma.post.count();
 
     return (
         <Box>
@@ -65,7 +61,6 @@ export default async function UserPage({
                                 <TableCell align="center">#</TableCell>
                                 <TableCell align="center">Image</TableCell>
                                 <TableCell align="center">Text</TableCell>
-                                <TableCell align="center">Tags</TableCell>
                                 <TableCell align="center">Aggr</TableCell>
                                 <TableCell align="center">Actions</TableCell>
                             </TableRow>
@@ -87,7 +82,6 @@ export default async function UserPage({
                                             />
                                         </TableCell>
                                         <TableCell align="center">{post.text}</TableCell>
-                                        <TableCell align="center">{post.tags.map(tag => tag.name).join(',')}</TableCell>
                                         <TableCell align="center">{post.aggr}</TableCell>
                                         <TableCell align="center">
                                             <Tooltip title="Edit">

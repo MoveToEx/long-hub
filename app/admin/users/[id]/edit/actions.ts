@@ -1,4 +1,6 @@
-import { User } from "@/lib/db";
+'use server';
+
+import { prisma } from "@/lib/db";
 import bcrypt from 'bcrypt';
 import { cookies } from "next/headers";
 
@@ -9,7 +11,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 export async function EditUser(fd: FormData) {
-    'use server';
     const op = await authByCookies(cookies());
 
     if (!op) {
@@ -20,23 +21,28 @@ export async function EditUser(fd: FormData) {
     
     if (!id) return;
 
-    const user = await User.findByPk(Number(id));
+    const user = await prisma.user.findFirst({
+        where: {
+            id: Number(id)
+        }
+    });
 
     if (!user) return;
 
+    const data: Record<string, any> = {};
+
     const username = fd.get('username');
+    const password = fd.get('password');
 
     if (username && user.name != username) {
-        user.name = username.toString();
+        data.name = username.toString();
     }
-
-    const pswd = fd.get('password');
-
-    if (pswd) {
+    
+    if (password) {
         if ((op.permission & Permission.Admin.User.edit) == 0) return;
 
-        const hash = bcrypt.hashSync(pswd.toString(), saltRound);
-        user.passwordHash = hash;
+        const hash = bcrypt.hashSync(password.toString(), saltRound);
+        data.passwordHash = hash;
     }
 
     const permission = fd.get('permission');
@@ -44,10 +50,15 @@ export async function EditUser(fd: FormData) {
     if (permission) {
         if ((op.permission & Permission.Admin.User.assign) == 0) return;
 
-        user.permission = Number(permission.toString());
+        data.permission = Number(permission.toString());
     }
 
-    await user.save();
+    await prisma.user.update({
+        where: {
+            id: Number(id)
+        },
+        data: data
+    });
 
     revalidatePath('/admin/users/');
     revalidatePath('/admin/users/' + id.toString());

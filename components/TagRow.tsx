@@ -6,7 +6,7 @@ import TagIcon from '@mui/icons-material/Tag';
 function TagRow({
     tags
 }: {
-    tags: string[]
+    tags: (string | null)[]
 }) {
     return (
         <Stack spacing={1} direction="row" display="inline">

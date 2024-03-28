@@ -1,5 +1,5 @@
 
-import { Post, User } from "@/lib/db";
+import { prisma } from "@/lib/db";
 import { authByCookies } from "@/lib/server-util";
 
 import { cookies } from "next/headers";
@@ -7,7 +7,6 @@ import { notFound } from "next/navigation";
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
-import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -55,17 +54,15 @@ export default async function AdminPage() {
     begin.setSeconds(0);
     begin.setMilliseconds(0);
 
-    const posts = await Post.findAll({
-        attributes: ['createdAt', 'uploaderId'],
-        include: {
-            model: User,
-            as: 'uploader'
-        },
+    const posts = await prisma.post.findMany({
         where: {
             createdAt: {
-                [Op.gt]: begin
+                gt: begin
             }
         },
+        include: {
+            uploader: true
+        }
     });
 
     const data: number[] = _.range(MAX_DATE_DIF + 1).map(x => 0);
@@ -80,17 +77,31 @@ export default async function AdminPage() {
         contribution[post.uploader.name] = (contribution[post.uploader.name] ?? 0) + 1;
     });
 
-    const postCount = await Post.count();
-    const userCount = await User.count();
+    const postCount = await prisma.post.count();
+    const userCount = await prisma.user.count();
 
-    const latestPost = await Post.findAll({
-        limit: 3,
-        order: [['createdAt', 'DESC'], ['id', 'ASC']],
+    const latestPost = await prisma.post.findMany({
+        take: 3,
+        orderBy: [
+            {
+                createdAt: 'desc',
+            },
+            {
+                id: 'asc'
+            }
+        ]
     });
 
-    const latestUser = await User.findAll({
-        limit: 3,
-        order: [['createdAt', 'DESC'], ['id', 'ASC']]
+    const latestUser = await prisma.user.findMany({
+        take: 3,
+        orderBy: [
+            {
+                createdAt: 'desc',
+            },
+            {
+                id: 'asc'
+            }
+        ]
     });
 
     return (

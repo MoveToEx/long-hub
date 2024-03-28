@@ -1,6 +1,6 @@
 import Stack from '@mui/material/Stack';
 import React from 'react';
-import { Post, Tag } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import Pagination from '@/components/Pagination';
 import _ from 'lodash';
 import Grid from '@mui/material/Unstable_Grid2';
@@ -25,16 +25,22 @@ export default async function PostList({
 }) {
     const page = Number(searchParams?.page ?? 1);
 
-    const posts = await Post.findAll({
-        order: [['createdAt', 'DESC']],
-        limit: pageLimit,
-        offset: (page - 1) * pageLimit,
+    const posts = await prisma.post.findMany({
+        orderBy: [
+            {
+                createdAt: 'desc',
+            },
+            {
+                id: 'asc'
+            }
+        ],
+        skip: (page - 1) * pageLimit,
+        take: pageLimit,
         include: {
-            model: Tag,
-            attributes: ['name']
+            tags: true
         }
     });
-    const count = await Post.count();
+    const count = await prisma.post.count();
 
     return (
         <>

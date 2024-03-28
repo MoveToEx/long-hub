@@ -49,13 +49,13 @@ export default function UploadPage() {
             .post('/api/template/' + meta.name, fd)
             .then(res => axios.put('/api/template/' + meta.name, meta))
             .then(() => {
-                // setMeta({
-                //     name: '',
-                //     rectTop: 0,
-                //     rectBottom: 0,
-                //     rectLeft: 0,
-                //     rectRight: 0,
-                // });
+                setMeta({
+                    name: '',
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 0,
+                });
                 setFiles(_.slice(files, 1));
                 enqueueSnackbar('Uploaded successfully', { variant: 'success' });
             })
