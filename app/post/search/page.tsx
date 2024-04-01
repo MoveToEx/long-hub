@@ -76,7 +76,8 @@ export default function SearchPage() {
 
     useEffect(() => {
         setPage(Number(searchParams.get('page') ?? '1'));
-        setQuery(searchParams.get('s')?.split(' ') ?? []);
+        const _s = searchParams.get('s');
+        setQuery(_s ? _s.split(' ') : []);
     }, [searchParams]);
     
     useEffect(() => {
