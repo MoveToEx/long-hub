@@ -99,8 +99,6 @@ export async function MigratePosts(_state: any, fd: FormData) {
 
     revalidatePath('/admin');
     revalidatePath('/admin/tags');
-
-    return redirect('/admin/tags');
 }
 
 export async function EditTag(updatedRow: any, originalRow: any) {
