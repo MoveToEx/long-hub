@@ -8,7 +8,8 @@ import { notFound } from "next/navigation";
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Button, { ButtonProps } from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -37,6 +38,16 @@ import Image from "next/image";
 const MAX_DATE_DIF = 28;
 
 type Contribution = Record<string, number>;
+
+function FlexEndButton(props: ButtonProps) {
+    return (
+        <Grid container sx={{ justifyContent: 'flex-end' }}>
+            <Grid>
+                <Button {...props} />
+            </Grid>
+        </Grid>
+    )
+}
 
 
 export default async function AdminPage() {
@@ -78,12 +89,34 @@ export default async function AdminPage() {
 
     const postCount = await prisma.post.count();
     const userCount = await prisma.user.count();
+    const tagCount = await prisma.tag.count();
 
     const latestPost = await prisma.post.findMany({
-        take: 3,
+        take: 6,
         orderBy: [
             {
                 createdAt: 'desc',
+            },
+            {
+                id: 'asc'
+            }
+        ]
+    });
+
+    const largestTag = await prisma.tag.findMany({
+        take: 3,
+        include: {
+            _count: {
+                select: {
+                    posts: true
+                }
+            }
+        },
+        orderBy: [
+            {
+                posts: {
+                    _count: 'desc'
+                }
             },
             {
                 id: 'asc'
@@ -107,7 +140,7 @@ export default async function AdminPage() {
         <Box sx={{
             m: 2
         }}>
-            <Box sx={{
+            <Paper sx={{
                 m: {
                     md: 2,
                     xs: 0,
@@ -123,11 +156,11 @@ export default async function AdminPage() {
                 </Typography>
                 <NewPostChart count={data} />
                 <PostContributionChart data={Object.values(contribution)} labels={Object.keys(contribution)} />
-            </Box>
+            </Paper>
 
             <Grid container>
                 <Grid xs={12} md={6}>
-                    <Box sx={{
+                    <Paper sx={{
                         m: {
                             md: 2
                         },
@@ -142,7 +175,7 @@ export default async function AdminPage() {
                             {postCount} posts in total.
                         </Typography>
                         <Typography>
-                            Latest 3 posts:
+                            Latest 6 posts:
                         </Typography>
 
                         <TableContainer sx={{ mb: 2 }}>
@@ -192,21 +225,17 @@ export default async function AdminPage() {
                             </Table>
                         </TableContainer>
 
-                        <Grid container sx={{ justifyContent: 'flex-end' }}>
-                            <Grid>
-                                <Button
-                                    variant='contained'
-                                    startIcon={<SettingsIcon />}
-                                    LinkComponent={Link}
-                                    href="/admin/posts" >
-                                    MANAGE
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Box>
+                        <FlexEndButton
+                            variant='contained'
+                            startIcon={<SettingsIcon />}
+                            LinkComponent={Link}
+                            href="/admin/posts" >
+                            MANAGE
+                        </FlexEndButton>
+                    </Paper>
                 </Grid>
                 <Grid xs={12} md={6}>
-                    <Box sx={{
+                    <Paper sx={{
                         m: {
                             md: 2
                         },
@@ -217,10 +246,10 @@ export default async function AdminPage() {
                         <Typography variant='h5'>
                             Users
                         </Typography>
-                        <Typography >
+                        <Typography>
                             {userCount} users in total.
                         </Typography>
-                        <Typography >
+                        <Typography>
                             Latest 3 users:
                         </Typography>
 
@@ -271,18 +300,64 @@ export default async function AdminPage() {
                             </Table>
                         </TableContainer>
 
-                        <Grid container sx={{ justifyContent: 'flex-end' }}>
-                            <Grid>
-                                <Button
-                                    variant='contained'
-                                    startIcon={<SettingsIcon />}
-                                    LinkComponent={Link}
-                                    href="/admin/users" >
-                                    MANAGE
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    </Box>
+                        <FlexEndButton
+                            variant='contained'
+                            startIcon={<SettingsIcon />}
+                            LinkComponent={Link}
+                            href="/admin/users" >
+                            MANAGE
+                        </FlexEndButton>
+
+                    </Paper>
+
+                    <Paper sx={{
+                        m: {
+                            md: 2
+                        },
+                        p: {
+                            md: 2
+                        }
+                    }}>
+                        <Typography variant='h5'>
+                            Tags
+                        </Typography>
+                        <Typography>
+                            {tagCount} tags in total.
+                        </Typography>
+                        <Typography>
+                            3 tags with the most posts:
+                        </Typography>
+                        <TableContainer sx={{ mb: 2 }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell align="center">#</TableCell>
+                                        <TableCell align="center">Name</TableCell>
+                                        <TableCell align="center">Posts</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {
+                                        largestTag.map(tag => (
+                                            <TableRow key={tag.id}>
+                                                <TableCell align="center">{tag.id}</TableCell>
+                                                <TableCell align="center">{tag.name}</TableCell>
+                                                <TableCell align="center">{tag._count.posts}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    }
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+
+                        <FlexEndButton
+                            variant='contained'
+                            startIcon={<SettingsIcon />}
+                            LinkComponent={Link}
+                            href="/admin/tags" >
+                            MANAGE
+                        </FlexEndButton>
+                    </Paper>
                 </Grid>
             </Grid>
         </Box>
