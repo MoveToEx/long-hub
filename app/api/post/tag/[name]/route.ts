@@ -45,6 +45,6 @@ export async function GET(req: NextRequest, {
 
     return NextResponse.json({
         "count": count?._count.posts,
-        "data": tag
+        "data": tag.posts
     });
 }

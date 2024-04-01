@@ -1,76 +1,70 @@
-import Typography from '@mui/material/Typography';
-import TagIcon from '@mui/icons-material/Tag';
-import _ from 'lodash';
-import LinkImageGrid from '@/components/LinkImageGrid';
-import { prisma } from '@/lib/db';
-import * as Constant from '@/lib/constants';
-import Pagination from '@/components/Pagination';
-import { notFound } from 'next/navigation';
-import { Metadata } from 'next';
-import * as C from '@/lib/constants';
+'use client';
 
-export async function generateMetadata({
+import LinkImageGrid from '@/components/LinkImageGrid';
+import _ from 'lodash';
+import Box from '@mui/material/Box';
+import * as C from '@/lib/constants';
+import Pagination from '@mui/material/Pagination';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import { useState, useEffect, useDeferredValue } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useSnackbar } from 'notistack';
+import { PostResponse } from '@/lib/types';
+import { useRouter } from 'next/navigation';
+import { createQueryString } from '@/lib/util';
+
+export default function TagPage({
     params
 }: {
     params: {
         tag: string
     }
-}): Promise<Metadata> {
-    return {
-        title: '#' + params.tag
-    };
-}
-
-export default async function SearchPage({
-    params,
-    searchParams
-}: {
-    params: {
-        tag: string
-    },
-    searchParams?: {
-        page?: string
-    }
 }) {
-    const page = Number(searchParams?.page ?? 1);
-    const tag = await prisma.tag.findFirst({
-        where: {
-            name: params.tag
-        },
-        select: {
-            _count: {
-                select: {
-                    posts: true
-                }
-            }
-        }
-    });
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const { enqueueSnackbar } = useSnackbar();
+    const [loading, setLoading] = useState(true);
+    const [post, setPost] = useState<PostResponse | null>(null);
+    const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
+    const deferredPage = useDeferredValue(C.pages(post?.count ?? 0));
 
-    if (!tag) return notFound();
+    useEffect(() => {
+        setPage(Number(searchParams.get('page') ?? '1'));
+    }, [searchParams]);
 
-    const posts = await prisma.post.findMany({
-        where: {
-            tags: {
-                some: {
-                    name: params.tag
+    useEffect(() => {
+        setLoading(true);
+
+        fetch('/api/post/tag/' + params.tag + '?limit=24&offset=' + (page - 1) * 24)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(response.statusText);
                 }
-            }
-        },
-        take: C.pageLimit,
-        skip: C.pageLimit * (page - 1)
-    });
+                return response.json();
+            })
+            .then(data => {
+                setPost(data);
+            })
+            .catch(reason => {
+                enqueueSnackbar('Failed: ' + reason);
+            }).finally(() => {
+                setLoading(false);
+            });
+    }, [page, params.tag, enqueueSnackbar]);
 
     return (
-        <>
-            <Typography variant="h3">
-                <TagIcon fontSize="large" />
-                {params.tag}
-            </Typography>
-
+        <Box sx={{ m: 2 }}>
+            <Box sx={{ m: 2 }}>
+                <Typography variant="h3">
+                    #{params.tag}
+                </Typography>
+            </Box>
             <LinkImageGrid
-                src={posts.map(x => ({
-                    href: `/post/${x.id}`,
-                    src: x.imageURL!
+                skeleton={loading ? 24 : 0}
+                src={post === null ? [] : post.data.map(post => ({
+                    href: `/post/${post.id}`,
+                    src: post.imageURL
                 }))}
                 gridContainerProps={{
                     spacing: 2
@@ -81,7 +75,19 @@ export default async function SearchPage({
                     md: 3
                 }} />
 
-            <Pagination total={Constant.pages(tag._count.posts)} />
-        </>
-    )
+            <Stack alignItems="center" sx={{ m: 4 }}>
+                <Pagination
+                    disabled={loading}
+                    count={deferredPage}
+                    page={page}
+                    onChange={(_, val) => {
+                        router.push(createQueryString('/tag/' + params.tag, {
+                            page: val
+                        }));
+                        setPage(val);
+                    }}
+                />
+            </Stack>
+        </Box>
+    );
 }
