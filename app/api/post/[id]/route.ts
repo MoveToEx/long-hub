@@ -116,7 +116,7 @@ export async function PUT(req: NextRequest, {
         }
 
         data.tags = {
-            connect: tags
+            set: tags
         };
     }
     
