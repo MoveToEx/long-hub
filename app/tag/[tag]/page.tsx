@@ -7,6 +7,7 @@ import * as Constant from '@/lib/constants';
 import Pagination from '@/components/Pagination';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import * as C from '@/lib/constants';
 
 export async function generateMetadata({
     params
@@ -54,7 +55,9 @@ export default async function SearchPage({
                     name: params.tag
                 }
             }
-        }
+        },
+        take: C.pageLimit,
+        skip: C.pageLimit * (page - 1)
     });
 
     return (
