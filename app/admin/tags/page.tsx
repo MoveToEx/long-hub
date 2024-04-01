@@ -2,11 +2,6 @@ import { prisma } from "@/lib/db";
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Unstable_Grid2';
 import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Link from "next/link";
 
@@ -14,6 +9,8 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 import { MigratePostsInput } from './components';
 import { EditTag } from "./actions";
+
+export const dynamic = 'force-dynamic'
 
 const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 100 },
