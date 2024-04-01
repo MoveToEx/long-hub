@@ -98,11 +98,18 @@ export async function MigratePosts(_state: any, fd: FormData) {
     }
 
     revalidatePath('/admin');
+    revalidatePath('/admin/tags');
 
     return redirect('/admin/tags');
 }
 
 export async function EditTag(updatedRow: any, originalRow: any) {
+    const user = await authByCookies(cookies());
+
+    if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
+        return Promise.resolve(originalRow);
+    }
+
     if (await prisma.tag.count({
         where: {
             name: updatedRow.name as string
@@ -111,7 +118,7 @@ export async function EditTag(updatedRow: any, originalRow: any) {
         return Promise.resolve(originalRow);
     }
 
-    return prisma.tag.update({
+    await prisma.tag.update({
         where: {
             id: originalRow.id as number
         },
@@ -119,4 +126,9 @@ export async function EditTag(updatedRow: any, originalRow: any) {
             name: updatedRow.name as string
         }
     });
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/tags');
+
+    return Promise.resolve(updatedRow);
 }
