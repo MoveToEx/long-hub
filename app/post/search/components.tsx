@@ -2,14 +2,8 @@
 import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import Autocomplete from '@mui/material/Autocomplete';
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { createQueryString } from '@/lib/util';
-import { Base64 } from 'js-base64';
 import _ from 'lodash';
 import TagIcon from '@mui/icons-material/Tag';
-import LabelIcon from '@mui/icons-material/Label';
-import PercentIcon from '@mui/icons-material/Percent';
-import { SyntheticEvent } from 'react';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import { useEffect, useState } from 'react';
 

@@ -84,7 +84,6 @@ export default function TagPage({
                         router.push(createQueryString('/tag/' + params.tag, {
                             page: val
                         }));
-                        setPage(val);
                     }}
                 />
             </Stack>

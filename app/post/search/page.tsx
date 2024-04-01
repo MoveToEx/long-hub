@@ -5,7 +5,6 @@ import Typography from '@mui/material/Typography';
 import LinkImageGrid from '@/components/LinkImageGrid';
 import Pagination from '@mui/material/Pagination';
 import _ from 'lodash';
-import { Base64 } from 'js-base64';
 import Skeleton from '@mui/material/Skeleton';
 import { SearchInput } from './components';
 import Box from '@mui/material/Box';
@@ -68,14 +67,18 @@ export default function SearchPage() {
     const [loading, setLoading] = useState(searchParams.has('s'));
     const [result, setResult] = useState<PostResponse | null>(null);
 
-    const _s = searchParams?.get('s');
-    const [query, setQuery] = useState<string[]>(_s ? _s.split(' ') : []);
-    const [page, setPage] = useState<number>(Number(searchParams?.get('page') ?? '1'));
+    const [query, setQuery] = useState<string[]>([]);
+    const [page, setPage] = useState(1);
     
     const totalPages = useDeferredValue(C.pages(result?.count ?? 0));
 
     const { enqueueSnackbar } = useSnackbar();
 
+    useEffect(() => {
+        setPage(Number(searchParams.get('page') ?? '1'));
+        setQuery(searchParams.get('s')?.split(' ') ?? []);
+    }, [searchParams]);
+    
     useEffect(() => {
         if (_.isEmpty(query)) {
             setResult(null);
@@ -97,7 +100,7 @@ export default function SearchPage() {
         }).then(data => {
             setResult(data);
         }).catch(reason => {
-            enqueueSnackbar('Failed when fetching data: ' + reason, { variant: 'error' });
+            enqueueSnackbar('Failed: ' + reason, { variant: 'error' });
         }).finally(() => {
             setLoading(false);
         });
@@ -143,11 +146,10 @@ export default function SearchPage() {
                     count={totalPages}
                     page={page}
                     onChange={(_, val) => {
-                        router.replace(createQueryString('/post/search', {
+                        router.push(createQueryString('/post/search', {
                             s: query.join(' '),
                             page: val
-                        }), { scroll: false });
-                        setPage(val);
+                        }));
                     }}
                 />
             </Stack>

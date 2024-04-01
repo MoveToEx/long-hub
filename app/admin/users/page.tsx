@@ -16,7 +16,7 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 
-import { TruncatedCopiableText } from "./components";
+import CopiableText from "@/components/CopiableText";
 import { Pagination } from '../components';
 
 import { prisma } from "@/lib/db";
@@ -69,9 +69,9 @@ export default async function UserPage({
                                         <TableCell align="center">{user.id}</TableCell>
                                         <TableCell align="center">{user.name}</TableCell>
                                         <TableCell align="center">
-                                            <TruncatedCopiableText text={user.passwordHash} maxLength={16} />
+                                            <CopiableText text={user.passwordHash} maxLength={16} />
                                         </TableCell>
-                                        <TableCell align="center"><TruncatedCopiableText text={user.accessKey} maxLength={16} /></TableCell>
+                                        <TableCell align="center"><CopiableText text={user.accessKey} maxLength={16} /></TableCell>
                                         <TableCell align="center">{user.permission.toString(16)}</TableCell>
                                         <TableCell align="center">
                                             <Tooltip title="Edit user">

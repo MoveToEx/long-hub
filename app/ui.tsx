@@ -168,7 +168,7 @@ function RootTemplate({
                     Post
                 </Typography>
             </li>
-            <DrawerItem title="List" href="/post/list" icon={<FormatListBulletedIcon />} />
+            <DrawerItem title="List" href="/post" icon={<FormatListBulletedIcon />} />
             <DrawerItem title="Upload" href="/post/upload" icon={<FileUploadIcon />} />
             <DrawerItem title="Search" href="/post/search" icon={<Search />} />
             <DrawerItem title="Find similar" href="/post/similar" icon={<ImageIcon />} />

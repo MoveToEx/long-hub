@@ -40,7 +40,7 @@ export default function Home() {
 				setPost(data);
 			})
 			.catch(reason => {
-				enqueueSnackbar('Failed: ' + reason);
+				enqueueSnackbar('Failed: ' + reason, { variant: 'error' });
 			}).finally(() => {
 				setLoading(false);
 			});
@@ -71,10 +71,7 @@ export default function Home() {
 					onChange={(_, val) => {
 						router.push(createQueryString('/', {
 							page: val
-						}), {
-							scroll: false
-						});
-						setPage(val);
+						}));
 					}}
 				/>
 			</Stack>

@@ -4,9 +4,9 @@ import Typography from "@mui/material/Typography";
 
 import { useSnackbar } from "notistack";
 
-import styles from './page.module.css';
+import styles from './components.module.css';
 
-export function TruncatedCopiableText({ text, maxLength }: { text: string, maxLength: number }) {
+export default function CopiableText({ text, maxLength }: { text: string, maxLength?: number | undefined }) {
     const { enqueueSnackbar } = useSnackbar();
 
     const copy = () => {
@@ -17,7 +17,7 @@ export function TruncatedCopiableText({ text, maxLength }: { text: string, maxLe
     }
     return (
         <Typography onClick={copy} className={styles.copiable} component="pre">
-            {text.length > maxLength ? text.slice(0, maxLength) + '...' : text}
+            {maxLength && text.length > maxLength ? text.slice(0, maxLength) + '...' : text}
         </Typography>
     )
 }
