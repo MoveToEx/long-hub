@@ -9,6 +9,7 @@ import ListItem from '@mui/material/ListItem';
 import Typography from "@mui/material/Typography";
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
+import NextLink from 'next/link';
 import '../../public/styles/vs.min.css';
 
 function ContentLink({
@@ -24,7 +25,7 @@ function ContentLink({
         <ListItem sx={{ p: 0, pt: 0.5, pb: 0.5 }}>
             {href === undefined ?
                 <Typography color="text.secondary" fontFamily={useConsolas ? "Consolas" : ""}>{title}</Typography> :
-                <Link href={href} underline="hover" color="text.secondary" fontFamily={useConsolas ? "Consolas" : ""}>{title}</Link>
+                <Link component={NextLink} href={href} underline="hover" color="text.secondary" fontFamily={useConsolas ? "Consolas" : ""}>{title}</Link>
             }
         </ListItem>
     )
