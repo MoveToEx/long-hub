@@ -15,7 +15,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Image from 'next/image';
 import _ from 'lodash';
 import Link from '@mui/material/Link';
-import axios from 'axios';
 import DropArea from '@/components/DropArea';
 import { Rnd } from 'react-rnd';
 

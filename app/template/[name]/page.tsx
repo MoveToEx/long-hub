@@ -11,7 +11,6 @@ import DialogContent from '@mui/material/DialogContent';
 import Fab from '@mui/material/Fab';
 import { useState, useEffect, useRef } from 'react';
 import TextField from '@mui/material/TextField';
-import axios from 'axios';
 import SendIcon from '@mui/icons-material/Send';
 import TemplateResponse from '@/lib/types/TemplateResponse';
 import FormGroup from '@mui/material/FormGroup';
@@ -55,17 +54,27 @@ export default function TemplatePage({
     }
 
     useEffect(() => {
-        axios.get('/api/template/' + params.name).then(x => {
-            setTemplate(x.data);
+        fetch('/api/template/' + params.name)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                setTemplate(data);
 
-            setRect({
-                x: x.data.offsetX,
-                y: x.data.offsetY,
-                height: x.data.rectHeight,
-                width: x.data.rectWidth
+                setRect({
+                    x: data.offsetX,
+                    y: data.offsetY,
+                    height: data.rectHeight,
+                    width: data.rectWidth
+                });
+            })
+            .catch(reason => {
+                enqueueSnackbar(reason, { variant: 'error' });
             });
-        });
-    }, [params.name]);
+    }, [params.name, enqueueSnackbar]);
 
     function submit() {
         const data = {
@@ -73,15 +82,23 @@ export default function TemplatePage({
             rect: (overrideRect ? rect : {})
         };
 
-        axios.post('/api/template/' + params.name + '/generate', data, { responseType: 'blob' })
-            .then(res => {
-                const blob = res.data as Blob;
-                setResult(URL.createObjectURL(blob));
-                write({
-                    'image/png': blob
-                });
-                setDialogOpen(true);
+        fetch('/api/template/' + params.name + '/generate', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+            return response.blob();
+        }).then(blob => {
+            setResult(URL.createObjectURL(blob));
+            write({
+                'image/png': blob
             });
+            setDialogOpen(true);
+        }).catch(reason => {
+            enqueueSnackbar(reason, { variant: 'error' });
+        });
     }
 
     return (
