@@ -14,7 +14,36 @@ import Button from '@mui/material/Button';
 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useFormState, useFormStatus } from 'react-dom';
-import { MigratePosts } from './actions';
+import { EditTag, MigratePosts } from './actions';
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+
+const columns: GridColDef[] = [
+    {
+        field: 'id',
+        headerName: 'ID',
+        align: 'center',
+        headerAlign: 'left',
+        width: 100
+    },
+    {
+        field: 'name',
+        headerName: 'Name',
+        width: 300,
+        align: 'center',
+        headerAlign: 'left',
+        type: 'string',
+        editable: true,
+    },
+    {
+        field: '_count',
+        headerName: 'Posts',
+        width: 150,
+        align: 'center',
+        headerAlign: 'left',
+        type: 'number',
+        editable: false
+    }
+];
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -63,5 +92,33 @@ export function MigratePostsInput({
             </Typography>
             <SubmitButton />
         </Box>
+    )
+}
+
+export function TagsGrid({ tags }: {
+    tags: {
+        _count: {
+            posts: number
+        },
+        id: number,
+        name: string | null,
+    }[]
+}) {
+    return (
+        <DataGrid
+            columns={columns}
+            rows={tags.map(tag => ({
+                ...tag,
+                _count: tag._count.posts,
+            }))}
+            processRowUpdate={EditTag}
+            pageSizeOptions={[30, 50, 100]}
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{
+                toolbar: {
+                    showQuickFilter: true,
+                },
+            }}
+        />
     )
 }

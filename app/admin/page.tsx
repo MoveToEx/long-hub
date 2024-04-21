@@ -184,7 +184,7 @@ export default async function AdminPage() {
                                     <TableRow>
                                         <TableCell align="center">#</TableCell>
                                         <TableCell align="center">Image</TableCell>
-                                        <TableCell align="center">Actions</TableCell>
+                                        <TableCell align="center">Text</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -204,19 +204,7 @@ export default async function AdminPage() {
                                                     />
                                                 </TableCell>
                                                 <TableCell align="center">
-                                                    <Tooltip title="Edit">
-                                                        <IconButton LinkComponent={Link} href={"/admin/posts/" + post.id + '/edit'} size="small">
-                                                            <EditIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <form action={DeletePost} style={{ display: 'inline-block' }}>
-                                                        <input type="hidden" name="id" value={post.id} />
-                                                        <Tooltip title="Delete">
-                                                            <IconButton size="small" type="submit">
-                                                                <DeleteIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </form>
+                                                    {post.text}
                                                 </TableCell>
                                             </TableRow>
                                         ))
