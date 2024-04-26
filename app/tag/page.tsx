@@ -58,7 +58,7 @@ export default function Tags() {
                             sx={{
                                 m: 1
                             }}>
-                            <Link href={"/tag/" + tag.name}>
+                            <Link href={"/tag/" + tag.name} prefetch={false}>
                                 <Chip label={<Typography>{tag.name}</Typography>} icon={<TagIcon />} />
                             </Link>
                         </Badge>
