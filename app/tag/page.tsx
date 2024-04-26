@@ -7,40 +7,20 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
 import CircularProgress from '@mui/material/CircularProgress';
-import Modal from '@mui/material/Modal';
-import { useState, useEffect } from 'react';
+import { useTag } from '../post/context';
 import { useSnackbar } from 'notistack';
 
-
-interface Tag {
-    id: number,
-    name: string,
-    count: number
-};
-
 export default function Tags() {
-    const [tags, setTags] = useState<Tag[]>([]);
+    const tags = useTag();
     const { enqueueSnackbar } = useSnackbar();
 
-    useEffect(() => {
-        fetch('/api/post/tag')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                setTags(data);
-            })
-            .catch(reason => {
-                enqueueSnackbar(reason, { variant: 'error' });
-            });
-    }, [enqueueSnackbar]);
+    if (tags.error) {
+        enqueueSnackbar('Failed: ' + tags.error, { variant: 'error' });
+    }
 
     return (
         <>
-            {tags.length == 0 &&
+            {tags.isLoading &&
                 <CircularProgress autoFocus={false} sx={{
                     position: 'absolute',
                     top: '50%',
@@ -50,7 +30,7 @@ export default function Tags() {
             }
             <Box sx={{ mt: '12px' }}>
                 {
-                    tags.map(tag => (
+                    tags.data && tags.data.map(tag => (
                         <Badge
                             badgeContent={tag.count}
                             key={tag.name}
