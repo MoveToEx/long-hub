@@ -81,7 +81,7 @@ export default function Post({
     }
 
     return (
-        <Grid container spacing={2} sx={{ mt: 2, mb: 2 }}>
+        <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
             <Grid item xs={12} md={4}>
                 {post.data &&  
                     <Image
@@ -92,11 +92,12 @@ export default function Post({
                         width={500}
                         style={{
                             width: '100%',
+                            height: 'auto',
                             maxHeight: '500px',
                             objectFit: 'contain'
                         }} />}
             </Grid>
-            <Grid item xs={12} md={8}>
+            <Grid item xs={12} md={8} sx={{ mt: 2 }}>
                 <Stack spacing={2} alignItems="center" sx={{ mb: 2 }}>
                     <TextField
                         label="Text"
