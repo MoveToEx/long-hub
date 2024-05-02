@@ -1,3 +1,5 @@
+'use client';
+
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Rating from '@mui/material/Rating';
@@ -7,82 +9,82 @@ import EditIcon from '@mui/icons-material/Edit';
 import _ from 'lodash';
 import TagRow from '@/components/TagRow';
 import CopiableImage from '@/components/CopiableImage';
-import { prisma } from '@/lib/db';
+import Skeleton from '@mui/material/Skeleton';
 import Link from 'next/link';
-import { ResolvingMetadata, Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { usePost } from '@/app/post/context';
 
-export async function generateMetadata(
-    { params }: { params: { id: string } },
-    parent: ResolvingMetadata
-): Promise<Metadata> {
-    return {
-        title: 'Post ' + _.first(params.id.split('-'))
-    };
-}
-
-export default async function PostPage({
+export default function PostPage({
     params
 }: {
     params: {
         id: string
     }
-    }) {
-    const post = await prisma.post.findFirst({
-        where: {
-            id: params.id
-        },
-        include: {
-            tags: true,
-            uploader: true
-        }
-    });
+}) {
+    const { data, isLoading, error } = usePost(params.id);
 
-    if (post === null) {
-        return notFound();
+    if (isLoading) {
+        return (
+            <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
+                <Grid item xs={12} md={4}>
+                    <Skeleton variant="rectangular" height={300} />
+                </Grid>
+                <Grid item xs={12} md={8} sx={{ mt: '16px' }}>
+                    <Stack alignItems="right" spacing={1}>
+                        <Skeleton />
+                        <Skeleton />
+                        <Skeleton />
+                        <Skeleton />
+                    </Stack>
+                </Grid>
+            </Grid>
+        );
     }
 
     return (
         <>
-            <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
-                <Grid item xs={12} md={4}>
-                    <CopiableImage
-                        src={post.imageURL!}
-                        alt={params.id}
-                    />
-                </Grid>
-                <Grid item xs={12} md={8} sx={{ marginTop: '16px' }}>
-                    <Stack alignItems="right" spacing={1}>
-                        <div>
-                            {post.text ? post.text : <i>No text</i>}
-                        </div>
-                        <div>
-                            Uploaded at {post.createdAt.toISOString()} {post.uploader ? ('by ' + post.uploader.name) : <i style={{ fontSize: '16px', color: 'darkgray'}}>(Disowned)</i>}
-                        </div>
-                        <div>
-                            <TagRow tags={post.tags.map(e => e.name!) ?? []} />
-                        </div>
-                        <div>
-                            <Typography component="legend">Aggressiveness</Typography>
-                            <Rating
-                                value={post.aggr}
-                                precision={0.5}
-                                max={10}
-                                size="large"
-                                readOnly
+            {
+                data &&
+                <>
+                    <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
+                        <Grid item xs={12} md={4}>
+                            <CopiableImage
+                                src={data.imageURL}
+                                alt={params.id}
                             />
-                        </div>
-                    </Stack>
-                </Grid>
-            </Grid>
-            <Fab size="large" color="primary" sx={{
-                position: 'absolute',
-                right: '32px',
-                bottom: '32px'
-            }} LinkComponent={Link} href={`/post/${params.id}/edit`}>
-                <EditIcon />
-            </Fab>
+                        </Grid>
+                        <Grid item xs={12} md={8} sx={{ mt: '16px' }}>
+                            <Stack alignItems="right" spacing={1}>
+                                <div>
+                                    {data.text ? data.text : <i>No text</i>}
+                                </div>
+                                <div>
+                                    Uploaded at {data.createdAt} {data.uploader ? ('by ' + data.uploader.name) : <i style={{ fontSize: '16px', color: 'darkgray' }}>(Disowned)</i>}
+                                </div>
+                                <div>
+                                    <TagRow tags={data.tags.map(e => e.name!) ?? []} />
+                                </div>
+                                <div>
+                                    <Typography component="legend">Aggressiveness</Typography>
+                                    <Rating
+                                        value={data.aggr}
+                                        precision={0.5}
+                                        max={10}
+                                        size="large"
+                                        readOnly
+                                    />
+                                </div>
+                            </Stack>
+                        </Grid>
+                    </Grid>
+                    <Fab size="large" color="primary" sx={{
+                        position: 'absolute',
+                        right: '32px',
+                        bottom: '32px'
+                    }} LinkComponent={Link} href={`/post/${params.id}/edit`}>
+                        <EditIcon />
+                    </Fab>
+                </>
+            }
         </>
-
     )
 }

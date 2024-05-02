@@ -13,9 +13,8 @@ import Typography from '@mui/material/Typography';
 import CopiableText from '@/components/CopiableText';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
-import { PostResponse } from '@/lib/types';
 import { createQueryString } from '@/lib/util';
-
+import { usePosts } from './context';
 
 const pageLimit = 64;
 
@@ -23,47 +22,30 @@ export default function PostList() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { enqueueSnackbar } = useSnackbar();
-    const [loading, setLoading] = useState(true);
-    const [post, setPost] = useState<PostResponse | null>(null);
     const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
-    const deferredPage = useDeferredValue(Math.ceil((post?.count ?? 0) / pageLimit));
+    const posts = usePosts((page - 1) * pageLimit, pageLimit);
+    const deferredPage = useDeferredValue(Math.ceil((posts.data?.count ?? 0) / pageLimit));
 
     useEffect(() => {
         setPage(Number(searchParams.get('page') ?? '1'));
     }, [searchParams]);
 
-    useEffect(() => {
-        setLoading(true);
-
-        fetch('/api/post?limit=' + pageLimit + '&offset=' + (page - 1) * 24)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                setPost(data);
-            })
-            .catch(reason => {
-                enqueueSnackbar('Failed: ' + reason, { variant: 'error' });
-            }).finally(() => {
-                setLoading(false);
-            });
-    }, [page, enqueueSnackbar]);
+    if (posts.error) {
+        enqueueSnackbar(posts.error, { variant: 'error' });
+    }
 
     return (
         <>
             <Stack alignItems="center" sx={{ m: 2 }}>
                 <Typography variant="h4">
                     {
-                        post ? <>{post.count} images in total</> : <Skeleton />
+                        posts.data ? <>{posts.data.count} images in total</> : <Skeleton />
                     }
                 </Typography>
             </Stack>
             <Grid container spacing={1}>
                 {
-                    loading ?
+                    posts.isLoading && posts.data ?
                         _.range(64).map(x => (
                             <Grid key={x} xs={12} md={6}>
                                 <Grid container spacing={1}>
@@ -86,7 +68,7 @@ export default function PostList() {
                                 </Grid>
                             </Grid>
                         )) :
-                        post!.data.map(post => (
+                        posts.data?.data.map(post => (
                             <Grid key={post.id} xs={12} md={6}>
                                 <Grid container spacing={1}>
                                     <Grid xs={4}>
@@ -121,7 +103,7 @@ export default function PostList() {
 
             <Stack alignItems="center" sx={{ m: 4 }}>
                 <Pagination
-                    disabled={loading}
+                    disabled={posts.isLoading}
                     count={deferredPage}
                     page={page}
                     onChange={(_, val) => {

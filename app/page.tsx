@@ -9,51 +9,29 @@ import Stack from '@mui/material/Stack';
 import { useState, useEffect, useDeferredValue } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
-import { PostResponse } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
+import { usePosts } from './post/context';
 
 export default function Home() {
 	const searchParams = useSearchParams();
 	const router = useRouter();
-	const { enqueueSnackbar } = useSnackbar();
-	const [loading, setLoading] = useState(true);
-	const [post, setPost] = useState<PostResponse | null>(null);
 	const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
-	const deferredPage = useDeferredValue(C.pages(post?.count ?? 0));
+	const { data, error, isLoading } = usePosts((page - 1) * 24, 24);
+	const deferredPage = useDeferredValue(C.pages(data?.count ?? 0));
 
 	useEffect(() => {
 		setPage(Number(searchParams.get('page') ?? '1'));
 	}, [searchParams]);
 
-	useEffect(() => {
-		setLoading(true);
-		
-		fetch('/api/post?limit=24&offset=' + (page - 1) * 24)
-			.then(response => {
-				if (!response.ok) {
-					throw new Error(response.statusText);
-				}
-				return response.json();
-			})
-			.then(data => {
-				setPost(data);
-			})
-			.catch(reason => {
-				enqueueSnackbar('Failed: ' + reason, { variant: 'error' });
-			}).finally(() => {
-				setLoading(false);
-			});
-	}, [page, enqueueSnackbar]);
-
 	return (
 		<Box sx={{ m: 2 }}>
 			<LinkImageGrid
-				skeleton={loading ? 24 : 0}
-				src={post === null ? [] : post.data.map(post => ({
+				skeleton={isLoading ? 24 : 0}
+				src={data ? data.data.map(post => ({
 					href: `/post/${post.id}`,
 					src: post.imageURL
-				}))}
+				})) : []}
 				gridContainerProps={{
 					spacing: 2
 				}}
@@ -65,13 +43,19 @@ export default function Home() {
 
 			<Stack alignItems="center" sx={{ m: 4 }}>
 				<Pagination
-					disabled={loading}
+					disabled={isLoading}
 					count={deferredPage}
 					page={page}
 					onChange={(_, val) => {
+						setPage(val);
+						window.scrollTo({
+							top: 0
+						});
 						router.push(createQueryString('/', {
 							page: val
-						}));
+						}), {
+							scroll: false
+						});
 					}}
 				/>
 			</Stack>

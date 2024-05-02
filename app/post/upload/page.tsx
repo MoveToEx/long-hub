@@ -32,6 +32,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 
 import { useUser } from '@/app/context';
+import { useTags } from '@/app/post/context';
 import DropArea from '@/components/DropArea';
 
 import styles from './page.module.css';
@@ -58,10 +59,10 @@ export default function UploadPage() {
     const [dialog, setDialog] = useState<DialogInfo>({
         open: false
     });
-    const [tags, setTags] = useState<string[]>([]);
+    const tags = useTags();
     const [ignoreSimilar, setIgnoreSimilar] = useState(false);
 
-    const { user } = useUser();
+    const { data: user } = useUser();
     const router = useRouter();
 
     const { enqueueSnackbar } = useSnackbar();
@@ -73,12 +74,6 @@ export default function UploadPage() {
             router.push('/account/login');
         }
     }, [user, router]);
-
-    useEffect(() => {
-        fetch('/api/post/tag')
-            .then(val => val.json())
-            .then(x => setTags(x.map((x: any) => x.name)));
-    }, []);
 
     function next() {
         setMeta({
@@ -274,7 +269,7 @@ export default function UploadPage() {
                             value={meta.tags}
                             fullWidth
                             options={
-                                tags || []
+                                tags.data?.map(val => val.name) || []
                             }
                             onChange={(__, newValue) => {
                                 if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
@@ -299,7 +294,11 @@ export default function UploadPage() {
                                         label="Tags"
                                         error={!/^[a-z0-9_]*$/.test(params.inputProps.value as string ?? '')}
                                         helperText={"Only lower case, digits and underline are allowed in tags"}
-                                        variant="outlined" />
+                                        variant="outlined"
+                                        InputProps={{
+                                            ...params.InputProps,
+                                            endAdornment: tags.isLoading ? <CircularProgress size={20} /> : <></>
+                                        }}/>
                                 )
                             }
                         />

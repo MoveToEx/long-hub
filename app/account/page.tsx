@@ -59,7 +59,7 @@ function CopiableText({
 }
 
 export default function AccountPage() {
-    const { user, isLoading, mutate } = useUser();
+    const { data: user, isLoading } = useUser();
     const router = useRouter();
     const [resetDisabled, setResetDisabled] = useState(false);
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);

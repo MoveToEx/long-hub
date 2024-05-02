@@ -12,31 +12,33 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import SendIcon from '@mui/icons-material/Send';
 import Typography from '@mui/material/Typography';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
 import { useUser } from '@/app/context';
+import { usePost, useTags } from '@/app/post/context';
 
 export default function Post({
     params
 }: {
     params: {
-        id: String
+        id: string
     }
 }) {
-    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const initialized = useRef(false);
     const [meta, setMeta] = useState({
         text: '',
         aggr: 0,
         tags: [] as string[],
     });
-    const [image, setImage] = useState('');
-    const [tags, setTags] = useState<string[]>([]);
+    const tags = useTags();
+    const post = usePost(params.id);
 
     const { enqueueSnackbar } = useSnackbar();
     const router = useRouter();
-    const { user } = useUser();
+    const { data: user } = useUser();
 
     useEffect(() => {
         if (user === null) {
@@ -45,29 +47,18 @@ export default function Post({
     }, [user, router]);
 
     useEffect(() => {
-        fetch('/api/post/tag')
-            .then(response => response.json())
-            .then(x => setTags(x.map((x: any) => x.name)));
-    }, []);
-
-    useEffect(() => {
-        if (!user) return;
-
-        fetch('/api/post/' + params.id)
-            .then(response => response.json())
-            .then((x: any) => {
-                setMeta({
-                    text: x.text,
-                    tags: x.tags.map((x: any) => x.name),
-                    aggr: x.aggr
-                });
-                setImage(x.imageURL);
-            })
-            .finally(() => setLoading(false));
-    }, [params.id, user]);
+        if (post.data && !initialized.current) {
+            initialized.current = true;
+            setMeta({
+                text: post.data.text,
+                tags: post.data.tags.map(x => x.name),
+                aggr: post.data.aggr
+            });
+        }
+    }, [post]);
 
     function submit() {
-        setLoading(true);
+        setSubmitting(true);
         fetch('/api/post/' + params.id, {
             method: 'PUT',
             headers: {
@@ -77,34 +68,33 @@ export default function Post({
         })
             .then(response => {
                 if (!response.ok) {
-                    enqueueSnackbar('Failed: ' + response.statusText, { variant: 'error' });
-                    throw new Error(response.status.toString());
+                    throw new Error(response.statusText);
                 }
-                router.back();
+                router.push('/post/' + params.id);
             })
-            .catch(() => { })
+            .catch(reason => {
+                enqueueSnackbar(reason, { variant: 'error' });
+            })
             .finally(() => {
-                setLoading(false);
+                setSubmitting(false);
             });
     }
 
-
     return (
-        <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
+        <Grid container spacing={2} sx={{ mt: 2, mb: 2 }}>
             <Grid item xs={12} md={4}>
-                {image ?
+                {post.data &&  
                     <Image
                         id="preview-image"
                         alt="Preview"
-                        src={image}
-                        height={0}
+                        src={post.data.imageURL}
+                        height={500}
                         width={500}
                         style={{
                             width: '100%',
-                            height: 'auto',
+                            maxHeight: '500px',
                             objectFit: 'contain'
-                        }} />
-                    : <></>}
+                        }} />}
             </Grid>
             <Grid item xs={12} md={8}>
                 <Stack spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -125,7 +115,7 @@ export default function Post({
                         freeSolo
                         value={meta.tags}
                         fullWidth
-                        options={tags}
+                        options={tags.data?.map(val => val.name) ?? []}
                         onChange={(__, newValue) => {
                             if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
                                 setMeta({
@@ -157,6 +147,10 @@ export default function Post({
                                     type="text"
                                     error={!/^[a-z0-9_]*$/.test(params.inputProps.value as string ?? '')}
                                     helperText={"Only lower case, digits and underline are allowed in tags"}
+                                    InputProps={{
+                                        ...params.InputProps,
+                                        endAdornment: tags.isLoading ? <CircularProgress size={20} /> : <></>
+                                    }}
                                     variant="outlined" />
                             )
                         }
@@ -178,11 +172,11 @@ export default function Post({
                     </Box>
 
                     <Box sx={{ m: 1, position: 'relative' }}>
-                        <Fab onClick={submit} color="primary" disabled={loading}>
+                        <Fab onClick={submit} color="primary" disabled={submitting || post.isLoading}>
                             <SendIcon />
                         </Fab>
                         {
-                            loading && (
+                            submitting || post.isLoading && (
                                 <CircularProgress
                                     size={68}
                                     sx={{

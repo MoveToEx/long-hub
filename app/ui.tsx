@@ -129,7 +129,7 @@ function RootTemplate({
     const [expand, setExpand] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const { user, isLoading, mutate } = useUser();
+    const { data: user, isLoading, mutate } = useUser();
     const pathname = usePathname();
 
     useEffect(() => {

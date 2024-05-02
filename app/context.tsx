@@ -8,23 +8,16 @@ interface User {
     accessKey: string;
 };
 
-const fetcher = async (url: string) => {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-        return null;
-    }
-
-    return response.json();
-};
-
-
 export function useUser() {
-    const { data, error, isLoading, mutate } = useSWR<User | null>('/api/account', fetcher);
-    return {
-        user: data,
-        isLoading,
-        isError: error,
-        mutate
+    const fetcher = async (url: string) => {
+        const response = await fetch(url);
+    
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+    
+        return response.json();
     };
+
+    return useSWR<User | null>('/api/account', fetcher);
 }

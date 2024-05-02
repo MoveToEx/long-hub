@@ -15,12 +15,15 @@ interface Post {
     image: string;
     imageURL: string;
     imageHash: string;
-    createdAt: Date;
+    createdAt: string;
     updatedAt: Date;
     uploaderId?: number;
+    uploader?: {
+        name: string;
+    }
 };
 
-interface PostResponse {
+interface PostsResponse {
     count: number;
     data: Post[];
 };
@@ -70,7 +73,7 @@ function parseFilter(kw: string[]) {
     });
 }
 
-export function useTag() {
+export function useTags() {
     const fetcher = async (url: string) => {
         const response = await fetch(url);
 
@@ -82,6 +85,34 @@ export function useTag() {
     };
 
     return useSWR<(Tag & { count: number })[]>('/api/post/tag', fetcher);
+}
+
+export function usePosts(offset: number = 0, limit: number = 24) {
+    const fetcher = async ({ offset, limit }: { offset: number, limit: number }) => {
+        const response = await fetch('/api/post?limit=' + limit + '&offset=' + offset);
+
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+
+        return response.json();
+    };
+
+    return useSWR<PostsResponse>({ offset, limit }, fetcher, {});
+}
+
+export function usePost(id: string) {
+    const fetcher = async (id: string) => {
+        const response = await fetch('/api/post/' + id);
+
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+
+        return response.json();
+    };
+
+    return useSWR<Post>(id, fetcher);
 }
 
 export function useSearchResult({ keyword, page }: { keyword: string[], page: number }) {
@@ -103,6 +134,5 @@ export function useSearchResult({ keyword, page }: { keyword: string[], page: nu
         return response.json();
     }
 
-    return useSWR<PostResponse>([keyword, page], fetcher, {});
-    // return useSWR<PostResponse>([keyword, page], fetcher);
+    return useSWR<PostsResponse>([keyword, page], fetcher, {});
 }

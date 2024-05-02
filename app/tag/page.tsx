@@ -7,11 +7,11 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useTag } from '../post/context';
+import { useTags } from '../post/context';
 import { useSnackbar } from 'notistack';
 
 export default function Tags() {
-    const tags = useTag();
+    const tags = useTags();
     const { enqueueSnackbar } = useSnackbar();
 
     if (tags.error) {

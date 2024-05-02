@@ -50,7 +50,9 @@ export default function SearchPage() {
                 });
                 router.push(createQueryString('/post/search', {
                     s: val.join(' ')
-                }));
+                }), {
+                    scroll: false
+                });
             }} />
 
             {query.keyword.length != 0 &&
@@ -94,7 +96,12 @@ export default function SearchPage() {
                         router.push(createQueryString('/post/search', {
                             s: query.keyword.join(' '),
                             page: val
-                        }));
+                        }), {
+                            scroll: false
+                        });
+                        window.scrollTo({
+                            top: 0
+                        });
                     }}
                 />
             </Stack>

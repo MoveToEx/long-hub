@@ -9,7 +9,7 @@ import _ from 'lodash';
 import TagIcon from '@mui/icons-material/Tag';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 
-import { useTag } from '../context';
+import { useTags } from '../context';
 
 function getLabel(s: string) {
     if (s.startsWith('+') || s.startsWith('-')) {
@@ -45,7 +45,7 @@ export function SearchInput({
     value: string[],
     onChange: (_: any, val: string[]) => void
 }) {
-    const { data, isLoading } = useTag();
+    const { data, isLoading } = useTags();
 
     return (
         <>

@@ -19,7 +19,7 @@ import { useUser } from '@/app/context';
 import SubmitButton from '@/components/SubmitButton';
 
 export default function SigninPage() {
-    const { user, mutate } = useUser();
+    const { data: user } = useUser();
     const router = useRouter();
     const [state, action] = useFormState(login, '');
 
