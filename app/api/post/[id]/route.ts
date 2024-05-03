@@ -19,7 +19,13 @@ export async function GET(req: NextRequest, {
             id: params.id
         },
         include: {
-            tags: true
+            tags: true,
+            uploader: {
+                select: {
+                    name: true,
+                    id: true
+                }
+            }
         }
     });
 

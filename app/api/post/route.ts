@@ -33,7 +33,13 @@ export async function GET(req: NextRequest) {
             }
         ],
         include: {
-            tags: true
+            tags: true,
+            uploader: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            }
         },
         skip: offset,
         take: limit

@@ -109,17 +109,27 @@ export async function POST(req: NextRequest) {
         }
         else if (sel.type == 'id') {
             where.push({
-
-            })
+                id: {
+                    contains: sel.value
+                }
+            });
         }
     }
     
     const posts = await prisma.post.findMany({
         where: {
-            AND: where
+            AND: where,
         },
         skip: offset,
-        take: limit
+        take: limit,
+        include: {
+            uploader: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            }
+        }
     });
 
     const count = await prisma.post.count({
