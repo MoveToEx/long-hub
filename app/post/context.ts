@@ -73,47 +73,41 @@ function parseFilter(kw: string[]) {
     });
 }
 
-export function useTags() {
-    const fetcher = async (url: string) => {
-        const response = await fetch(url);
+export const TagsFetcher = async (url: string) => {
+    const response = await fetch(url);
 
-        if (!response.ok) {
-            return null;
-        }
+    if (!response.ok) {
+        return null;
+    }
 
-        return response.json();
-    };
+    return response.json();
+};
 
-    return useSWR<(Tag & { count: number })[]>('/api/post/tag', fetcher);
-}
+export const useTags = () => useSWR<(Tag & { count: number })[]>('/api/post/tag', TagsFetcher);
 
-export function usePosts(offset: number = 0, limit: number = 24) {
-    const fetcher = async ({ offset, limit }: { offset: number, limit: number }) => {
-        const response = await fetch('/api/post?limit=' + limit + '&offset=' + offset);
+export const PostsFetcher = async ({ offset, limit }: { offset: number, limit: number }) => {
+    const response = await fetch('/api/post?limit=' + limit + '&offset=' + offset);
 
-        if (!response.ok) {
-            throw new Error(response.statusText);
-        }
+    if (!response.ok) {
+        throw new Error(response.statusText);
+    }
 
-        return response.json();
-    };
+    return response.json();
+};
 
-    return useSWR<PostsResponse>({ offset, limit }, fetcher, {});
-}
+export const usePosts = (offset: number = 0, limit: number = 24) => useSWR<PostsResponse>({ offset, limit }, PostsFetcher, {});
 
-export function usePost(id: string) {
-    const fetcher = async (id: string) => {
-        const response = await fetch('/api/post/' + id);
+export const PostFetcher = async (id: string) => {
+    const response = await fetch('/api/post/' + id);
 
-        if (!response.ok) {
-            throw new Error(response.statusText);
-        }
+    if (!response.ok) {
+        throw new Error(response.statusText);
+    }
 
-        return response.json();
-    };
+    return response.json();
+};
 
-    return useSWR<Post>(id, fetcher);
-}
+export const usePost = (id: string) => useSWR<Post>(id, PostFetcher);
 
 export function useSearchResult({ keyword, page }: { keyword: string[], page: number }) {
     const fetcher = async ([keyword, page]: [string[], number]) => {

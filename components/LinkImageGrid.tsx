@@ -14,10 +14,6 @@ interface LinkImage {
     src: string;
 }
 
-export function SkeletonGrid({ count }: { count: number }) {
-
-}
-
 export default function LinkImageGrid({
     src,
     gridProps,

@@ -25,7 +25,6 @@ export default function CopiableImage({
             style={{
                 width: '100%',
                 height: 'auto',
-                maxHeight: '500px',
                 objectFit: 'contain'
             }}
             onClick={async (e) => {
