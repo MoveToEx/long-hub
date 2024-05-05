@@ -71,5 +71,6 @@
     "express": "^4.19.2",
     "prisma": "^5.11.0",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "yarn@4.2.1"
 }
