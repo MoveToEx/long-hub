@@ -161,7 +161,7 @@ function RootTemplate({
         <List>
             <DrawerItem title="Home" href="/" icon={<Home />} />
             <DrawerItem title="Tag" href="/tag" icon={<TagIcon />} />
-            <DrawerItem title="Document" href="/doc" icon={<TextSnippetIcon />} />
+            <DrawerItem title="Document" href="https://doc.longhub.top" icon={<TextSnippetIcon />} />
             <Divider component="li" />
             <li>
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 2 }}>

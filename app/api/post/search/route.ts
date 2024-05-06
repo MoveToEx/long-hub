@@ -33,13 +33,13 @@ interface TagSelector {
 
 interface TextSelector {
     type: 'text';
-    op: unknown;
+    op: 'contains' | 'not_contains';
     value: string;
 }
 
 interface IDSelector {
     type: 'id';
-    op: unknown;
+    op: 'contains';
     value: string;
 }
 
@@ -76,11 +76,22 @@ export async function POST(req: NextRequest) {
 
     for (const sel of query) {
         if (sel.type == 'text') {
-            where.push({
-                text: {
-                    contains: sel.value
-                }
-            });
+            if (sel.op == 'contains') {
+                where.push({
+                    text: {
+                        contains: sel.value
+                    }
+                });
+            }
+            else if (sel.op == 'not_contains') {
+                where.push({
+                    NOT: {
+                        text: {
+                            contains: sel.value
+                        }
+                    }
+                });
+            }
         }
         else if (sel.type == 'aggr') {
             where.push({
@@ -108,17 +119,19 @@ export async function POST(req: NextRequest) {
             }
         }
         else if (sel.type == 'id') {
-            where.push({
-                id: {
-                    contains: sel.value
-                }
-            });
+            if (sel.op == 'contains') {
+                where.push({
+                    id: {
+                        contains: sel.value
+                    }
+                });
+            }
         }
     }
     
     const posts = await prisma.post.findMany({
         where: {
-            AND: where,
+            AND: where
         },
         skip: offset,
         take: limit,

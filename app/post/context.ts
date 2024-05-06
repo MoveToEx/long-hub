@@ -61,12 +61,14 @@ function parseFilter(kw: string[]) {
         else if (x.startsWith('@')) {
             return {
                 type: 'id',
+                op: 'contains',
                 value: _.trimStart(x, '@')
             }
         }
         else {
             return {
                 type: 'text',
+                op: 'contains',
                 value: x
             }
         }
