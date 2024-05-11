@@ -3,9 +3,19 @@ import { prisma } from "@/lib/db";
 import { cookies } from 'next/headers';
 import fs from 'fs';
 
-import { auth } from "@/lib/server-util";
+import { auth, formatZodError } from "@/lib/server-util";
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
+import { z } from 'zod';
+import _ from 'lodash';
+import { responses } from "@/lib/server-util";
+import { Prisma } from "@prisma/client";
+
+const updateSchema = z.object({
+    text: z.optional(z.string()),
+    aggr: z.optional(z.number().min(0).max(10)),
+    tags: z.optional(z.array(z.string()))
+});
 
 export async function GET(req: NextRequest, {
     params
@@ -30,9 +40,7 @@ export async function GET(req: NextRequest, {
     });
 
     if (!post) {
-        return NextResponse.json('post not found', {
-            status: 404
-        });
+        return responses.notFound('Post ' + params.id);
     }
 
     return NextResponse.json(post);
@@ -48,15 +56,11 @@ export async function PUT(req: NextRequest, {
     const user = await auth(req, cookies());
 
     if (!user) {
-        return NextResponse.json('unauthorized', {
-            status: 401
-        });
+        return responses.unauthorized();
     }
 
     if ((user.permission & C.Permission.Post.edit) == 0) {
-        return NextResponse.json('operation not permitted', {
-            status: 403
-        });
+        return responses.forbidden();
     }
 
     var post = await prisma.post.findFirst({
@@ -64,41 +68,26 @@ export async function PUT(req: NextRequest, {
             id: params.id
         }
     });
-    const meta = await req.json();
-    const data: Record<string, any> = {};
+
+    const data: Prisma.postUpdateInput = {};
 
     if (!post) {
-        return NextResponse.json('post not found', {
-            status: 404
-        });
+        return responses.notFound('Post ' + params.id);
     }
 
-    if (meta.aggr !== undefined && typeof meta.aggr !== 'number') {
-        return NextResponse.json('ill-typed aggr', {
+    const { data: meta, error } = updateSchema.safeParse(await req.json());
+
+    if (error) {
+        return new Response(formatZodError(error), {
             status: 400
         });
     }
-    else {
-        data.aggr = meta.aggr;
-    }
 
-    if (meta.text !== undefined && typeof meta.text !== 'string') {
-        return NextResponse.json('ill-typed text', {
-            status: 400
-        });
-    }
-    else {
-        data.text = meta.text;
-    }
-
+    if (meta.aggr) data.aggr = meta.aggr;
+    if (meta.text) data.text = meta.text;
     if (meta.tags) {
-        if (typeof meta.tags !== 'object' || !Array.isArray(meta.tags)) {
-            return NextResponse.json('ill-typed tags', {
-                status: 400
-            });
-        }
-
-        const tags = [];
+        data.tags = {};
+        data.tags.set = [];
 
         for (const tagName of meta.tags) {
             const tag = await prisma.tag.findFirst({
@@ -108,38 +97,43 @@ export async function PUT(req: NextRequest, {
             });
 
             if (tag) {
-                tags.push({
-                    id: tag.id
-                });
+                data.tags.set.push(tag);
             }
             else {
-                tags.push(await prisma.tag.create({
+                data.tags.set.push(await prisma.tag.create({
                     data: {
                         name: tagName
                     }
                 }));
             }
         }
-
-        data.tags = {
-            set: tags
-        };
     }
-    
+
     await prisma.post.update({
         where: {
             id: params.id
         },
-        data: data
+        data: {
+            ...data,
+            updatedAt: new Date()
+        }
     });
 
-    revalidatePath('/post/' + params.id);
     revalidatePath('/admin');
-    revalidatePath('/admin/post');
+    revalidatePath('/admin/posts');
 
     return NextResponse.json(await prisma.post.findFirst({
         where: {
             id: params.id
+        },
+        include: {
+            tags: true,
+            uploader: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            }
         }
     }));
 }
@@ -154,15 +148,11 @@ export async function DELETE(req: NextRequest, {
     const user = await auth(req, cookies());
 
     if (!user) {
-        return NextResponse.json('unauthorized', {
-            status: 401
-        });
+        return responses.unauthorized();
     }
 
     if ((user.permission & C.Permission.Admin.Post.delete) == 0) {
-        return NextResponse.json('operation not permitted', {
-            status: 403
-        });
+        return responses.forbidden();
     }
 
     const post = await prisma.post.findFirst({
@@ -172,9 +162,7 @@ export async function DELETE(req: NextRequest, {
     });
 
     if (!post) {
-        return NextResponse.json('post ' + params.id + ' not found', {
-            status: 404
-        });
+        return responses.notFound('Post ' + params.id);
     }
 
     fs.rmSync(post.imagePath);

@@ -61,6 +61,7 @@ export default function UploadPage() {
     });
     const tags = useTags();
     const [ignoreSimilar, setIgnoreSimilar] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     const { data: user } = useUser();
     const router = useRouter();
@@ -85,105 +86,36 @@ export default function UploadPage() {
         setFiles(_.slice(files, 1));
     }
 
-    function submit() {
+    async function submit() {
         setLoading(true);
+
         var fd = new FormData();
         fd.append('force', ignoreSimilar ? '1' : '0');
         fd.append('image', files[0].file);
         fd.append('metadata', JSON.stringify(meta));
 
-        fetch('/api/post', {
+        const stream = new ReadableStream(fd.entries());
+
+        const response = await fetch('/api/post', {
             method: 'POST',
-            body: fd,
-        })
-            .then(response => {
-                if (response.ok) {
-                    next();
-                    enqueueSnackbar('Uploaded successfully', {
-                        variant: 'success'
-                    });
-                }
-                else if (response.status == 409) {
-                    response.json().then(data => {
-                        setDialog({
-                            open: true,
-                            title: 'Similar images',
-                            subtitle: 'These images are similar to yours. Make sure not to upload duplicates',
-                            content: (
-                                <LinkImageGrid
-                                    src={data.map((post: any) => ({
-                                        href: `/post/${post.id}`,
-                                        src: post.imageURL
-                                    }))}
-                                    gridProps={{
-                                        md: 6,
-                                        xs: 12
-                                    }}
-                                    gridContainerProps={{
-                                        spacing: 2
-                                    }}
-                                    linkProps={{
-                                        target: '_blank'
-                                    }} />
-                            )
-                        });
-                    });
-                }
-                else {
-                    enqueueSnackbar('Failed: ' + response.statusText, {
-                        variant: 'error'
-                    });
-                }
-            })
-            .finally(() => setLoading(false));
-    }
-
-    function skip() {
-        next();
-        enqueueSnackbar('Skipped 1 image', {
-            variant: 'info'
+            body: stream,
         });
-    }
 
-    function search() {
-        if (!meta.text && meta.tags.length == 0) {
-            enqueueSnackbar('No text given', { variant: 'info' });
-            return;
-        }
-        setLoading(true);
-        const selector = meta.tags.map(val => ({
-            type: 'tag',
-            op: 'include',
-            value: val
-        }));
-
-        if (meta.text) {
-            selector.push({
-                type: 'text',
-                op: 'include',
-                value: meta.text
+        if (response.ok) {
+            next();
+            enqueueSnackbar('Uploaded successfully', {
+                variant: 'success'
             });
         }
-
-        fetch('/api/post/search?offset=0&limit=24', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(selector)
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error(response.statusText);
-            }
-            return response.json();
-        }).then(data => {
+        else if (response.status == 409) {
+            const data = await response.json();
             setDialog({
                 open: true,
-                title: 'Search result',
-                subtitle: `${data.count} result(s) in total` + (data.count > 24 ? `, ${data.count - 24} result(s) omitted` : ''),
+                title: 'Similar images',
+                subtitle: 'These images are similar to yours. Make sure not to upload duplicates',
                 content: (
                     <LinkImageGrid
-                        src={data.data.map((post: any) => ({
+                        src={data.map((post: any) => ({
                             href: `/post/${post.id}`,
                             src: post.imageURL
                         }))}
@@ -199,11 +131,83 @@ export default function UploadPage() {
                         }} />
                 )
             });
-        }).catch((reason) => {
-            enqueueSnackbar('Failed: ' + reason, { variant: 'error' });
-        }).finally(() => {
-            setLoading(false);
+        }
+        else {
+            enqueueSnackbar('Failed: ' + response.statusText, {
+                variant: 'error'
+            });
+        }
+        setLoading(false);
+    }
+
+    function skip() {
+        next();
+        enqueueSnackbar('Skipped 1 image', {
+            variant: 'info'
         });
+    }
+
+    async function search() {
+        if (!meta.text && meta.tags.length == 0) {
+            enqueueSnackbar('No condition given', { variant: 'info' });
+            return;
+        }
+        setLoading(true);
+
+        const selector = meta.tags.map(val => ({
+            type: 'tag',
+            op: 'include',
+            value: val
+        }));
+
+        if (meta.text) {
+            selector.push({
+                type: 'text',
+                op: 'contains',
+                value: meta.text
+            });
+        }
+
+        const response = await fetch('/api/post/search?offset=0&limit=24', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(selector)
+        })
+
+        if (!response.ok) {
+            enqueueSnackbar('Failed: ' + response.statusText, { variant: 'error' });
+            setLoading(false);
+            return;
+        }
+
+        const data = await response.json();
+
+        setDialog({
+            open: true,
+            title: 'Search result',
+            subtitle: `${data.count} result(s) in total` + (data.count > 24 ? `, ${data.count - 24} result(s) omitted` : ''),
+            content: (
+                <LinkImageGrid
+                    src={data.data.map((post: any) => ({
+                        href: `/post/${post.id}`,
+                        src: post.imageURL
+                    }))}
+                    gridProps={{
+                        md: 6,
+                        xs: 12
+                    }}
+                    gridContainerProps={{
+                        spacing: 2
+                    }}
+                    linkProps={{
+                        target: '_blank'
+                    }} />
+            )
+        });
+
+        setLoading(false);
     }
 
     if (files.length == 0) {
@@ -298,7 +302,7 @@ export default function UploadPage() {
                                         InputProps={{
                                             ...params.InputProps,
                                             endAdornment: tags.isLoading ? <CircularProgress size={20} /> : <></>
-                                        }}/>
+                                        }} />
                                 )
                             }
                         />
@@ -323,7 +327,7 @@ export default function UploadPage() {
                         <Box sx={{ p: 1, position: 'relative' }} >
 
                             <Stack direction="row" spacing={2}>
-                                
+
                                 <Tooltip title="Submit">
                                     <Fab onClick={submit} color="primary" disabled={loading}>
                                         <SendIcon />
@@ -343,10 +347,6 @@ export default function UploadPage() {
                                 </Tooltip>
                             </Stack>
                         </Box>
-
-                        <Typography variant="subtitle2">
-                            Make sure to read <Link href="/doc/guide/uploading" target="_blank">upload docs</Link> first.
-                        </Typography>
                     </Stack>
                 </Grid>
             </Grid>

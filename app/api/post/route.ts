@@ -6,6 +6,7 @@ import _ from 'lodash';
 import fs from 'fs';
 import path from 'node:path';
 import crypto from 'crypto';
+import { z } from 'zod';
 
 // @ts-expect-error
 import phash from 'sharp-phash';
@@ -16,6 +17,12 @@ import { auth } from '@/lib/server-util';
 import { cookies } from 'next/headers';
 import { Permission } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+
+const schema = z.object({
+    text: z.string(),
+    aggr: z.number().min(0).max(10).multipleOf(0.5),
+    tags: z.array(z.string())
+});
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -78,21 +85,41 @@ export async function POST(req: NextRequest) {
 
     const img = fd.get('image') as File;
     const _metadata = fd.get('metadata') as string;
-    const force = Number.parseInt(fd.get('force') as string | null ?? '0');
+    const force = Number.parseInt(fd.get('force')?.toString() ?? '0');
 
-    let metadata;
+    let raw;
 
-    if (!_metadata || !img) {
-        return NextResponse.json('insufficient parameters', {
+    if (!_metadata) {
+        return new Response('Metadata field not found', {
             status: 400
         });
     }
 
+    if (!img) {
+        return new Response('Image not found', {
+            status: 400
+        });
+    }
+    
     try {
-        metadata = JSON.parse(_metadata);
+        raw = JSON.parse(_metadata);
     }
     catch (e) {
-        return NextResponse.json('failed to parse JSON', {
+        return new Response('Failed when parsing JSON', {
+            status: 400
+        });
+    }
+
+    const { data: metadata, error } = schema.safeParse(_metadata);
+
+    if (error) {
+        const err = error.flatten();
+        const msg = _.concat(
+            err.formErrors,
+            _.toPairs(err.fieldErrors).map(([field, msg]) => `Error parsing ${field}: ${msg}`)
+        );
+
+        return new Response(msg.join('\n'), {
             status: 400
         });
     }
