@@ -83,9 +83,9 @@ export async function PUT(req: NextRequest, {
         });
     }
 
-    if (meta.aggr) data.aggr = meta.aggr;
-    if (meta.text) data.text = meta.text;
-    if (meta.tags) {
+    if (meta.aggr !== undefined) data.aggr = meta.aggr;
+    if (meta.text !== undefined) data.text = meta.text;
+    if (meta.tags !== undefined) {
         data.tags = {};
         data.tags.set = [];
 
