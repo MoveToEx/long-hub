@@ -15,10 +15,9 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
-import LinkImageGrid from '@/components/LinkImageGrid';
+import PostGrid from '@/components/PostGrid';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Link from '@mui/material/Link';
 
 import { ReactNode, useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
@@ -61,7 +60,6 @@ export default function UploadPage() {
     });
     const tags = useTags();
     const [ignoreSimilar, setIgnoreSimilar] = useState(false);
-    const [progress, setProgress] = useState(0);
 
     const { data: user } = useUser();
     const router = useRouter();
@@ -94,11 +92,9 @@ export default function UploadPage() {
         fd.append('image', files[0].file);
         fd.append('metadata', JSON.stringify(meta));
 
-        const stream = new ReadableStream(fd.entries());
-
         const response = await fetch('/api/post', {
             method: 'POST',
-            body: stream,
+            body: fd,
         });
 
         if (response.ok) {
@@ -114,21 +110,15 @@ export default function UploadPage() {
                 title: 'Similar images',
                 subtitle: 'These images are similar to yours. Make sure not to upload duplicates',
                 content: (
-                    <LinkImageGrid
-                        src={data.map((post: any) => ({
-                            href: `/post/${post.id}`,
-                            src: post.imageURL
-                        }))}
-                        gridProps={{
-                            md: 6,
-                            xs: 12
-                        }}
-                        gridContainerProps={{
-                            spacing: 2
-                        }}
-                        linkProps={{
-                            target: '_blank'
-                        }} />
+                    <Grid container>
+                        {
+                            data.map((post: any) => (
+                                <Grid xs={12} sm={6} md={4} key={post.id}>
+                                    <PostGrid value={post} newTab />
+                                </Grid>
+                            ))
+                        }
+                    </Grid>
                 )
             });
         }
@@ -189,21 +179,15 @@ export default function UploadPage() {
             title: 'Search result',
             subtitle: `${data.count} result(s) in total` + (data.count > 24 ? `, ${data.count - 24} result(s) omitted` : ''),
             content: (
-                <LinkImageGrid
-                    src={data.data.map((post: any) => ({
-                        href: `/post/${post.id}`,
-                        src: post.imageURL
-                    }))}
-                    gridProps={{
-                        md: 6,
-                        xs: 12
-                    }}
-                    gridContainerProps={{
-                        spacing: 2
-                    }}
-                    linkProps={{
-                        target: '_blank'
-                    }} />
+                <Grid container>
+                    {
+                        data.data.map((post: any) => (
+                            <Grid xs={12} sm={6} md={4} key={post.id}>
+                                <PostGrid value={post} newTab/>
+                            </Grid>
+                        ))
+                    }
+                </Grid>
             )
         });
 

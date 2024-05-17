@@ -14,7 +14,7 @@ function TagRow({
                 ? <i> Untagged </i>
                 : tags.map((e, i) => (
                     <Link href={'/tag/' + e} key={i}>
-                        <Chip label={e} sx={{ fontSize: '16px' }} icon={<TagIcon />} />
+                        <Chip label={e} sx={{ fontSize: '16px', mt: 0.25, mb: 0.25 }} icon={<TagIcon />} />
                     </Link>
                 ))
             }

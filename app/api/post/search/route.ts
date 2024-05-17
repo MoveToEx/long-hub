@@ -67,6 +67,11 @@ const schema = z.array(
             type: z.literal('id'),
             op: z.literal('contains'),
             value: z.string()
+        }),
+        z.object({
+            type: z.literal('uploader'),
+            op: z.literal('is'),
+            value: z.string()
         })
     ])
 ).min(1).max(24);
@@ -152,6 +157,15 @@ export async function POST(req: NextRequest) {
                 where.push({
                     id: {
                         contains: sel.value
+                    }
+                });
+            }
+        }
+        else if (sel.type == 'uploader') {
+            if (sel.op == 'is') {
+                where.push({
+                    uploader: {
+                        name: sel.value
                     }
                 });
             }

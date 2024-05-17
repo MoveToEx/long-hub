@@ -2,7 +2,7 @@
 
 import './globals.css'
 import { styled, Theme, CSSObject } from '@mui/material/styles';
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, Suspense, ReactNode, ElementType, ComponentProps } from 'react';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -24,6 +24,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import SecurityIcon from '@mui/icons-material/Security';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import Home from '@mui/icons-material/Home';
 import TagIcon from '@mui/icons-material/Tag';
@@ -132,15 +133,22 @@ function RootTemplate({
     const { data: user, isLoading, mutate } = useUser();
     const pathname = usePathname();
 
-    useEffect(() => {
-        mutate();
-    }, [pathname, mutate]);
+    type ItemLinkProps<T extends ElementType> = {
+        title: ReactNode;
+        href: string;
+        icon: ReactNode;
+        LinkComponent?: T;
+        LinkProps?: ComponentProps<T>
+    };
 
-    function DrawerItem({ title, href, icon }: { title: string, href: string, icon: React.ReactElement }) {
+    function DrawerItem<T extends ElementType>({
+        title, href, icon, LinkComponent, LinkProps
+    }: ItemLinkProps<T>) {
         return (
             <ListItemButton
+                {...LinkProps}
                 href={href}
-                LinkComponent={Link}
+                LinkComponent={LinkComponent ?? Link}
                 selected={pathname == href}
                 onClick={() => setMobileOpen(false)}
             >
@@ -161,7 +169,14 @@ function RootTemplate({
         <List>
             <DrawerItem title="Home" href="/" icon={<Home />} />
             <DrawerItem title="Tag" href="/tag" icon={<TagIcon />} />
-            <DrawerItem title="Document" href="https://doc.longhub.top" icon={<TextSnippetIcon />} />
+            <DrawerItem
+                LinkComponent="a"
+                LinkProps={{
+                    target: '_blank'
+                }}
+                title={<>Docs <OpenInNewIcon sx={{ fontSize: '14px' }} /></>}
+                href="https://doc.longhub.top"
+                icon={<TextSnippetIcon />} />
             <Divider component="li" />
             <li>
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 2 }}>

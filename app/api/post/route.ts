@@ -13,7 +13,7 @@ import phash from 'sharp-phash';
 
 // @ts-expect-error
 import phashDistance from 'sharp-phash/distance';
-import { auth } from '@/lib/server-util';
+import { auth, responses } from '@/lib/server-util';
 import { cookies } from 'next/headers';
 import { Permission } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
@@ -70,15 +70,11 @@ export async function POST(req: NextRequest) {
     const user = await auth(req, cookies());
 
     if (user === null) {
-        return NextResponse.json('unauthorized', {
-            status: 401
-        });
+        return responses.unauthorized();
     }
 
     if ((user.permission & Permission.Post.new) == 0) {
-        return NextResponse.json('operation not permitted', {
-            status: 403
-        });
+        return responses.forbidden();
     }
 
     const fd = await req.formData();
@@ -110,7 +106,7 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    const { data: metadata, error } = schema.safeParse(_metadata);
+    const { data: metadata, error } = schema.safeParse(raw);
 
     if (error) {
         const err = error.flatten();
@@ -183,7 +179,7 @@ export async function POST(req: NextRequest) {
             text: metadata.text,
             aggr: metadata.aggr,
             image: filename,
-            imageHash: await phash(buffer),
+            imageHash: hash,
             uploaderId: user.id,
             tags: {
                 connect: tags
@@ -194,7 +190,9 @@ export async function POST(req: NextRequest) {
     fs.writeFileSync(path.join(process.env.MEDIA_ROOT, 'posts', filename), buffer);
 
     revalidatePath('/admin');
-    revalidatePath('/admin/post');
+    revalidatePath('/admin/posts');
 
-    return NextResponse.json(post);
+    return NextResponse.json(post, {
+        status: 201
+    });
 }

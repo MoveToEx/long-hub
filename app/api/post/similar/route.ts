@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     const img = fd.get('image') as File;
-    
+
     var buf = await sharp(await img.arrayBuffer()).trim({
         background: 'rgba(255, 255, 255, 0)'
     }).toBuffer();
@@ -35,9 +35,9 @@ export async function POST(req: NextRequest) {
             imageHash: true
         }
     });
-    
+
     let result = [];
-    
+
     for (var post of posts) {
         const dist = phashDistance(hash, post.imageHash);
         if (dist <= SIMILAR_THRESHOLD) {

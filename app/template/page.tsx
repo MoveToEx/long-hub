@@ -1,11 +1,15 @@
 'use client';
 
-import LinkImageGrid from '@/components/LinkImageGrid';
 import _ from 'lodash';
 import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import Grid from '@mui/material/Unstable_Grid2';
+import Link from 'next/link';
+import Skeleton from '@mui/material/Skeleton';
+import Image from 'next/image';
+
 import { useState, useEffect, useDeferredValue } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
@@ -63,20 +67,42 @@ export default function Home() {
 
     return (
         <Box sx={{ m: 2 }}>
-            <LinkImageGrid
-                skeleton={loading ? 24 : 0}
-                src={templates === null ? [] : templates.data.map(template => ({
-                    href: `/template/${template.name}`,
-                    src: template.imageURL
-                }))}
-                gridContainerProps={{
-                    spacing: 2
-                }}
-                gridProps={{
-                    xs: 12,
-                    sm: 6,
-                    md: 3
-                }} />
+            <Grid container spacing={2}>
+                {
+                    loading && _.range(24).map(i => (
+                        <Grid xs={12} sm={6} md={3} key={i.toString()}>
+                            <Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
+                        </Grid>
+                    ))
+                }
+                {
+                    templates && templates.data.map(value => (
+                        <Grid xs={12} sm={6} md={3} key={value.name}>
+                            <Link
+                                href={`/template/${value.name}`}
+                                style={{
+                                    display: 'block',
+                                    position: 'relative'
+                                }}>
+                                <Image
+                                    src={value.imageURL}
+                                    alt={value.name}
+                                    height={300}
+                                    width={300}
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '300px',
+                                        width: 'auto',
+                                        minWidth: '100%',
+                                        minHeight: '100%',
+                                        objectFit: 'contain',
+                                    }}
+                                />
+                            </Link>
+                        </Grid>
+                    ))
+                }
+            </Grid>
 
             <Stack alignItems="center" sx={{ m: 4 }}>
                 <Pagination

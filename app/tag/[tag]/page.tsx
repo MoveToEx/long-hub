@@ -1,12 +1,14 @@
 'use client';
 
-import LinkImageGrid from '@/components/LinkImageGrid';
+import PostGrid from '@/components/PostGrid';
 import _ from 'lodash';
 import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
 import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
+import Grid from '@mui/material/Unstable_Grid2';
 import { useState, useEffect, useDeferredValue } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
@@ -60,20 +62,26 @@ export default function TagPage({
                     #{params.tag}
                 </Typography>
             </Box>
-            <LinkImageGrid
-                skeleton={loading ? 24 : 0}
-                src={post === null ? [] : post.data.map(post => ({
-                    href: `/post/${post.id}`,
-                    src: post.imageURL
-                }))}
-                gridContainerProps={{
-                    spacing: 2
-                }}
-                gridProps={{
-                    xs: 12,
-                    sm: 6,
-                    md: 3
-                }} />
+            <Grid container spacing={2}>
+
+                {
+                    loading &&
+                    _.range(24).map(i => (
+                        <Grid xs={12} sm={6} md={3} key={i}>
+                            <Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
+                        </Grid>
+                    ))
+                }
+
+                {
+                    !_.isEmpty(post) &&
+                    post.data.map(val => (
+                        <Grid xs={12} sm={6} md={3} key={val.id}>
+                            <PostGrid value={val} />
+                        </Grid>
+                    ))
+                }
+            </Grid>
 
             <Stack alignItems="center" sx={{ m: 4 }}>
                 <Pagination

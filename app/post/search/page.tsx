@@ -2,7 +2,8 @@
 
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import LinkImageGrid from '@/components/LinkImageGrid';
+import Grid from '@mui/material/Unstable_Grid2';
+import PostGrid from '@/components/PostGrid';
 import Pagination from '@mui/material/Pagination';
 import _ from 'lodash';
 import Skeleton from '@mui/material/Skeleton';
@@ -19,14 +20,14 @@ import { useSearchResult } from '../context';
 export default function SearchPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    
+
     const [query, setQuery] = useState({
         keyword: [] as string[],
         page: 1
     });
     const result = useSearchResult(query);
     const totalPages = useDeferredValue(C.pages(result.data?.count ?? 0));
-    
+
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
@@ -55,7 +56,8 @@ export default function SearchPage() {
                 });
             }} />
 
-            {query.keyword.length != 0 &&
+            {
+                query.keyword.length != 0 &&
                 <Typography variant="h6" align="center">
                     {
                         result.isLoading
@@ -67,20 +69,25 @@ export default function SearchPage() {
 
             {
                 !_.isEmpty(query.keyword) &&
-                <LinkImageGrid
-                    skeleton={result.isLoading ? 24 : 0}
-                    src={result.data ? result.data.data.map((x: any) => ({
-                        href: `/post/${x.id}`,
-                        src: x.imageURL
-                    })) : []}
-                    gridContainerProps={{
-                        spacing: 2
-                    }}
-                    gridProps={{
-                        xs: 12,
-                        sm: 6,
-                        md: 3
-                    }} />
+                <Grid container spacing={2}>
+                    {
+                        result.isLoading &&
+                        _.range(24).map(i => (
+                            <Grid xs={12} sm={6} md={3} key={i}>
+                                <Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
+                            </Grid>
+                        ))
+                    }
+
+                    {
+                        !_.isEmpty(result.data) &&
+                        result.data.data.map(value => (
+                            <Grid xs={12} sm={6} md={3} key={value.id}>
+                                <PostGrid value={value} />
+                            </Grid>
+                        ))
+                    }
+                </Grid>
             }
 
             <Stack alignItems="center" sx={{ m: 4 }}>

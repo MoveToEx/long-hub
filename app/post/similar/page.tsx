@@ -3,7 +3,6 @@
 import styles from './page.module.css';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import LinkImageGrid from '@/components/LinkImageGrid';
 import DropArea from '@/components/DropArea';
 import Skeleton from '@mui/material/Skeleton';
 import Button from '@mui/material/Button';
@@ -12,6 +11,7 @@ import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import Box from '@mui/material/Box';
+import PostGrid from '@/components/PostGrid';
 
 interface Preview {
     file: File;
@@ -46,7 +46,7 @@ export default function UploadPage() {
 
         fetch('/api/post/similar', {
             method: 'POST',
-            body: fd,
+            body: fd
         }).then(response => {
             if (!response.ok) {
                 throw new Error(response.status + ' ' + response.statusText);
@@ -100,21 +100,17 @@ export default function UploadPage() {
                     <Grid item xs={12} md={4}>
                         <Skeleton height={300} variant='rounded' />
                     </Grid>
-                    <Grid item xs={12} md={4}>
-                        <Skeleton height={300} variant='rounded' />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                        <Skeleton height={300} variant='rounded' />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                        <Skeleton height={300} variant='rounded' />
-                    </Grid>
                 </Grid>
             )
         }
         else if (result.similar.length === 0) {
             elem = (
-                <Typography variant="h5">No similar images found</Typography>
+                <>
+                    <Typography variant="h5">No similar images found</Typography>
+                    <Typography variant="subtitle2">
+                        Image hash: {result.hash}
+                    </Typography>
+                </>
             )
         }
         else {
@@ -126,21 +122,15 @@ export default function UploadPage() {
                     <Typography variant="subtitle2">
                         Image hash: {result.hash}
                     </Typography>
-                    <LinkImageGrid
-                        src={result.similar.map((post: any) => ({
-                            href: `/post/${post.id}`,
-                            src: post.imageURL
-                        }))}
-                        gridProps={{
-                            md: 4,
-                            xs: 12
-                        }}
-                        gridContainerProps={{
-                            spacing: 2
-                        }}
-                        linkProps={{
-                            target: '_blank'
-                        }} />
+                    <Grid container spacing={1}>
+                        {
+                            result && result.similar.map(val => (
+                                <Grid xs={12} md={4} key={val.id}>
+                                    <PostGrid value={val} newTab />
+                                </Grid>
+                            ))
+                        }
+                    </Grid>
                 </>
             );
         }
