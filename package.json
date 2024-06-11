@@ -13,7 +13,7 @@
     "dev:start-image-host": "npx ts-node ./scripts/dev-start-img-host.ts"
   },
   "dependencies": {
-    "@azure/msal-node": "^2.5.1",
+    "@azure/msal-node": "^2.9.2",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mdx-js/loader": "^3.0.0",
