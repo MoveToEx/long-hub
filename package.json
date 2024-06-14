@@ -23,7 +23,7 @@
     "@mui/x-charts": "^7.0.0",
     "@mui/x-data-grid": "^7.1.0",
     "@next/mdx": "^14.0.2",
-    "@prisma/client": "^5.11.0",
+    "@prisma/client": "^5.14.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cli-progress": "^3.11.5",
     "@types/color": "^3.0.6",
@@ -70,7 +70,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.0.1",
     "express": "^4.19.2",
-    "prisma": "^5.11.0",
+    "prisma": "^5.14.0",
     "typescript": "^5"
   },
   "packageManager": "yarn@4.2.1"
