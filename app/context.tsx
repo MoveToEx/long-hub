@@ -19,5 +19,5 @@ export function useUser() {
         return response.json();
     };
 
-    return useSWR<User | null>('/api/account', fetcher);
+    return useSWR<User | undefined>('/api/account', fetcher);
 }

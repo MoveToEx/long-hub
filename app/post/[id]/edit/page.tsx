@@ -41,7 +41,7 @@ export default function Post({
     const { data: user } = useUser();
 
     useEffect(() => {
-        if (user === null) {
+        if (!user) {
             router.push('/account/login');
         }
     }, [user, router]);

@@ -69,7 +69,7 @@ export default function UploadPage() {
     let elem;
 
     useEffect(() => {
-        if (user === null) {
+        if (!user) {
             router.push('/account/login');
         }
     }, [user, router]);
