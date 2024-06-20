@@ -35,7 +35,13 @@ export default async function UserPage() {
             aggr: true,
             createdAt: true,
             imageHash: true,
-            uploaderId: true
+            uploaderId: true,
+            uploader: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            }
         }
     });
     

@@ -14,7 +14,8 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 
 import { useSnackbar } from 'notistack';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import Link from 'next/link';
 
 type Post = Prisma.Result<typeof prisma.post, {
     select: {
@@ -25,7 +26,12 @@ type Post = Prisma.Result<typeof prisma.post, {
         aggr: true,
         createdAt: true,
         imageHash: true,
-        uploaderId: true
+        uploaderId: true,
+        uploader: {
+            select: {
+                name: true
+            }
+        }
     }
 }, 'findMany'>;
 
@@ -36,7 +42,8 @@ export function PostGrid({ posts }: {
     const [deleteDialog, setDeleteDialog] = useState({
         open: false,
         id: '',
-        image: ''
+        image: '',
+        pending: false,
     });
     const { enqueueSnackbar } = useSnackbar();
     const columns: GridColDef[] = [
@@ -45,7 +52,11 @@ export function PostGrid({ posts }: {
             headerName: 'ID',
             align: 'center',
             headerAlign: 'left',
-            width: 300
+            width: 300,
+            renderCell: (params) => {
+                if (params.value == null) return <></>;
+                return <Link href={"/post/" + params.value}>{params.value}</Link>
+            }
         },
         {
             field: 'imageURL',
@@ -108,18 +119,25 @@ export function PostGrid({ posts }: {
         },
         {
             field: 'uploaderId',
-            headerName: 'Uploader',
+            headerName: 'Uploader ID',
             width: 100,
             align: 'center',
             headerAlign: 'center',
             type: 'number',
-            editable: true
+            editable: true,
+        },
+        {
+            field: 'uploader',
+            headerName: 'Uploader',
+            width: 150,
+            align: 'center',
+            headerAlign: 'center',
+            editable: false,
+            valueFormatter: (val?: { name: string }) => val?.name ?? "(NULL)"
         },
         {
             field: 'actions',
             type: 'actions',
-            headerName: 'Actions',
-            headerAlign: 'center',
             getActions: (params) => [
                 <GridActionsCellItem
                     key="delete"
@@ -128,24 +146,16 @@ export function PostGrid({ posts }: {
                     onClick={() => setDeleteDialog({
                         open: true,
                         id: params.row.id,
-                        image: params.row.imageURL
+                        image: params.row.imageURL,
+                        pending: false,
                     })} />
             ]
         }
     ];
 
-    const editAction = (updatedRow: any, originalRow: any) => {
-        return EditPost(updatedRow, originalRow)
-            .then(({ ok, message }) => {
-                if (ok) {
-                    return updatedRow;
-                }
-                else {
-                    enqueueSnackbar('Failed: ' + message, { variant: 'error' });
-                    return originalRow;
-                }
-            });
-    }
+    const onError = useCallback((err: Error) => {
+        enqueueSnackbar('Failed: ' + err.message, { variant: 'error' });
+    }, [enqueueSnackbar]);
 
     return (
         <>
@@ -179,22 +189,26 @@ export function PostGrid({ posts }: {
                         open: false
                     })}>Cancel</Button>
                     <Button
-                        onClick={() => {
+                        onClick={async () => {
+                            setDeleteDialog({
+                                ...deleteDialog,
+                                pending: true
+                            });
+                            const { ok, message } = await DeletePost(deleteDialog.id);
+                            if (ok) {
+                                enqueueSnackbar('Deleted ' + deleteDialog.id, { variant: 'success' });
+                            }
+                            else {
+                                enqueueSnackbar('Failed: ' + message, { variant: 'error' });
+                            }
                             setDeleteDialog({
                                 ...deleteDialog,
                                 open: false,
+                                pending: false,
                             });
-                            DeletePost(deleteDialog.id)
-                                .then(({ ok, message }) => {
-                                    if (ok) {
-                                        enqueueSnackbar('Deleted ' + deleteDialog.id, { variant: 'success' });
-                                    }
-                                    else {
-                                        enqueueSnackbar('Failed: ' + message, { variant: 'error' });
-                                    }
-                                });
                         }}
                         color="warning"
+                        disabled={deleteDialog.pending}
                         autoFocus
                     >
                         Delete
@@ -208,7 +222,8 @@ export function PostGrid({ posts }: {
                 pageSizeOptions={[10, 20, 50]}
                 columns={columns}
                 rows={posts}
-                processRowUpdate={editAction}
+                processRowUpdate={EditPost}
+                onProcessRowUpdateError={onError}
                 initialState={{
                     pagination: {
                         paginationModel: {
@@ -219,6 +234,7 @@ export function PostGrid({ posts }: {
                     columns: {
                         columnVisibilityModel: {
                             imageHash: false,
+                            uploaderId: false
                         }
                     },
                     density: 'comfortable'

@@ -12,10 +12,11 @@ export async function EditPost(updatedRow: any, originalRow: any) {
     const user = await authByCookies(cookies());
 
     if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
-        return {
-            ok: false,
-            message: 'Forbidden'
-        };
+        return Promise.reject(new Error('Forbidden'));
+    }
+
+    if (updatedRow.aggr != originalRow.aggr && updatedRow.aggr % 0.5 != 0) {
+        return Promise.reject(new Error('Invalid aggr'));
     }
 
     if (updatedRow.uploaderId != originalRow.uploaderId) {
@@ -26,14 +27,11 @@ export async function EditPost(updatedRow: any, originalRow: any) {
         });
 
         if (count == 0) {
-            return {
-                ok: false,
-                message: 'Invalid uploader ID'
-            };
+            return Promise.reject(new Error('Invalid uploader ID'));
         }
     }
 
-    await prisma.post.update({
+    const row = await prisma.post.update({
         where: {
             id: originalRow.id as string
         },
@@ -41,15 +39,20 @@ export async function EditPost(updatedRow: any, originalRow: any) {
             text: updatedRow.text as string,
             aggr: updatedRow.aggr as number,
             uploaderId: updatedRow.uploaderId as number
+        },
+        include: {
+            uploader: {
+                select: {
+                    name: true
+                }
+            }
         }
     });
 
     revalidatePath('/admin');
     revalidatePath('/admin/posts');
 
-    return {
-        ok: true
-    };
+    return Object.fromEntries(Object.entries(row));
 }
 
 
