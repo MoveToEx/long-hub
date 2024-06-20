@@ -16,6 +16,7 @@ import TagIcon from '@mui/icons-material/Tag';
 import TodayIcon from '@mui/icons-material/Today';
 import Skeleton from '@mui/material/Skeleton';
 import PersonIcon from '@mui/icons-material/Person';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePost } from '@/app/post/context';
 
@@ -138,6 +139,9 @@ export default function PostPage({
                                     <TagRow tags={data.tags.map(e => e.name!) ?? []} noicon />
                                 </div>
                                 <div style={{ display: 'flex' }}>
+                                    <Image src="/aggr.png" alt="aggr" width={24} height={24} style={{
+                                        margin: '4px 8px 4px 8px'
+                                    }} />
                                     <Rating
                                         value={data.aggr}
                                         precision={0.5}

@@ -2,7 +2,7 @@
 
 import './globals.css'
 import { styled, Theme, CSSObject } from '@mui/material/styles';
-import { useState, useMemo, Suspense, ReactNode, ElementType, ComponentProps } from 'react';
+import { useState, useMemo, Suspense, ReactNode, ElementType, ComponentProps, forwardRef } from 'react';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -14,6 +14,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemButton from '@mui/material/ListItemButton';
 import Menu from '@mui/material/Menu';
+import Alert, { AlertColor } from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -37,7 +38,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
-import { SnackbarProvider } from 'notistack';
+import { SnackbarProvider, CustomContentProps } from 'notistack';
 
 import * as C from '@/lib/constants';
 import { usePathname } from 'next/navigation';
@@ -374,6 +375,16 @@ function RootTemplate({
     )
 }
 
+function createSnackbarFactory(variant: AlertColor) {
+    const obj = forwardRef<HTMLDivElement, CustomContentProps>((props, ref) => {
+        const { id, message, action, variant: _variant, ...other } = props;
+        const actions = action && action instanceof Function ? action(id) : action;
+        return <Alert ref={ref} severity={variant} action={actions} {...other}> {message} </Alert>;
+    });
+    obj.displayName = variant + 'Snackbar';
+    return obj;
+}
+
 export default function ProviderWrapper({
     children
 }: {
@@ -391,13 +402,26 @@ export default function ProviderWrapper({
 
     return (
         <ThemeProvider theme={currentTheme}>
-            <SnackbarProvider maxSnack={5} autoHideDuration={3000}>
+            <SnackbarProvider
+                maxSnack={5}
+                autoHideDuration={3000}
+                Components={{
+                    info: createSnackbarFactory('info'),
+                    default: createSnackbarFactory('info'),
+                    success: createSnackbarFactory('success'),
+                    warning: createSnackbarFactory('warning'),
+                    error: createSnackbarFactory('error'),
+                }}
+                anchorOrigin={{
+                    horizontal: 'center',
+                    vertical: 'bottom'
+                }}>
                 <RootTemplate>
                     <Suspense>
                         {children}
                     </Suspense>
                 </RootTemplate>
             </SnackbarProvider>
-        </ThemeProvider>
+        </ThemeProvider >
     )
 }
