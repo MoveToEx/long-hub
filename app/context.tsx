@@ -4,7 +4,7 @@ interface User {
     id: number;
     name: string;
     permission: number;
-    createdAt: Date;
+    createdAt: string;
     accessKey: string;
 };
 

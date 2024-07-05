@@ -65,8 +65,9 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string | un
 
                 <Grid container justifyContent="flex-end">
                     <Grid>
+                        Already have an account?
                         <Link href="/account/login" variant="body2">
-                            {"Already have an account? Log in"}
+                            Log in
                         </Link>
                     </Grid>
                 </Grid>

@@ -9,7 +9,11 @@ import Button from '@mui/material/Button';
 
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import AutorenewIcon from '@mui/icons-material/Autorenew';
+import KeyIcon from '@mui/icons-material/Key';
+import TodayIcon from '@mui/icons-material/Today';
+import TagIcon from '@mui/icons-material/Tag';
 
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import { useUser } from "../context";
@@ -19,26 +23,6 @@ import Skeleton from '@mui/material/Skeleton';
 import { useSnackbar } from "notistack";
 
 import style from './page.module.css';
-
-interface UserInfo {
-    id: number,
-    email?: string,
-    name: string,
-    permission: number,
-    accessKey: string,
-    createdAt: Date
-}
-
-function permission(p: number) {
-    let res = [];
-    if (p & 0x2) {
-        res.push('write');
-    }
-    if (p & 0x4) {
-        res.push('delete');
-    }
-    return res.join();
-}
 
 function CopiableText({
     text
@@ -52,81 +36,91 @@ function CopiableText({
         enqueueSnackbar('Copied to clipboard', { variant: 'success' });
     }
     return (
-        <span className={style.copiable} onClick={() => { copy() }}>
-            {text}
-        </span>
+        <Tooltip title="Click to copy">
+            <span className={style.copiable} onClick={() => { copy() }}>
+                {text}
+            </span>
+        </Tooltip>
     )
 }
 
 export default function AccountPage() {
-    const { data: user, isLoading } = useUser();
+    const { data: user, isLoading, mutate } = useUser();
     const router = useRouter();
     const [resetDisabled, setResetDisabled] = useState(false);
-    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
     useEffect(() => {
         if (user === null) {
             router.push('/account/login');
         }
-
-        fetch('/api/account')
-            .then(response => response.json())
-            .then(data => setUserInfo(data));
     }, [router, user]);
 
     return (
         <Box sx={{ mt: 4 }}>
-            <Grid container>
-                <Grid xs={12} md={6}>
-                    <Paper sx={{ m: 1 }}>
-                        <Box sx={{ p: 1 }}>
-                            <Typography variant="h4" sx={{ m: 2 }}>
-                                {
-                                    !isLoading && userInfo ?
-                                        <Stack direction="row" alignItems="center">
-                                            <AccountCircle fontSize="large" />{userInfo.name}
-                                        </Stack>
-                                        : <Skeleton />
-                                }
+            <Paper sx={{ m: 1 }}>
+                <Box sx={{ p: 1 }}>
+                    <Typography variant="h4" sx={{ m: 2 }}>
+                        {
+                            !isLoading && user ?
+                                <Stack direction="row" alignItems="center">
+                                    <AccountCircle fontSize="large" />{user.name}
+                                </Stack>
+                                : <Skeleton />
+                        }
 
-                            </Typography>
+                    </Typography>
 
-                        </Box>
-                        <Divider />
+                </Box>
+                <Divider />
 
-                        <Box sx={{ p: 2 }}>
+                <Box sx={{ p: 2 }}>
 
-                            <Typography variant="body2">
-                                {!isLoading && userInfo ?
-                                    <>
-                                        Access Key: <CopiableText text={userInfo.accessKey} />
-                                    </> : <Skeleton />}
-                            </Typography>
+                    <Stack direction="column">
 
-                            <Typography variant="body2">
-                                {!isLoading && userInfo ? 'Permission: ' + permission(userInfo.permission) : <Skeleton />}
-                            </Typography>
+                        {!isLoading && user ?
+                            <>
+                                <div style={{ display: 'flex' }}>
+                                    <Tooltip title="User ID">
+                                        <TagIcon sx={{ ml: 1, mr: 1 }} />
+                                    </Tooltip>
+                                    {user.id}
+                                </div>
+                                <div style={{ display: 'flex' }}>
+                                    <Tooltip title="Access Key">
+                                        <KeyIcon sx={{ ml: 1, mr: 1 }} />
+                                    </Tooltip>
+                                    <CopiableText text={user.accessKey} />
+                                </div>
+                                <div style={{ display: 'flex' }}>
+                                    <Tooltip title="Registration Date">
+                                        <TodayIcon sx={{ ml: 1, mr: 1 }} />
+                                    </Tooltip>
+                                    {user.createdAt}
+                                </div>
+                            </> :
+                            <>
+                                <Skeleton />
+                                <Skeleton />
+                                <Skeleton />
+                            </>}
 
-                            <Typography variant="body2">
-                                {!isLoading && userInfo ? 'Registered at ' + userInfo.createdAt : <Skeleton />}
-                            </Typography>
+                    </Stack>
 
-
-                            <Button
-                                onClick={function (e) {
-                                    setResetDisabled(true);
-                                    fetch('/api/account/reset-key').then(() => {
-                                        window.location.reload();
-                                    });
-                                }}
-                                disabled={resetDisabled}
-                            >
-                                <AutorenewIcon /> reset access key
-                            </Button>
-                        </Box>
-                    </Paper>
-                </Grid>
-            </Grid>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button
+                            onClick={async () => {
+                                setResetDisabled(true);
+                                await fetch('/api/account/reset-key');
+                                await mutate();
+                                setResetDisabled(false);
+                            }}
+                            disabled={resetDisabled}
+                        >
+                            <AutorenewIcon /> reset access key
+                        </Button>
+                    </div>
+                </Box>
+            </Paper>
         </Box>
     );
 }
