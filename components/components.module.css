@@ -3,7 +3,17 @@
     height: 300px;
     max-width: 100%;
     object-fit: contain;
-    transition: opacity .02s linear;
+    transition: opacity .2s linear;
+}
+
+.copy-button {
+    transition: opacity linear .1s;
+    opacity: 0;
+}
+
+.grid-image-container:hover > .copy-button {
+    transition: opacity linear .1s;
+    opacity: 1;
 }
 
 .grid-image-fetching {
