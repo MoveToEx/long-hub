@@ -8,8 +8,8 @@ import Fab from '@mui/material/Fab';
 import EditIcon from '@mui/icons-material/Edit';
 import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
-import Tooltip from '@mui/material/Tooltip';
 import _ from 'lodash';
+import Tooltip from '@mui/material/Tooltip';
 import TagRow from '@/components/TagRow';
 import CopiableImage from '@/components/CopiableImage';
 import TagIcon from '@mui/icons-material/Tag';
@@ -19,6 +19,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePost } from '@/app/post/context';
+import aggrIcon from '@/app/post/[id]/aggr.png';
 
 function LoadingSkeleton({ id }: { id: string }) {
     return (
@@ -47,6 +48,9 @@ function LoadingSkeleton({ id }: { id: string }) {
                         <Skeleton sx={{ flexGrow: 1 }} />
                     </div>
                     <div style={{ display: 'flex', height: '30px' }}>
+                        <Image src={aggrIcon} alt="aggr" width={24} height={24} style={{
+                            margin: '4px 8px 4px 8px'
+                        }} />
                         <Skeleton sx={{ flexGrow: 1 }} />
                     </div>
                     <Divider />
@@ -98,76 +102,79 @@ export default function PostPage({
 }) {
     const { data, isLoading, error } = usePost(params.id);
 
-    if (isLoading) {
+    if (isLoading || !data) {
         return <LoadingSkeleton id={params.id} />;
     }
-    
+
     if (error) {
         return <Error id={params.id} />;
     }
 
     return (
         <>
-            {
-                data &&
-                <>
-                    <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
-                        <Grid item xs={12} md={4}>
-                            <CopiableImage
-                                src={data.imageURL}
-                                alt={params.id}
+            <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
+                <Grid item xs={12} md={4}>
+                    <CopiableImage
+                        src={data.imageURL}
+                        alt={params.id}
+                    />
+                </Grid>
+                <Grid item xs={12} md={8} >
+                    <Stack
+                        spacing={1}
+                        component={Paper}
+                        sx={{ p: 2 }}
+                    >
+                        <Typography variant="h5">Post #{params.id}</Typography>
+                        <Typography>{data.text ? data.text : <i>No text</i>}</Typography>
+                        <div style={{ display: 'flex' }}>
+                            <Tooltip title="Created at">
+                                <TodayIcon sx={{ ml: 1, mr: 1 }} />
+                            </Tooltip>
+                            <Typography>{data.createdAt}</Typography>
+                        </div>
+                        <div style={{ display: 'flex' }}>
+                            <Tooltip title="Uploader">
+                                <PersonIcon sx={{ ml: 1, mr: 1 }} />
+                            </Tooltip>
+                            <Typography>{data.uploader?.name ?? <i style={{ fontSize: '16px', color: 'darkgray' }}>(Disowned)</i>}</Typography>
+                        </div>
+                        <div style={{ display: 'flex' }}>
+                            <Tooltip title="Tags">
+                                <TagIcon sx={{ ml: 1, mr: 1, mt: 'auto', mb: 'auto' }} />
+                            </Tooltip>
+                            <TagRow tags={data.tags.map(e => e.name!) ?? []} noicon />
+                        </div>
+                        <div style={{ display: 'flex' }}>
+                            <Tooltip title="Aggressiveness">
+                                <Image src={aggrIcon} alt="aggr" width={24} height={24} style={{
+                                    margin: '4px 8px 4px 8px'
+                                }} />
+                            </Tooltip>
+                            <Rating
+                                value={data.aggr}
+                                precision={0.5}
+                                max={10}
+                                size="large"
+                                readOnly
                             />
-                        </Grid>
-                        <Grid item xs={12} md={8} >
-                            <Stack
-                                spacing={1}
-                                component={Paper}
-                                sx={{ p: 2 }}
-                            >
-                                <Typography variant="h5">Post #{params.id}</Typography>
-                                <Typography>{data.text ? data.text : <i>No text</i>}</Typography>
-                                <div style={{ display: 'flex' }}>
-                                    <TodayIcon sx={{ ml: 1, mr: 1 }} />
-                                    <Typography>{data.createdAt}</Typography>
-                                </div>
-                                <div style={{ display: 'flex' }}>
-                                    <PersonIcon sx={{ ml: 1, mr: 1 }} />
-                                    <Typography>{data.uploader?.name ?? <i style={{ fontSize: '16px', color: 'darkgray' }}>(Disowned)</i>}</Typography>
-                                </div>
-                                <div style={{ display: 'flex' }}>
-                                    <TagIcon sx={{ ml: 1, mr: 1, mt: 'auto', mb: 'auto' }} />
-                                    <TagRow tags={data.tags.map(e => e.name!) ?? []} noicon />
-                                </div>
-                                <div style={{ display: 'flex' }}>
-                                    <Image src="/aggr.png" alt="aggr" width={24} height={24} style={{
-                                        margin: '4px 8px 4px 8px'
-                                    }} />
-                                    <Rating
-                                        value={data.aggr}
-                                        precision={0.5}
-                                        max={10}
-                                        size="large"
-                                        readOnly
-                                    />
-                                </div>
-                                <Divider />
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <Tooltip title="Edit metadata">
-                                        <Fab
-                                            size="large"
-                                            color="primary"
-                                            LinkComponent={Link}
-                                            href={`/post/${params.id}/edit`}
-                                        >
-                                            <EditIcon />
-                                        </Fab>
-                                    </Tooltip>
-                                </div>
-                            </Stack>
-                        </Grid>
-                    </Grid>
-                </>
-            }
+                        </div>
+                        <Divider />
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Tooltip title="Edit metadata">
+                                <Fab
+                                    size="large"
+                                    color="primary"
+                                    LinkComponent={Link}
+                                    href={`/post/${params.id}/edit`}
+                                >
+                                    <EditIcon />
+                                </Fab>
+                            </Tooltip>
+                        </div>
+                    </Stack>
+                </Grid>
+            </Grid>
         </>
     )
 }
