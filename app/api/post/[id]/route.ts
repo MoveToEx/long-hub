@@ -9,11 +9,11 @@ import { revalidatePath } from "next/cache";
 import { z } from 'zod';
 import _ from 'lodash';
 import { responses } from "@/lib/server-util";
-import { Prisma } from "@prisma/client";
+import { Prisma, Rating } from "@prisma/client";
 
 const updateSchema = z.object({
     text: z.optional(z.string()),
-    aggr: z.optional(z.number().min(0).max(10)),
+    rating: z.optional(z.nativeEnum(Rating)),
     tags: z.optional(z.array(z.string()))
 });
 
@@ -83,7 +83,7 @@ export async function PUT(req: NextRequest, {
         });
     }
 
-    if (meta.aggr !== undefined) data.aggr = meta.aggr;
+    if (meta.rating !== undefined) data.rating = meta.rating;
     if (meta.text !== undefined) data.text = meta.text;
     if (meta.tags !== undefined) {
         data.tags = {};
@@ -165,7 +165,7 @@ export async function DELETE(req: NextRequest, {
         return responses.notFound('Post ' + params.id);
     }
 
-    fs.rmSync(post.imagePath);
+    await fs.promises.rm(post.imagePath);
 
     await prisma.post.delete({
         where: {

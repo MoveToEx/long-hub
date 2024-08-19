@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import _ from 'lodash';
 import { z } from "zod";
+import { Rating } from "@prisma/client";
 
 const operatorMapping = {
     'gt': 'gt',
@@ -14,16 +15,16 @@ const operatorMapping = {
     'ne': 'not',
 };
 
-function parseOperator(s: keyof typeof operatorMapping, val: number) {
+function parseOperator(s: keyof typeof operatorMapping, val: number | string) {
     return {
         [operatorMapping[s]]: val
     };
 }
 
-interface AggrSelector {
-    type: 'aggr';
+interface RatingSelector {
+    type: 'rating';
     op: 'gt' | 'lt' | 'lte' | 'gte' | 'eq' | 'ne';
-    value: number;
+    value: Rating
 }
 
 interface TagSelector {
@@ -44,19 +45,18 @@ interface IDSelector {
     value: string;
 }
 
-type Selector = AggrSelector | TagSelector | TextSelector | IDSelector;
+type Selector = RatingSelector | TagSelector | TextSelector | IDSelector;
 
 const schema = z.array(
     z.union([
         z.object({
             type: z.literal('text'),
-            op: z.literal('contains').or(z.literal('not_contains')),
+            op: z.union([z.literal('contains'), z.literal('not_contains')]),
             value: z.string()
         }),
         z.object({
-            type: z.literal('aggr'),
-            op: z.union([z.literal('gt'), z.literal('lt'), ...['le', 'lte', 'ge', 'gte', 'eq', 'ne'].map(val => z.literal(val))]),
-            value: z.number()
+            type: z.literal('rating'),
+            value: z.nativeEnum(Rating)
         }),
         z.object({
             type: z.literal('tag'),
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
             err.formErrors,
             _.toPairs(err.fieldErrors).map(([field, msg]) => `Error parsing ${field}: ${msg}`)
         );
-        
+
         return new Response(msg.join('\n'), {
             status: 400
         });
@@ -127,9 +127,9 @@ export async function POST(req: NextRequest) {
                 });
             }
         }
-        else if (sel.type == 'aggr') {
+        else if (sel.type == 'rating') {
             where.push({
-                aggr: parseOperator(sel.op as any, sel.value)
+                rating: sel.value
             });
         }
         else if (sel.type == 'tag') {

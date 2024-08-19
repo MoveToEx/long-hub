@@ -13,14 +13,15 @@ import phash from 'sharp-phash';
 
 // @ts-expect-error
 import phashDistance from 'sharp-phash/distance';
-import { auth, responses } from '@/lib/server-util';
+import { auth, formatZodError, responses } from '@/lib/server-util';
 import { cookies } from 'next/headers';
 import { Permission } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+import { Rating } from '@prisma/client';
 
 const schema = z.object({
     text: z.string(),
-    aggr: z.number().min(0).max(10).multipleOf(0.5),
+    rating: z.nativeEnum(Rating),
     tags: z.array(z.string())
 });
 
@@ -62,7 +63,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     if (process.env.MEDIA_ROOT === undefined) {
-        return NextResponse.json('MEDIA_ROOT env not found on server', {
+        return new Response('MEDIA_ROOT env not found on server', {
             status: 500
         });
     }
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
             status: 400
         });
     }
-    
+
     try {
         raw = JSON.parse(_metadata);
     }
@@ -109,13 +110,7 @@ export async function POST(req: NextRequest) {
     const { data: metadata, error } = schema.safeParse(raw);
 
     if (error) {
-        const err = error.flatten();
-        const msg = _.concat(
-            err.formErrors,
-            _.toPairs(err.fieldErrors).map(([field, msg]) => `Error parsing ${field}: ${msg}`)
-        );
-
-        return new Response(msg.join('\n'), {
+        return new Response(formatZodError(error), {
             status: 400
         });
     }
@@ -125,7 +120,7 @@ export async function POST(req: NextRequest) {
     if (img.type != 'image/gif') {
         buffer = await sharp(buffer).trim({
             background: 'rgba(255,255,255,0.0)'
-        }).toBuffer();
+        }).trim().toBuffer();
     }
 
     const hash: string = await phash(buffer);
@@ -148,36 +143,21 @@ export async function POST(req: NextRequest) {
     const id = crypto.randomUUID();
     const filename = id + '.' + _.last(img.name.split('.'));
 
-    const tags = [];
-
-    for (const tagName of metadata.tags) {
-        const tag = await prisma.tag.findFirst({
-            where: {
-                name: tagName
-            }
-        });
-
-        if (tag) {
-            tags.push({
-                id: tag.id
-            });
-        }
-        else {
-            tags.push(await prisma.tag.create({
-                data: {
-                    name: tagName
-                }
-            }));
-        }
-    }
-
+    const tags = await Promise.all(
+        metadata.tags.map(async name => prisma.tag.upsert({
+            where: { name },
+            create: { name },
+            update: {}
+        }))
+    );
+    
     const post = await prisma.post.create({
         data: {
             id: id,
             createdAt: new Date(),
             updatedAt: new Date(),
             text: metadata.text,
-            aggr: metadata.aggr,
+            rating: metadata.rating,
             image: filename,
             imageHash: hash,
             uploaderId: user.id,
@@ -187,7 +167,7 @@ export async function POST(req: NextRequest) {
         }
     });
 
-    fs.writeFileSync(path.join(process.env.MEDIA_ROOT, 'posts', filename), buffer);
+    await fs.promises.writeFile(path.join(process.env.MEDIA_ROOT, 'posts', filename), buffer);
 
     revalidatePath('/admin');
     revalidatePath('/admin/posts');

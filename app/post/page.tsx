@@ -45,7 +45,7 @@ export default function PostList() {
             </Stack>
             <Grid container spacing={1}>
                 {
-                    posts.isLoading && posts.data ?
+                    posts.isLoading ?
                         _.range(64).map(x => (
                             <Grid key={x} xs={12} md={6}>
                                 <Grid container spacing={1}>
@@ -54,9 +54,6 @@ export default function PostList() {
                                     </Grid>
                                     <Grid xs>
                                         <Stack spacing={1} justifyItems="center">
-                                            <Typography>
-                                                <Skeleton />
-                                            </Typography>
                                             <Typography>
                                                 <Skeleton />
                                             </Typography>

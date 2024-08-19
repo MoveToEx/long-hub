@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/db';
 import { DataGrid, GridColDef, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
-import { Prisma } from '@prisma/client';
+import { Prisma, Rating } from '@prisma/client';
 import { EditPost, DeletePost } from './actions';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Image from 'next/image';
@@ -23,7 +23,7 @@ type Post = Prisma.Result<typeof prisma.post, {
         image: true,
         imageURL: true,
         text: true,
-        aggr: true,
+        rating: true,
         createdAt: true,
         imageHash: true,
         uploaderId: true,
@@ -92,12 +92,13 @@ export function PostGrid({ posts }: {
             editable: true,
         },
         {
-            field: 'aggr',
-            headerName: 'Aggr.',
-            width: 70,
+            field: 'rating',
+            headerName: 'Rating',
+            width: 100,
             align: 'center',
-            headerAlign: 'left',
-            type: 'number',
+            headerAlign: 'center',
+            type: 'singleSelect',
+            valueOptions: Object.values(Rating),
             editable: true
         },
         {

@@ -1,3 +1,5 @@
+import { Rating } from '@prisma/client';
+import _ from 'lodash';
 
 export const pageLimit = 24;
 export const saltRound = 10;
@@ -18,6 +20,10 @@ export const PermissionDescription = {
     14: 'Edit template',
     15: 'Delete template'
 };
+
+const ratings = Object.values(Rating);
+export const RatingsMapping = _.range(ratings.length).map(x => ratings[x]);
+export const ReverseRatingsMapping = _.zipObject(ratings, _.range(1, ratings.length + 1));
 
 export const Permission = {
     super_user: 0x1,

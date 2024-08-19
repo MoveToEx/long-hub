@@ -4,13 +4,13 @@ import Grid from '@mui/material/Grid';
 import Image from 'next/image';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import Rating from '@mui/material/Rating';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import SendIcon from '@mui/icons-material/Send';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,13 @@ import _ from 'lodash';
 import { useSnackbar } from 'notistack';
 import { useUser } from '@/app/context';
 import { usePost, useTags } from '@/app/post/context';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import { Rating } from '@prisma/client';
+import RatingComponent from '@/components/Rating';
+import ratingIcon from '@/public/rating.png';
 
 export default function Post({
     params
@@ -30,7 +37,7 @@ export default function Post({
     const initialized = useRef(false);
     const [meta, setMeta] = useState({
         text: '',
-        aggr: 0,
+        rating: Rating.none as Rating,
         tags: [] as string[],
     });
     const tags = useTags();
@@ -52,7 +59,7 @@ export default function Post({
             setMeta({
                 text: post.data.text,
                 tags: post.data.tags.map(x => x.name),
-                aggr: post.data.aggr
+                rating: post.data.rating
             });
         }
     }, [post]);
@@ -157,20 +164,23 @@ export default function Post({
                             )
                         }
                     />
-                    <Box alignItems="center">
-                        <Typography component="legend">Aggressiveness</Typography>
-                        <Rating
-                            value={meta.aggr}
-                            precision={0.5}
-                            max={10}
-                            size="large"
-                            onChange={(event, newValue) => {
+                    <Box alignItems="center" sx={{ width: '100%', display: 'flex' }}>
+                        <Tooltip title="Rating">
+                            <Image src={ratingIcon} alt="rating" width={24} height={24} style={{
+                                margin: '4px 8px 4px 8px'
+                            }} />
+                        </Tooltip>
+                        <RatingComponent
+                            value={meta.rating}
+                            onChange={(_, newValue) => {
                                 setMeta({
                                     ...meta,
-                                    aggr: newValue ?? 0
+                                    rating: newValue
                                 });
-                            }}
-                        />
+                            }} />
+                        <Box sx={{ ml: 1 }}>
+                            {_.upperFirst(meta.rating)}
+                        </Box>
                     </Box>
 
                     <Box sx={{ m: 1, position: 'relative' }}>

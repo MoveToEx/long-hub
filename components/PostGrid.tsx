@@ -13,7 +13,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 type PostGridProps = {
     value: {
         imageURL: string;
-        text?: string;
+        text: string;
         id: string;
     },
     ImageProps?: Omit<ImageProps, 'src' | 'alt'>,
@@ -78,14 +78,14 @@ export default function PostGrid({
         }
 
         const blob = new Blob(chunks);
-        const items = [];
 
         if (blob.type === 'image/png') {
-            items.push(new ClipboardItem({
-                [blob.type]: blob
-            }));
             try {
-                await navigator.clipboard.write(items);
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        [blob.type]: blob
+                    })
+                ]);
             }
             catch (e: any) {
                 enqueueSnackbar(e, { variant: 'error' });
@@ -102,52 +102,52 @@ export default function PostGrid({
             return;
         }
 
-        await new Promise((resolve, reject) => {
-            const image = document.createElement('img');
+        const image: HTMLImageElement = await new Promise((resolve, reject) => {
+            const element = document.createElement('img');
 
-            image.onload = async (e) => {
-                canvas.width = image.naturalWidth;
-                canvas.height = image.naturalHeight;
-                context.fillStyle = 'white';
-                context.fillRect(0, 0, canvas.width, canvas.height);
-
-                context.drawImage(image, 0, 0);
-
-                const blob: Blob | null = await new Promise((_resolve, _reject) => {
-                    canvas.toBlob(blob => {
-                        if (blob === null) {
-                            _reject('Cannot convert canvas to blob');
-                        }
-                        else {
-                            _resolve(blob);
-                        }
-                    }, 'image/png');
-                });
-
-                if (blob === null) {
-                    reject('Failed fetching image');
-                    return;
-                }
-
-                try {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({
-                            'image/png': blob
-                        })
-                    ]);
-                }
-                catch (e: any) {
-                    reject(e);
-                }
-                resolve(null);
+            element.onload = async (e) => {
+                resolve(element);
             }
-            image.src = URL.createObjectURL(blob);
-        }).then(() => {
-            enqueueSnackbar('Copied to clipboard', { variant: 'success' });
-        }).catch(reason => {
-            enqueueSnackbar(reason, { variant: 'error' });
+            element.onerror = async (e) => {
+                reject(e);
+            }
+            element.src = URL.createObjectURL(blob);
         });
 
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        context.fillStyle = 'white';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0);
+
+        const pngBlob: Blob | null = await new Promise((resolve, reject) => {
+            canvas.toBlob(blob => {
+                if (blob === null) {
+                    reject('Cannot convert canvas to blob');
+                }
+                else {
+                    resolve(blob);
+                }
+            }, 'image/png');
+        });
+
+        if (pngBlob === null) {
+            enqueueSnackbar('Failed fetching image', { variant: 'error' });
+            return;
+        }
+
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    'image/png': pngBlob
+                })
+            ]);
+        }
+        catch (e: any) {
+            enqueueSnackbar(e, { variant: 'error' });
+        }
+
+        enqueueSnackbar('Copied to clipboard', { variant: 'success' });
         setCopying(false);
         setProgress(0);
     }, [value, enqueueSnackbar]);
@@ -174,6 +174,8 @@ export default function PostGrid({
                 if (!event.ctrlKey || copying) {
                     return;
                 }
+                event.preventDefault();
+                event.stopPropagation();
                 await copy();
             }}
             {...ImageProps}

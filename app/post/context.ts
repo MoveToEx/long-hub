@@ -1,75 +1,75 @@
-import useSWR, { Fetcher } from 'swr';
+import useSWR from 'swr';
 import _ from 'lodash';
+import { Prisma } from '@prisma/client';
+import { prisma } from "@/lib/db";
 
 
-interface Tag {
-    id: number;
-    name: string;
+type ReplaceByValue<T, U, V> = {
+    [K in keyof T]: T[K] extends U ? V : T[K];
 };
 
-interface Post {
-    id: string;
-    text: string;
-    aggr: number;
-    tags: Tag[];
-    image: string;
-    imageURL: string;
-    imageHash: string;
-    createdAt: string;
-    updatedAt: Date;
-    uploaderId?: number;
-    uploader?: {
-        name: string;
-    }
-};
+type Tag = NonNullable<Prisma.Result<typeof prisma.tag, {}, 'findFirst'>>;
+
+type Tags = (Tag & {
+    count: number
+})[];
+
+type Post = NonNullable<ReplaceByValue<Prisma.Result<typeof prisma.post, {
+    include: {
+        tags: true,
+        uploader: {
+            select: {
+                id: true,
+                name: true
+            }
+        }
+    },
+}, 'findFirst'>, Date, string>>;
 
 interface PostsResponse {
     count: number;
     data: Post[];
 };
 
-function parseOp(s: string) {
-    if (s.startsWith('=')) return 'eq';
-    else if (s.startsWith('!=')) return 'ne';
-    else if (s.startsWith('>=')) return 'gte';
-    else if (s.startsWith('>')) return 'gt';
-    else if (s.startsWith('<=')) return 'lte';
-    else if (s.startsWith('<')) return 'lt';
-    else throw new Error('unknown operator');
+function parseRating(s: string) {
+    if (s == 'n') return 'none';
+    else if (s == 'm') return 'moderate';
+    else if (s == 'v') return 'violent';
+    return s;
 }
 
 function startsWith(s: string, ch: string[]) {
     return ch.map(val => s.startsWith(val)).reduce((x, y) => x || y);
 }
 
-function parseFilter(kw: string[]) {
-    return kw.map(x => {
-        if (startsWith(x, ['+', '-'])) {
+function parseFilter(params: string[]) {
+    return params.map(s => {
+        if (startsWith(s, ['+', '-'])) {
             return {
                 type: 'tag',
-                op: x.startsWith('+') ? 'include' : 'exclude',
-                value: _.trimStart(x, '+-')
+                op: s.startsWith('+') ? 'include' : 'exclude',
+                value: _.trimStart(s, '+-')
             }
         }
-        else if (startsWith(x, ['>', '<', '!', '='])) {
+        const [field, value] = s.split(':', 2);
+        if (field == 'rating') {
             return {
-                type: 'aggr',
-                op: parseOp(x),
-                value: Number(_.trimStart(x, '<=>!'))
+                type: 'rating',
+                value: parseRating(value)
             }
         }
-        else if (x.startsWith('@')) {
+        else if (field == 'uploader') {
             return {
-                type: 'id',
-                op: 'contains',
-                value: _.trimStart(x, '@')
+                type: 'uploader',
+                op: 'is',
+                value
             }
         }
         else {
             return {
                 type: 'text',
                 op: 'contains',
-                value: x
+                value: s
             }
         }
     });
@@ -85,7 +85,7 @@ export const TagsFetcher = async (url: string) => {
     return response.json();
 };
 
-export const useTags = () => useSWR<(Tag & { count: number })[]>('/api/post/tag', TagsFetcher);
+export const useTags = () => useSWR<Tags>('/api/post/tag', TagsFetcher);
 
 export const PostsFetcher = async ({ offset, limit }: { offset: number, limit: number }) => {
     const response = await fetch('/api/post?limit=' + limit + '&offset=' + offset);
@@ -113,10 +113,12 @@ export const usePost = (id: string) => useSWR<Post>(id, PostFetcher);
 
 export function useSearchResult({ keyword, page }: { keyword: string[], page: number }) {
     const fetcher = async ([keyword, page]: [string[], number]) => {
-        if (keyword.length == 0) return {
-            count: 0,
-            data: []
-        };
+        if (keyword.length == 0) {
+            return {
+                count: 0,
+                data: []
+            };
+        }
 
         const data = JSON.stringify(parseFilter(keyword));
         const response = await fetch('/api/post/search?limit=24&offset=' + (page - 1) * 24, {

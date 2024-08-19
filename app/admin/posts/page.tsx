@@ -32,7 +32,7 @@ export default async function UserPage() {
             image: true,
             imageURL: true,
             text: true,
-            aggr: true,
+            rating: true,
             createdAt: true,
             imageHash: true,
             uploaderId: true,

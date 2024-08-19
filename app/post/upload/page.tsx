@@ -8,7 +8,6 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
-import Rating from '@mui/material/Rating';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -24,7 +23,6 @@ import { useSnackbar } from 'notistack';
 import _ from 'lodash';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import PostMetadata from '@/lib/types/PostMetadata';
 
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,8 +31,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useUser } from '@/app/context';
 import { useTags } from '@/app/post/context';
 import DropArea from '@/components/DropArea';
+import { Rating } from '@prisma/client';
 
 import styles from './page.module.css';
+import RatingComponent from '@/components/Rating';
+import ratingIcon from '@/public/rating.png';
+
 interface Preview {
     file: File,
     url: string
@@ -50,10 +52,10 @@ interface DialogInfo {
 export default function UploadPage() {
     const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState<Preview[]>([]);
-    const [meta, setMeta] = useState<PostMetadata>({
+    const [meta, setMeta] = useState({
         text: '',
-        aggr: 0,
-        tags: []
+        rating: Rating.none as Rating,
+        tags: [] as string[]
     });
     const [dialog, setDialog] = useState<DialogInfo>({
         open: false
@@ -77,7 +79,7 @@ export default function UploadPage() {
     function next() {
         setMeta({
             text: '',
-            aggr: 0,
+            rating: Rating.none,
             tags: []
         });
         setIgnoreSimilar(false);
@@ -183,7 +185,7 @@ export default function UploadPage() {
                     {
                         data.data.map((post: any) => (
                             <Grid xs={12} sm={6} md={4} key={post.id}>
-                                <PostGrid value={post} newTab/>
+                                <PostGrid value={post} newTab />
                             </Grid>
                         ))
                     }
@@ -290,20 +292,23 @@ export default function UploadPage() {
                                 )
                             }
                         />
-                        <Box alignItems="center">
-                            <Typography component="legend">Aggressiveness</Typography>
-                            <Rating
-                                value={meta.aggr}
-                                precision={0.5}
-                                max={10}
-                                size="large"
-                                onChange={(_event, newValue) => {
+                        <Box alignItems="center" sx={{ width: '100%', display: 'flex' }}>
+                            <Tooltip title="Rating">
+                                <Image src={ratingIcon} alt="rating" width={24} height={24} style={{
+                                    margin: '4px 8px 4px 8px'
+                                }} />
+                            </Tooltip>
+                            <RatingComponent
+                                value={meta.rating}
+                                onChange={(_, newValue) => {
                                     setMeta({
                                         ...meta,
-                                        aggr: newValue ?? 0
+                                        rating: newValue
                                     });
-                                }}
-                            />
+                                }} />
+                            <Box sx={{ ml: 1 }}>
+                                {_.upperFirst(meta.rating)}
+                            </Box>
                         </Box>
 
                         <FormControlLabel control={<Checkbox checked={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />} label="Ignore similar" />

@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
+import { Rating } from "@prisma/client";
 
 export async function EditPost(updatedRow: any, originalRow: any) {
     const user = await authByCookies(cookies());
@@ -15,8 +16,8 @@ export async function EditPost(updatedRow: any, originalRow: any) {
         return Promise.reject(new Error('Forbidden'));
     }
 
-    if (updatedRow.aggr != originalRow.aggr && updatedRow.aggr % 0.5 != 0) {
-        return Promise.reject(new Error('Invalid aggr'));
+    if (updatedRow.rating != originalRow.rating && !Object.values(Rating).includes(updatedRow.rating)) {
+        return Promise.reject(new Error('Invalid rating'));
     }
 
     if (updatedRow.uploaderId != originalRow.uploaderId) {
@@ -37,7 +38,7 @@ export async function EditPost(updatedRow: any, originalRow: any) {
         },
         data: {
             text: updatedRow.text as string,
-            aggr: updatedRow.aggr as number,
+            rating: updatedRow.rating as Rating,
             uploaderId: updatedRow.uploaderId as number
         },
         include: {
