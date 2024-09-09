@@ -58,7 +58,7 @@
     "tar": "^6.2.1",
     "tsconfig-paths": "^4.2.0",
     "utility-types": "^3.11.0",
-    "webpack": "^5.89.0",
+    "webpack": "^5.94.0",
     "zod": "^3.23.7"
   },
   "devDependencies": {
