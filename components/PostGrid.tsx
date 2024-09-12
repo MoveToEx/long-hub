@@ -13,7 +13,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 type PostGridProps = {
     value: {
         imageURL: string;
-        text: string;
+        text?: string;
         id: string;
     },
     ImageProps?: Omit<ImageProps, 'src' | 'alt'>,
