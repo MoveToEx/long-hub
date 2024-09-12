@@ -1,6 +1,6 @@
 'use client';
 
-import PostGrid from '@/components/PostGrid';
+import PostGrid from '@/components/PostGridItem';
 import _ from 'lodash';
 import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
@@ -8,7 +8,7 @@ import Pagination from '@mui/material/Pagination';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid2';
 import { useState, useEffect, useDeferredValue } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
@@ -67,7 +67,7 @@ export default function TagPage({
                 {
                     loading &&
                     _.range(24).map(i => (
-                        <Grid xs={12} sm={6} md={3} key={i}>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
                             <Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
                         </Grid>
                     ))
@@ -76,7 +76,7 @@ export default function TagPage({
                 {
                     !_.isEmpty(post) &&
                     post.data.map(val => (
-                        <Grid xs={12} sm={6} md={3} key={val.id}>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={val.id}>
                             <PostGrid value={val} />
                         </Grid>
                     ))

@@ -1,6 +1,6 @@
 'use client';
 
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -110,7 +110,7 @@ export default function UploadPage() {
     else {
         elem = (
             <Grid container spacing={2} sx={{ paddingTop: '16px' }}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Image
                         ref={image}
                         alt="Preview"
@@ -156,7 +156,7 @@ export default function UploadPage() {
                             border: '3px grey dashed'
                         }} />
                 </Grid>
-                <Grid item xs={12} md={8}>
+                <Grid size={{ xs: 12, md: 8 }}>
                     <Stack spacing={2} alignItems="center" sx={{ m: 2 }}>
                         <Typography variant="h6">
                             {files.length.toString() + ' left'}

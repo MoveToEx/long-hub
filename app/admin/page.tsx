@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Button, { ButtonProps } from '@mui/material/Button';
@@ -159,7 +159,7 @@ export default async function AdminPage() {
             </Paper>
 
             <Grid container>
-                <Grid xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Paper sx={{
                         m: {
                             md: 2
@@ -222,7 +222,7 @@ export default async function AdminPage() {
                         </FlexEndButton>
                     </Paper>
                 </Grid>
-                <Grid xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <Paper sx={{
                         m: {
                             md: 2

@@ -1,6 +1,6 @@
 'use client';
 
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
@@ -21,15 +21,17 @@ import Link from 'next/link';
 import { usePost } from '@/app/post/context';
 import { ReverseRatingsMapping } from '@/lib/constants';
 import ratingIcon from '@/public/rating.png';
+import DownloadIcon from '@mui/icons-material/Download';
+import ImageIcon from '@mui/icons-material/Image';
 import RatingComponent from '@/components/Rating';
 
 function LoadingSkeleton({ id }: { id: string }) {
     return (
         <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
                 <Skeleton variant="rectangular" height={300} />
             </Grid>
-            <Grid item xs={12} md={8} >
+            <Grid size={{ xs: 12, md: 8 }}>
                 <Stack
                     spacing={1}
                     component={Paper}
@@ -76,10 +78,10 @@ function LoadingSkeleton({ id }: { id: string }) {
 function Error({ id }: { id: string }) {
     return (
         <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
                 <Skeleton variant="rectangular" height={300} />
             </Grid>
-            <Grid item xs={12} md={8} >
+            <Grid size={{ xs: 12, md: 8 }} >
                 <Stack
                     spacing={1}
                     component={Paper}
@@ -114,13 +116,13 @@ export default function PostPage({
 
     return (
         <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
                 <CopiableImage
                     src={data.imageURL}
                     alt={params.id}
                 />
             </Grid>
-            <Grid item xs={12} md={8} >
+            <Grid size={{ xs: 12, md: 8 }} >
                 <Stack
                     spacing={1}
                     component={Paper}
@@ -160,7 +162,7 @@ export default function PostPage({
                         </Box>
                     </div>
                     <Divider />
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', gap: '10px' }}>
                         <Tooltip title="Edit metadata">
                             <Fab
                                 size="large"
@@ -171,6 +173,27 @@ export default function PostPage({
                                 <EditIcon />
                             </Fab>
                         </Tooltip>
+                        <Tooltip title="Original file">
+                            <Fab
+                                size="large"
+                                color="primary"
+                                target="_blank"
+                                href={data.imageURL}
+                            >
+                                <ImageIcon />
+                            </Fab>
+                        </Tooltip>
+                        {/* <Tooltip title="Download">
+                            <Fab
+                                size="large"
+                                color="primary"
+                                target="_blank"
+                                href={data.imageURL}
+                                download="nmsl.png"
+                            >
+                                <DownloadIcon />
+                            </Fab>
+                        </Tooltip> */}
                     </div>
                 </Stack>
             </Grid>

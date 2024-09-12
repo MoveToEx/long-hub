@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid2';
 import Link from 'next/link';
 import Skeleton from '@mui/material/Skeleton';
 import Image from 'next/image';
@@ -70,14 +70,14 @@ export default function Home() {
             <Grid container spacing={2}>
                 {
                     loading && _.range(24).map(i => (
-                        <Grid xs={12} sm={6} md={3} key={i.toString()}>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i.toString()}>
                             <Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
                         </Grid>
                     ))
                 }
                 {
                     templates && templates.data.map(value => (
-                        <Grid xs={12} sm={6} md={3} key={value.name}>
+                        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={value.name}>
                             <Link
                                 href={`/template/${value.name}`}
                                 style={{

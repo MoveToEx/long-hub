@@ -1,6 +1,6 @@
 'use client';
 
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import _ from 'lodash';
@@ -123,7 +123,7 @@ export default function TemplatePage({
             </Dialog >
 
             <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     {template && <>
                         <Image
                             unoptimized
@@ -173,7 +173,7 @@ export default function TemplatePage({
                     </>
                     }
                 </Grid>
-                <Grid item xs={12} md={8} sx={{ marginTop: '16px' }}>
+                <Grid size={{ xs: 12, md: 8 }} sx={{ mt: '16px' }}>
                     <Stack alignItems="right" spacing={1}>
                         <Typography variant="h4">
                             Template {params.name}

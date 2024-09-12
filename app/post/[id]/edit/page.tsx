@@ -1,6 +1,6 @@
 'use client';
 
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Image from 'next/image';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
@@ -89,7 +89,7 @@ export default function Post({
 
     return (
         <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
                 {post.data &&
                     <Image
                         id="preview-image"
@@ -105,7 +105,7 @@ export default function Post({
                             objectFit: 'contain'
                         }} />}
             </Grid>
-            <Grid item xs={12} md={8} sx={{ mt: 2 }}>
+            <Grid size={{ xs: 12, md: 8 }} sx={{ mt: 2 }}>
                 <Stack spacing={2} alignItems="center" sx={{ mb: 2 }}>
                     <TextField
                         label="Text"

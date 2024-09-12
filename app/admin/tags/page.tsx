@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid2';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Link from "next/link";
@@ -30,7 +30,7 @@ export default async function TagsAdminPage() {
             }
         }
     });
-    
+
 
     return (
         <Box sx={{ m: 2 }}>
@@ -38,12 +38,12 @@ export default async function TagsAdminPage() {
                 ≪ BACK
             </Button>
             <Grid container spacing={2}>
-                <Grid xs={12} md={8}>
-                    <div style={{height: 750}}>
+                <Grid size={{ xs: 12, md: 8 }}>
+                    <div style={{ height: 750 }}>
                         <TagsGrid tags={tags} />
                     </div>
                 </Grid>
-                <Grid xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Paper sx={{ p: 2 }}>
                         <MigratePostsInput tags={tags.map(tag => tag.name!)} />
                     </Paper>

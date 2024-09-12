@@ -184,7 +184,6 @@ function RootTemplate({
                     Post
                 </Typography>
             </li>
-            <DrawerItem title="List" href="/post" icon={<FormatListBulletedIcon />} />
             <DrawerItem title="Upload" href="/post/upload" icon={<FileUploadIcon />} />
             <DrawerItem title="Search" href="/post/search" icon={<Search />} />
             <DrawerItem title="Find similar" href="/post/similar" icon={<ImageIcon />} />
@@ -194,7 +193,7 @@ function RootTemplate({
                     {expand ? "Template" : "Temp."}
                 </Typography>
             </li>
-            <DrawerItem title="List" href="/template" icon={<AccountTreeIcon />} />
+            <DrawerItem title="List" href="/template" icon={<FormatListBulletedIcon />} />
             <DrawerItem title="Upload" href="/template/upload" icon={<FileUploadIcon />} />
             {(!isLoading && ((user?.permission ?? 0) & C.Permission.Admin.base) != 0) &&
                 <>

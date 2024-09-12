@@ -1,7 +1,7 @@
 'use client';
 
 import styles from './page.module.css';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import DropArea from '@/components/DropArea';
 import Skeleton from '@mui/material/Skeleton';
@@ -11,7 +11,7 @@ import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import Box from '@mui/material/Box';
-import PostGrid from '@/components/PostGrid';
+import PostGrid from '@/components/PostGridItem';
 
 interface Preview {
     file: File;
@@ -87,17 +87,17 @@ export default function UploadPage() {
         if (result === null) {
             elem = (
                 <Grid container spacing={2}>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <Typography variant="h5"><Skeleton width="50%" /></Typography>
                         <Typography variant="subtitle2"><Skeleton /></Typography>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <Skeleton height={300} variant='rounded' />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <Skeleton height={300} variant='rounded' />
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                         <Skeleton height={300} variant='rounded' />
                     </Grid>
                 </Grid>
@@ -125,7 +125,7 @@ export default function UploadPage() {
                     <Grid container spacing={1}>
                         {
                             result && result.similar.map(val => (
-                                <Grid xs={12} md={4} key={val.id}>
+                                <Grid size={{ xs: 12, md: 4 }} key={val.id}>
                                     <PostGrid value={val} newTab />
                                 </Grid>
                             ))
@@ -137,7 +137,7 @@ export default function UploadPage() {
 
         elem = (
             <Grid container spacing={2} sx={{ m: 2 }}>
-                <Grid xs={12}>
+                <Grid size={12}>
                     <Button variant="text" onClick={() => {
                         setFile(null);
                         setResult(null);
@@ -145,7 +145,7 @@ export default function UploadPage() {
                         ≪ BACK
                     </Button>
                 </Grid>
-                <Grid item md={4} xs={12}>
+                <Grid size={{ md: 4, xs: 12 }}>
                     <Image
                         src={file.url}
                         alt='preview'
@@ -159,7 +159,7 @@ export default function UploadPage() {
                     />
                 </Grid>
 
-                <Grid item md={8} xs={12}>
+                <Grid size={{ md: 8, xs: 12 }}>
                     {elem}
                 </Grid>
             </Grid>

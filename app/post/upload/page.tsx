@@ -1,6 +1,6 @@
 'use client';
 
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -14,7 +14,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
-import PostGrid from '@/components/PostGrid';
+import PostGrid from '@/components/PostGridItem';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
@@ -115,7 +115,7 @@ export default function UploadPage() {
                     <Grid container>
                         {
                             data.map((post: any) => (
-                                <Grid xs={12} sm={6} md={4} key={post.id}>
+                                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
                                     <PostGrid value={post} newTab />
                                 </Grid>
                             ))
@@ -184,7 +184,7 @@ export default function UploadPage() {
                 <Grid container>
                     {
                         data.data.map((post: any) => (
-                            <Grid xs={12} sm={6} md={4} key={post.id}>
+                            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
                                 <PostGrid value={post} newTab />
                             </Grid>
                         ))
@@ -220,7 +220,7 @@ export default function UploadPage() {
     else {
         elem = (
             <Grid container spacing={2} sx={{ paddingTop: '16px' }}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                     <Image
                         id="preview-image"
                         alt="Preview"
@@ -233,7 +233,7 @@ export default function UploadPage() {
                             objectFit: 'contain'
                         }} />
                 </Grid>
-                <Grid item xs={12} md={8}>
+                <Grid size={{ xs: 12, md: 8 }}>
                     <Stack spacing={2} alignItems="center" sx={{ m: 2 }}>
                         <Typography variant="h6">
                             {files.length.toString() + ' image' + (files.length > 1 ? 's' : '') + ' left'}

@@ -1,7 +1,7 @@
 'use client';
 
 import TextField from '@mui/material/TextField';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid2';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
