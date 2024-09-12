@@ -10,9 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest",
-    "db:import": "npx ts-node ./scripts/db-import.ts",
-    "db:export": "npx ts-node ./scripts/db-export.ts",
-    "dev:start-image-host": "npx ts-node ./scripts/dev-start-img-host.ts"
+    "dev:start-image-host": "node ./scripts/img-host.js"
   },
   "dependencies": {
     "@azure/msal-node": "^2.9.2",
@@ -21,7 +19,7 @@
     "@mdx-js/loader": "^3.0.0",
     "@mdx-js/react": "^3.0.0",
     "@mui/icons-material": "^5.14.16",
-    "@mui/material": "^5.14.17",
+    "@mui/material": "^6.1.0",
     "@mui/x-charts": "^7.0.0",
     "@mui/x-data-grid": "^7.1.0",
     "@next/mdx": "^14.0.2",
