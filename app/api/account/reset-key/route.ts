@@ -13,16 +13,18 @@ export async function GET(req: NextRequest) {
         });
     }
 
+    const key = crypto.randomBytes(32).toString('base64url')
+
     await prisma.user.update({
         where: {
             id: user.id
         },
         data: {
-            accessKey: crypto.randomBytes(32).toString('base64url')
+            accessKey: key
         }
     });
 
     return NextResponse.json({
-        accessKey: user.accessKey
+        accessKey: key
     });
 }

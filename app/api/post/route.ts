@@ -142,14 +142,6 @@ export async function POST(req: NextRequest) {
 
     const id = crypto.randomUUID();
     const filename = id + '.' + _.last(img.name.split('.'));
-
-    const tags = await Promise.all(
-        metadata.tags.map(async name => prisma.tag.upsert({
-            where: { name },
-            create: { name },
-            update: {}
-        }))
-    );
     
     const post = await prisma.post.create({
         data: {
@@ -160,9 +152,16 @@ export async function POST(req: NextRequest) {
             rating: metadata.rating,
             image: filename,
             imageHash: hash,
-            uploaderId: user.id,
+            uploader: {
+                connect: {
+                    id: user.id
+                }
+            },
             tags: {
-                connect: tags
+                connectOrCreate: metadata.tags.map(name => ({
+                    where: { name },
+                    create: { name }
+                }))
             }
         }
     });
