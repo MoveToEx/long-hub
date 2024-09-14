@@ -99,7 +99,7 @@ function ListLayout({
 				{
 					isLoading && _.range(24).map(i => (
 						<Grid size={{ xs: 12, md: 8 }} offset={{ md: 2 }} key={i.toString()}>
-							<Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
+							<Skeleton variant="rectangular" height={150} sx={{ width: '100%' }} />
 						</Grid>
 					))
 				}

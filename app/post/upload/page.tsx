@@ -225,11 +225,12 @@ export default function UploadPage() {
                         id="preview-image"
                         alt="Preview"
                         src={files[0].url}
-                        height={500}
+                        height={300}
                         width={0}
                         style={{
                             width: '100%',
                             height: 'auto',
+                            maxHeight: '300px',
                             objectFit: 'contain'
                         }} />
                 </Grid>
@@ -285,9 +286,11 @@ export default function UploadPage() {
                                         error={!/^[a-z0-9_]*$/.test(params.inputProps.value as string ?? '')}
                                         helperText={"Only lower case, digits and underline are allowed in tags"}
                                         variant="outlined"
-                                        InputProps={{
-                                            ...params.InputProps,
-                                            endAdornment: tags.isLoading ? <CircularProgress size={20} /> : <></>
+                                        slotProps={{
+                                            input: {
+                                                ...params.InputProps,
+                                                endAdornment: tags.isLoading ? <CircularProgress size={20} /> : <></>
+                                            }
                                         }} />
                                 )
                             }

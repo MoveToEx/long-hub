@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
-import { writeClipboard } from '@/lib/util';
+import { copyImage } from '@/lib/util';
 import styles from './components.module.css';
 
 export default function CopiableImage({
@@ -20,11 +20,12 @@ export default function CopiableImage({
             crossOrigin="anonymous"
             src={src}
             width={300}
-            height={500}
+            height={300}
             alt={alt}
             style={{
                 width: '100%',
                 height: 'auto',
+                maxHeight: '300px',
                 objectFit: 'contain'
             }}
             onClick={async (e) => {

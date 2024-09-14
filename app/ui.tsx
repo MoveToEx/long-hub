@@ -403,24 +403,18 @@ export default function ProviderWrapper({
         <ThemeProvider theme={currentTheme}>
             <SnackbarProvider
                 maxSnack={5}
-                autoHideDuration={3000}
+                autoHideDuration={2000}
                 Components={{
                     info: createSnackbarFactory('info'),
                     default: createSnackbarFactory('info'),
                     success: createSnackbarFactory('success'),
                     warning: createSnackbarFactory('warning'),
                     error: createSnackbarFactory('error'),
-                }}
-                anchorOrigin={{
-                    horizontal: 'center',
-                    vertical: 'bottom'
                 }}>
                 <RootTemplate>
-                    <Suspense>
-                        {children}
-                    </Suspense>
+                    {children}
                 </RootTemplate>
             </SnackbarProvider>
-        </ThemeProvider >
+        </ThemeProvider>
     )
 }

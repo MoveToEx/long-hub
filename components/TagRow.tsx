@@ -10,22 +10,22 @@ function TagRow({
     tags: (string | null)[],
     noicon?: boolean
 }) {
+    if (tags.length == 0) {
+        return <i>Untagged</i>;
+    }
     return (
-        <Stack spacing={1} direction="row" display="inline">
-            {tags.length == 0
-                ? <i> Untagged </i>
-                : tags.map((e, i) => (
-                    <Chip
-                        component={Link}
-                        href={'/tag/' + e}
-                        key={i}
-                        label={e}
-                        sx={{ fontSize: '16px' }}
-                        icon={noicon ? <></> : <TagIcon />}
-                        onClick={() => { }}
-                    />
-                ))
-            }
+        <Stack direction="row" display="inline-block" useFlexGap>
+            {tags.map((e, i) => (
+                <Chip
+                    component={Link}
+                    href={'/tag/' + e}
+                    key={i}
+                    label={e}
+                    sx={{ fontSize: '16px', m: .5 }}
+                    icon={noicon ? <></> : <TagIcon />}
+                    onClick={() => { }}
+                />
+            ))}
         </Stack>
     )
 }

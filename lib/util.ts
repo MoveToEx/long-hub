@@ -17,61 +17,93 @@ export function writeClipboard(items: Record<string, any>, notify?: EnqueueSnack
         .catch((e) => notify && notify('Failed when copying: ' + e, { variant: 'error' }));
 }
 
-export async function copyImage(element: HTMLImageElement, onInfo?: (info: string) => void) {
-    const src = element.src;
+export async function copyImage(
+    src: string,
+    onProgress: (percentage: number) => void
+) {
+    const chunks = [];
+    const response = await fetch(src);
 
-    if (src.endsWith('gif') && onInfo) onInfo('Only the first frame will be copied');
+    if (!response.ok) {
+        throw new Error(response.statusText);
+    }
 
-    const blob = await fetch(src).then(x => x.blob());
+    if (response.body === null) {
+        throw new Error('Unexpected null body');
+    }
 
-    const items = [];
+    const reader = response.body.getReader();
+    const contentLength = Number(response.headers.get('Content-Length') ?? '0');
+
+    if (contentLength == 0) {
+        throw new Error('Unexpected zero-length response');
+    }
+
+    let received = 0;
+
+    while (1) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+            break;
+        }
+        
+        chunks.push(value);
+        received += value.length;
+        onProgress(received / contentLength * 100);
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    const blob = new Blob(chunks);
 
     if (blob.type === 'image/png') {
-        items.push(new ClipboardItem({
-            [blob.type]: blob
-        }));
-        await navigator.clipboard.write(items);
+        await navigator.clipboard.write([
+            new ClipboardItem({
+                [blob.type]: blob
+            })
+        ]);
         return;
     }
 
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     if (context === null) {
-        throw new Error('unable to get canvas context');
-        return;
+        throw new Error('Unable to get canvas context');
     }
 
-    await new Promise((resolve, reject) => {
-        const image = document.createElement('img');
+    const image: HTMLImageElement = await new Promise((resolve, reject) => {
+        const element = document.createElement('img');
 
-        image.onload = async (e) => {
-            canvas.width = image.naturalWidth;
-            canvas.height = image.naturalHeight;
-            context.fillStyle = 'white';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-
-            context.drawImage(image, 0, 0);
-
-            const blob: Blob = await new Promise((resolve, reject) => {
-                canvas.toBlob(blob => {
-                    if (blob === null) {
-                        reject('Cannot convert canvas to blob');
-                    }
-                    else {
-                        resolve(blob);
-                    }
-                }, 'image/png');
-            });
-
-            await navigator.clipboard.write([
-                new ClipboardItem({
-                    'image/png': blob
-                })
-            ]);
-        }
-
-        image.src = URL.createObjectURL(blob);
-
-        resolve(null);
+        element.onload = () => resolve(element);
+        element.onerror = reject;
+        element.src = URL.createObjectURL(blob);
     });
+
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0);
+
+    const pngBlob: Blob | null = await new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+            if (blob === null) {
+                reject('Cannot convert canvas to blob');
+            }
+            else {
+                resolve(blob);
+            }
+        }, 'image/png');
+    });
+
+    if (pngBlob === null) {
+        throw new Error('Failed fetching image');
+    }
+
+    await navigator.clipboard.write([
+        new ClipboardItem({
+            [pngBlob.type]: pngBlob
+        })
+    ]);
 }
