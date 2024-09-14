@@ -163,7 +163,9 @@ export default function Home() {
 					{isLoading ? <Skeleton width={200} /> : <>Total: {data?.count} images</>}
 				</Typography>
 				<ToggleButtonGroup size="small" value={layout} exclusive onChange={(event, value) => {
-					setLayout(value);
+					if (value !== null) {
+						setLayout(value);
+					}
 				}}>
 					<Tooltip title="Grid layout">
 						<ToggleButton value="grid">
