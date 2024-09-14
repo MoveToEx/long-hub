@@ -37,8 +37,5 @@
     font-family: 'Consolas';
     cursor: pointer;
     user-select: none;
-}
-
-.copiable:active {
-    background-color: rgba(0, 0, 0, 0.2);
+    max-width: 100%;
 }

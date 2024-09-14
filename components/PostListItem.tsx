@@ -155,69 +155,27 @@ export default function PostGrid({
         setProgress(0);
     }, [value, enqueueSnackbar]);
 
-    const image = (
-        <Image
-            src={value.imageURL}
-            alt={value.text ?? value.id}
-            height={300}
-            width={300}
-            className={copying ? styles['grid-image-fetching'] : ''}
-            style={{
-                maxWidth: '100%',
-                maxHeight: '300px',
-                width: 'auto',
-                minWidth: '100%',
-                minHeight: '100%',
-                objectFit: 'contain',
-            }}
-            onMouseOver={prefetch ? () => {
-                preload(value.id, PostFetcher);
-            } : () => { }}
-            onClick={async (event) => {
-                if (!event.ctrlKey || copying) {
-                    return;
-                }
-                event.preventDefault();
-                event.stopPropagation();
-                await copy();
-            }}
-            {...ImageProps}
-        />
-    );
-
     return (
-        <div className={styles['grid-image-container']} style={{ position: 'relative' }}>
-            <Fab
-                sx={{
-                    position: 'absolute',
-                    left: '10px',
-                    top: '10px',
-                }}
-                onClick={async () => {
-                    if (copying) return;
-                    await copy();
-                }}
-                size="medium"
-                className={styles['copy-button']}>
-                <ContentCopyIcon />
-            </Fab>
+        <div className={styles['grid-image-container']}>
             <Grid container spacing={1}>
                 <Grid size={4}>
-                    <Link href={`/post/${value.id}`}>
+                    <Link href={`/post/${value.id}`} style={{ maxWidth: '100%' }}>
                         <Image
                             src={value.imageURL}
                             alt={value.id}
                             height={150}
                             width={150}
                             style={{
-                                objectFit: 'contain'
+                                maxWidth: '100%',
+                                minHeight: '150px',
+                                objectFit: 'contain',
                             }}
                         />
                     </Link>
                 </Grid>
                 <Grid size="grow">
                     <Stack spacing={1} justifyItems="center">
-                        <CopiableText text={value.id} />
+                        <CopiableText text={value.id}/>
                         <div>
                             {value.text ?? <i>Notext</i>}
                         </div>

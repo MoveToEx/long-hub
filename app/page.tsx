@@ -94,7 +94,7 @@ function ListLayout({
 	onPagination: (page: number) => void
 }) {
 	return (
-		<Box sx={{ m: 1 }}>
+		<Box sx={{ mt: 1, mb: 1 }}>
 			<Grid container spacing={2}>
 				{
 					isLoading && _.range(24).map(i => (

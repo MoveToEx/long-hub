@@ -6,7 +6,15 @@ import { useSnackbar } from "notistack";
 
 import styles from './components.module.css';
 
-export default function CopiableText({ text, maxLength }: { text: string, maxLength?: number | undefined }) {
+export default function CopiableText({
+    text,
+    maxLength,
+    displayText
+}: {
+    text: string,
+    maxLength?: number,
+    displayText?: string,
+}) {
     const { enqueueSnackbar } = useSnackbar();
 
     const copy = () => {
@@ -16,8 +24,12 @@ export default function CopiableText({ text, maxLength }: { text: string, maxLen
             });
     }
     return (
-        <Typography onClick={copy} className={styles.copiable} component="pre">
-            {maxLength && text.length > maxLength ? text.slice(0, maxLength) + '...' : text}
+        <Typography onClick={copy} className={styles.copiable} component="pre" noWrap>
+            {
+                displayText === undefined ?
+                    (maxLength && text.length > maxLength ? text.slice(0, maxLength) + '...' : text) :
+                    displayText
+            }
         </Typography>
     )
 }
