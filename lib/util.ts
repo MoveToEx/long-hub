@@ -51,8 +51,6 @@ export async function copyImage(
         chunks.push(value);
         received += value.length;
         onProgress(received / contentLength * 100);
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     const blob = new Blob(chunks);
