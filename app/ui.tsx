@@ -412,7 +412,9 @@ export default function ProviderWrapper({
                     error: createSnackbarFactory('error'),
                 }}>
                 <RootTemplate>
-                    {children}
+                    <Suspense>
+                        {children}
+                    </Suspense>
                 </RootTemplate>
             </SnackbarProvider>
         </ThemeProvider>
