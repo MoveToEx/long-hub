@@ -1,17 +1,12 @@
 /** @type {import('next').NextConfig} */
 
-import rehypeHighlight from 'rehype-highlight';
-import json from 'highlight.js/lib/languages/json';
-import http from 'highlight.js/lib/languages/http';
-import nextMDX from '@next/mdx';
-
-const nextConfig = {
+export const nextConfig = {
     experimental: {
         serverActions: {
             allowedOrigins: ['longhub.top', 'www.longhub.top', 'localhost', 'nextjs'],
         },
     },
-    pageExtensions: ['js', 'jsx', 'mdx', 'ts', 'tsx'],
+    pageExtensions: ['js', 'jsx', 'ts', 'tsx'],
     images: {
         remotePatterns: [
             {
@@ -35,21 +30,3 @@ const nextConfig = {
         ]
     },
 };
-
-const withMDX = nextMDX({
-    options: {
-        rehypePlugins: [
-            [
-                rehypeHighlight,
-                {
-                    languages: {
-                        json: json,
-                        http: http
-                    }
-                }
-            ]
-        ]
-    }
-});
-
-export default withMDX(nextConfig);
