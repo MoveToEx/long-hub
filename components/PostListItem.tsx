@@ -36,6 +36,7 @@ export default function PostGrid({
                         alt={value.id}
                         height={150}
                         width={150}
+                        loading="eager"
                         style={{
                             maxWidth: '100%',
                             minHeight: '150px',

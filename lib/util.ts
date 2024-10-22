@@ -17,6 +17,41 @@ export function writeClipboard(items: Record<string, any>, notify?: EnqueueSnack
         .catch((e) => notify && notify('Failed when copying: ' + e, { variant: 'error' }));
 }
 
+export async function copyImageElem(element: HTMLImageElement) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (context === null) {
+        throw new Error('Unable to get canvas context');
+    }
+
+    canvas.width = element.naturalWidth;
+    canvas.height = element.naturalHeight;
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(element, 0, 0);
+
+    const pngBlob: Blob | null = await new Promise((resolve, reject) => {
+        canvas.toBlob(blob => {
+            if (blob === null) {
+                reject('Cannot convert canvas to blob');
+            }
+            else {
+                resolve(blob);
+            }
+        }, 'image/png');
+    });
+
+    if (pngBlob === null) {
+        throw new Error('Failed fetching image');
+    }
+
+    await navigator.clipboard.write([
+        new ClipboardItem({
+            [pngBlob.type]: pngBlob
+        })
+    ]);
+}
+
 export async function copyImage(
     src: string,
     onProgress: (percentage: number) => void
@@ -64,12 +99,6 @@ export async function copyImage(
         return;
     }
 
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    if (context === null) {
-        throw new Error('Unable to get canvas context');
-    }
-
     const image: HTMLImageElement = await new Promise((resolve, reject) => {
         const element = document.createElement('img');
 
@@ -78,30 +107,5 @@ export async function copyImage(
         element.src = URL.createObjectURL(blob);
     });
 
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    context.fillStyle = 'white';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0);
-
-    const pngBlob: Blob | null = await new Promise((resolve, reject) => {
-        canvas.toBlob(blob => {
-            if (blob === null) {
-                reject('Cannot convert canvas to blob');
-            }
-            else {
-                resolve(blob);
-            }
-        }, 'image/png');
-    });
-
-    if (pngBlob === null) {
-        throw new Error('Failed fetching image');
-    }
-
-    await navigator.clipboard.write([
-        new ClipboardItem({
-            [pngBlob.type]: pngBlob
-        })
-    ]);
+    await copyImageElem(image);
 }

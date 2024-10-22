@@ -3,19 +3,26 @@
 import Image from 'next/image';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
-import { copyImage } from '@/lib/util';
+import { copyImage, copyImageElem } from '@/lib/util';
 import styles from './components.module.css';
+import { ImageProps } from 'next/image';
+import { useRef } from 'react';
 
 export default function CopiableImage({
     src,
     alt,
+    ImageProps = undefined
 }: {
     src: string,
     alt: string,
+    ImageProps?: Omit<ImageProps, 'src' | 'alt'> & Partial<Omit<ImageProps, 'height' | 'width'>>
 }) {
     const { enqueueSnackbar } = useSnackbar();
+    const image = useRef<HTMLImageElement>(null);
     return (
         <Image
+            {...ImageProps}
+            ref={image}
             unoptimized
             crossOrigin="anonymous"
             src={src}
@@ -29,49 +36,23 @@ export default function CopiableImage({
                 objectFit: 'contain'
             }}
             onClick={async (e) => {
+                if (image.current === null) return;
+
                 if (!navigator.clipboard) {
                     enqueueSnackbar('navigator.clipboard is undefined', { variant: 'error' });
                     return;
                 }
 
                 if (src.endsWith('gif')) enqueueSnackbar('Only the first frame will be copied', { variant: 'info' });
-                const img = e.currentTarget;
                 
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                if (context === null) {
-                    enqueueSnackbar('Unable to get canvas context', { variant: 'error'} );
-                    return;
+                try {
+                    await copyImageElem(image.current);
+                    enqueueSnackbar('Copied to clipboard', { variant: 'success' });
                 }
-                
-                canvas.width = img.naturalWidth;
-                canvas.height = img.naturalHeight;
-                context.fillStyle = 'white';
-                context.fillRect(0, 0, canvas.width, canvas.height);
-                
-                context.drawImage(img, 0, 0);
-
-                const blob: Blob | null = await new Promise((resolve, reject) => {
-                    canvas.toBlob(res => {
-                        if (res === null) reject('Failed when converting to blob');
-
-                        resolve(res);
-                    }, 'image/png');
-                });
-
-                if (!blob) {
-                    enqueueSnackbar('Cannot convert image to blob', { variant: 'error' });
-                    return;
+                catch (e) {
+                    enqueueSnackbar('Failed: ' + e, { variant: 'error' });
                 }
-
-                const item = new ClipboardItem({
-                    [blob.type]: blob
-                });
-
-                await navigator.clipboard.write([item]);
-
-                enqueueSnackbar('Copied to clipboard', { variant: 'success' });
             }}
         />
-        );
+    );
 }

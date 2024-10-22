@@ -1,9 +1,7 @@
 'use client';
 
 import Typography from "@mui/material/Typography";
-
 import { useSnackbar } from "notistack";
-
 import styles from './components.module.css';
 
 export default function CopiableText({
@@ -17,11 +15,14 @@ export default function CopiableText({
 }) {
     const { enqueueSnackbar } = useSnackbar();
 
-    const copy = () => {
-        navigator.clipboard.writeText(text)
-            .then(() => {
-                enqueueSnackbar('Copied to clipboard', { variant: 'success' });
-            });
+    const copy = async () => {
+        try {
+            await navigator.clipboard.writeText(text);
+            enqueueSnackbar('Copied to clipboard', { variant: 'success' });
+        }
+        catch (e) {
+            enqueueSnackbar('Failed: ' + e, { variant: 'error' });
+        }
     }
     return (
         <Typography onClick={copy} className={styles.copiable} component="pre" noWrap>

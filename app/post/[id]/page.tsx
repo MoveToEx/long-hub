@@ -120,6 +120,9 @@ export default function PostPage({
                 <CopiableImage
                     src={data.imageURL}
                     alt={params.id}
+                    ImageProps={{
+                        loading: 'eager'
+                    }}
                 />
             </Grid>
             <Grid size={{ xs: 12, md: 8 }} >
@@ -148,7 +151,7 @@ export default function PostPage({
                         <Tooltip title="Tags">
                             <TagIcon sx={{ ml: 1, mr: 1, mt: 'auto', mb: 'auto' }} />
                         </Tooltip>
-                        <TagRow tags={data.tags.map(e => e.name!) ?? []} noicon />
+                        <TagRow tags={data.tags.map(e => e.name) ?? []} noicon />
                     </div>
                     <div style={{ display: 'flex' }}>
                         <Tooltip title="Rating">
@@ -183,17 +186,6 @@ export default function PostPage({
                                 <ImageIcon />
                             </Fab>
                         </Tooltip>
-                        {/* <Tooltip title="Download">
-                            <Fab
-                                size="large"
-                                color="primary"
-                                target="_blank"
-                                href={data.imageURL}
-                                download="nmsl.png"
-                            >
-                                <DownloadIcon />
-                            </Fab>
-                        </Tooltip> */}
                     </div>
                 </Stack>
             </Grid>

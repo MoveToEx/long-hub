@@ -34,9 +34,13 @@ export default function PostGrid({
 
     const copy = useCallback(async () => {
         setCopying(true);
-        await copyImage(value.imageURL, (val) => setProgress(val))
-            .then(() => enqueueSnackbar('Copied to clipboard', { variant: 'success' }))
-            .catch(e => enqueueSnackbar(e, { variant: 'error' }));
+        try {
+            await copyImage(value.imageURL, (val) => setProgress(val));
+            enqueueSnackbar('Copied to clipboard', { variant: 'success' });
+        }
+        catch (e) {
+            enqueueSnackbar('Failed: ' + e, { variant: 'error' });
+        }
         setCopying(false);
         setProgress(0);
     }, [enqueueSnackbar, value]);
@@ -47,6 +51,7 @@ export default function PostGrid({
             alt={value.text ?? value.id}
             height={300}
             width={300}
+            loading="eager"
             className={copying ? styles['grid-image-fetching'] : ''}
             style={{
                 maxWidth: '100%',
@@ -62,37 +67,6 @@ export default function PostGrid({
             {...ImageProps}
         />
     );
-
-    let link;
-
-    if (newTab) {
-        link = (
-            <a
-                href={`/post/${value.id}`}
-                target="_blank"
-                style={{
-                    display: 'block',
-                    position: 'relative'
-                }}>
-                {image}
-                {copying && <CircularProgress className={styles['progress']} variant="determinate" value={progress} />}
-            </a>
-        )
-    }
-    else {
-        link = (
-            <Link
-                href={`/post/${value.id}`}
-                prefetch={prefetch}
-                style={{
-                    display: 'block',
-                    position: 'relative'
-                }}>
-                {image}
-                {copying && <CircularProgress className={styles['progress']} variant="determinate" value={progress} />}
-            </Link>
-        );
-    }
 
     return (
         <div className={styles['grid-image-container']} style={{ position: 'relative' }}>
@@ -111,7 +85,17 @@ export default function PostGrid({
                 className={styles['copy-button']}>
                 <ContentCopyIcon />
             </Fab>
-            {link}
+            <Link
+                href={`/post/${value.id}`}
+                prefetch={prefetch}
+                target={newTab ? '_blank' : undefined}
+                style={{
+                    display: 'block',
+                    position: 'relative'
+                }}>
+                {image}
+                {copying && <CircularProgress className={styles['progress']} variant="determinate" value={progress} />}
+            </Link>
         </div>
     )
 }
