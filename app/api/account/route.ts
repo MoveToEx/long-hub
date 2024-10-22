@@ -12,12 +12,5 @@ export async function GET(req: NextRequest) {
         }); 
     }
 
-    return NextResponse.json({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        permission: user.permission,
-        accessKey: user.accessKey,
-        createdAt: user.createdAt
-    });
+    return NextResponse.json(user);
 }

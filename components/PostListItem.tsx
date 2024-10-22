@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image, { ImageProps } from 'next/image';
 import Typography from '@mui/material/Typography';
 import { preload } from 'swr';
-import { PostFetcher } from '@/app/post/context';
+import { PostFetcher } from '@/app/context';
 import Stack from '@mui/material/Stack';
 import CopiableText from '@/components/CopiableText';
 import TagRow from '@/components/TagRow';

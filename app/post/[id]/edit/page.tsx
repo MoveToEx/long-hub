@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
 import { useUser } from '@/app/context';
-import { usePost, useTags } from '@/app/post/context';
+import { usePost, useTags } from '@/app/context';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';

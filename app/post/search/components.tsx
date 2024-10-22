@@ -9,7 +9,7 @@ import _ from 'lodash';
 import TagIcon from '@mui/icons-material/Tag';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 
-import { useTags } from '../context';
+import { useTags } from '@/app/context';
 
 function getLabel(s: string) {
     if (s.startsWith('+') || s.startsWith('-')) {

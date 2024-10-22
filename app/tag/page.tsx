@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useTags } from '../post/context';
+import { useTags } from '../context';
 import { useSnackbar } from 'notistack';
 
 export default function Tags() {

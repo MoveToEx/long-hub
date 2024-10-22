@@ -3,10 +3,11 @@ import _ from 'lodash';
 import { Prisma } from '@prisma/client';
 import { prisma } from "@/lib/db";
 
-
 type ReplaceByValue<T, U, V> = {
     [K in keyof T]: T[K] extends U ? V : T[K];
 };
+
+type User = NonNullable<ReplaceByValue<Prisma.Result<typeof prisma.user, {}, 'findFirst'>, Date, String>>;
 
 type Tag = NonNullable<Prisma.Result<typeof prisma.tag, {}, 'findFirst'>>;
 
@@ -26,10 +27,24 @@ type Post = NonNullable<ReplaceByValue<Prisma.Result<typeof prisma.post, {
     },
 }, 'findFirst'>, Date, string>>;
 
-interface PostsResponse {
+type PostsResponse = {
     count: number;
     data: Post[];
 };
+
+export function useUser() {
+    const fetcher = async (url: string) => {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+
+        return response.json();
+    };
+
+    return useSWR<User | undefined>('/api/account', fetcher);
+}
 
 function parseRating(s: string) {
     if (s == 'n') return 'none';
@@ -84,7 +99,6 @@ export const TagsFetcher = async (url: string) => {
 
     return response.json();
 };
-
 export const useTags = () => useSWR<Tags>('/api/post/tag', TagsFetcher);
 
 export const PostsFetcher = async ({ offset, limit }: { offset: number, limit: number }) => {
@@ -96,7 +110,6 @@ export const PostsFetcher = async ({ offset, limit }: { offset: number, limit: n
 
     return response.json();
 };
-
 export const usePosts = (offset: number = 0, limit: number = 24) => useSWR<PostsResponse>({ offset, limit }, PostsFetcher, {});
 
 export const PostFetcher = async (id: string) => {
@@ -108,29 +121,38 @@ export const PostFetcher = async (id: string) => {
 
     return response.json();
 };
-
 export const usePost = (id: string) => useSWR<Post>(id, PostFetcher);
 
-export function useSearchResult({ keyword, page }: { keyword: string[], page: number }) {
-    const fetcher = async ([keyword, page]: [string[], number]) => {
-        if (keyword.length == 0) {
-            return {
-                count: 0,
-                data: []
-            };
-        }
-
-        const data = JSON.stringify(parseFilter(keyword));
-        const response = await fetch('/api/post/search?limit=24&offset=' + (page - 1) * 24, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: data
-        });
-
-        return response.json();
+export const SearchResultFetcher = async ([keyword, page]: [string[], number]) => {
+    if (keyword.length == 0) {
+        return {
+            count: 0,
+            data: []
+        };
     }
 
-    return useSWR<PostsResponse>([keyword, page], fetcher, {});
+    const data = JSON.stringify(parseFilter(keyword));
+    const response = await fetch('/api/post/search?limit=24&offset=' + (page - 1) * 24, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: data
+    });
+
+    return response.json();
 }
+export function useSearchResult({ keyword, page }: { keyword: string[], page: number }) {
+    return useSWR<PostsResponse>([keyword, page], SearchResultFetcher, {});
+}
+
+export const TaggedPostsFetcher = async ([tag, page]: [string, number]) => {
+    const response = await fetch('/api/post/tag/' + tag + '?limit=24&offset=' + (page - 1) * 24);
+
+    if (!response.ok) {
+        throw new Error(response.statusText);
+    }
+
+    return response.json();
+}
+export const useTaggedPost = (tag: string, page: number) => useSWR<PostsResponse>([tag, page], TaggedPostsFetcher, {});

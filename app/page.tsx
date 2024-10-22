@@ -15,7 +15,7 @@ import { useState, useEffect, useDeferredValue } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
-import { usePosts } from './post/context';
+import { usePosts } from './context';
 import PostGridItem from '@/components/PostGridItem';
 import PostListItem from '@/components/PostListItem';
 import { useSnackbar } from 'notistack';

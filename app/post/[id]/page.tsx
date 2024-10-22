@@ -18,7 +18,7 @@ import Skeleton from '@mui/material/Skeleton';
 import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePost } from '@/app/post/context';
+import { usePost } from '@/app/context';
 import { ReverseRatingsMapping } from '@/lib/constants';
 import ratingIcon from '@/public/rating.png';
 import DownloadIcon from '@mui/icons-material/Download';

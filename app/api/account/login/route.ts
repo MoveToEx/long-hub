@@ -40,10 +40,5 @@ export async function POST(req: NextRequest) {
 
     await session.save();
 
-    return NextResponse.json({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        accessKey: user.accessKey
-    });
+    return NextResponse.json(user);
 }

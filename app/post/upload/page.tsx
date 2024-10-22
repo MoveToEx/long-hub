@@ -29,7 +29,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 
 import { useUser } from '@/app/context';
-import { useTags } from '@/app/post/context';
+import { useTags } from '@/app/context';
 import DropArea from '@/components/DropArea';
 import { Rating } from '@prisma/client';
 

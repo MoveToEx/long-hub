@@ -5,7 +5,7 @@ import { useSnackbar } from 'notistack';
 import Link from 'next/link';
 import Image, { ImageProps } from 'next/image';
 import { preload } from 'swr';
-import { PostFetcher } from '@/app/post/context';
+import { PostFetcher } from '@/app/context';
 import styles from './components.module.css';
 import Fab from '@mui/material/Fab';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';

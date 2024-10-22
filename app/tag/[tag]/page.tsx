@@ -12,9 +12,9 @@ import Grid from '@mui/material/Grid2';
 import { useState, useEffect, useDeferredValue } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
-import { PostResponse } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
+import { useTaggedPost } from '@/app/context';
 
 export default function TagPage({
     params
@@ -26,34 +26,13 @@ export default function TagPage({
     const searchParams = useSearchParams();
     const router = useRouter();
     const { enqueueSnackbar } = useSnackbar();
-    const [loading, setLoading] = useState(true);
-    const [post, setPost] = useState<PostResponse | null>(null);
     const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
-    const deferredPage = useDeferredValue(C.pages(post?.count ?? 0));
+    const { data, isLoading } = useTaggedPost(params.tag, page);
+	const deferredPage = useDeferredValue(C.pages(data?.count ?? 0));
 
     useEffect(() => {
         setPage(Number(searchParams.get('page') ?? '1'));
     }, [searchParams]);
-
-    useEffect(() => {
-        setLoading(true);
-
-        fetch('/api/post/tag/' + params.tag + '?limit=24&offset=' + (page - 1) * 24)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                setPost(data);
-            })
-            .catch(reason => {
-                enqueueSnackbar('Failed: ' + reason);
-            }).finally(() => {
-                setLoading(false);
-            });
-    }, [page, params.tag, enqueueSnackbar]);
 
     return (
         <Box sx={{ m: 2 }}>
@@ -65,7 +44,7 @@ export default function TagPage({
             <Grid container spacing={2}>
 
                 {
-                    loading &&
+                    isLoading &&
                     _.range(24).map(i => (
                         <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
                             <Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
@@ -74,8 +53,8 @@ export default function TagPage({
                 }
 
                 {
-                    !_.isEmpty(post) &&
-                    post.data.map(val => (
+                    !_.isEmpty(data) &&
+                    data.data.map(val => (
                         <Grid size={{ xs: 12, sm: 6, md: 3 }} key={val.id}>
                             <PostGrid value={val} />
                         </Grid>
@@ -85,7 +64,7 @@ export default function TagPage({
 
             <Stack alignItems="center" sx={{ m: 4 }}>
                 <Pagination
-                    disabled={loading}
+                    disabled={isLoading}
                     count={deferredPage}
                     page={page}
                     onChange={(_, val) => {

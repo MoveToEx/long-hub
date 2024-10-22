@@ -15,7 +15,7 @@ import { useSnackbar } from 'notistack';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
 
-import { useSearchResult } from '../context';
+import { useSearchResult } from '@/app/context';
 
 export default function SearchPage() {
     const searchParams = useSearchParams();
