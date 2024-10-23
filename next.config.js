@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 
-export const nextConfig = {
+const nextConfig = {
     experimental: {
         serverActions: {
             allowedOrigins: ['longhub.top', 'www.longhub.top', 'localhost', 'nextjs'],
@@ -30,3 +30,5 @@ export const nextConfig = {
         ]
     },
 };
+
+export default nextConfig;

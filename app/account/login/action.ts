@@ -6,7 +6,7 @@ import { getIronSession } from 'iron-session';
 import { Session } from '@/lib/server-types';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 import { cookieSettings } from '@/lib/server-util';
 

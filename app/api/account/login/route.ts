@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Session } from '@/lib/server-types';
 import { getIronSession } from 'iron-session';
 import { prisma } from '@/lib/db';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 import { cookieSettings } from '@/lib/server-util';
 

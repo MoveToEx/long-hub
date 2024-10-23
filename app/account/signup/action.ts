@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import _ from 'lodash';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import * as C from '@/lib/constants';
 import crypto from 'crypto';
 import { headers } from 'next/headers';
