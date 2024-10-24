@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 import { ZodError } from 'zod';
 import _ from 'lodash';
+import { cookies } from 'next/headers';
 
 export const cookieSettings = {
     password: process.env['COOKIE_SECRET'] as string,
@@ -40,8 +41,8 @@ export async function authByKey(request: NextRequest) {
     return user;
 }
 
-export async function authByCookies(cookies: ReadonlyRequestCookies) {
-    const session = await getIronSession<Session>(cookies, cookieSettings);
+export async function authByCookies() {
+    const session = await getIronSession<Session>(await cookies(), cookieSettings);
 
     if (session.expire > new Date()) {
         session.destroy();
@@ -59,11 +60,11 @@ export async function authByCookies(cookies: ReadonlyRequestCookies) {
     return user;
 }
 
-export async function auth(req: NextRequest, cookies: ReadonlyRequestCookies) {
+export async function auth(req: NextRequest) {
     let user = await authByKey(req);
 
     if (!user) {
-        user = await authByCookies(cookies);
+        user = await authByCookies();
     }
 
     return user;

@@ -19,13 +19,13 @@ import Link from 'next/link';
 export default async function EditUserPage({
     params
 }: {
-    params: {
-        id: string
-    }
-    }) {
+    params: Promise<{ id: string }>
+}) {
+    const { id } = await params;
+    
     const user = await prisma.user.findFirst({
         where: {
-            id: Number(params.id)
+            id: Number(id)
         }
     });
 

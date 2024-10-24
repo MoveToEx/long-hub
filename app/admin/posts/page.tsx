@@ -14,7 +14,7 @@ import * as C from '@/lib/constants';
 
 export default async function UserPage() {
 
-    const user = await authByCookies(cookies());
+    const user = await authByCookies();
 
     if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
         return notFound();

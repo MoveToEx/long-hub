@@ -5,7 +5,7 @@ import { cookieSettings } from "@/lib/server-util";
 import { Session } from "@/lib/server-types";
 
 export async function GET() {
-    const session = await getIronSession<Session>(cookies(), cookieSettings);
+    const session = await getIronSession<Session>(await cookies(), cookieSettings);
 
     session.destroy();
 

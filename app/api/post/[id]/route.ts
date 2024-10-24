@@ -20,13 +20,12 @@ const updateSchema = z.object({
 export async function GET(req: NextRequest, {
     params
 }: {
-    params: {
-        id: string
-    }
+    params: Promise<{ id: string }>
 }) {
+    const { id } = await params;
     const post = await prisma.post.findFirst({
         where: {
-            id: params.id
+            id
         },
         include: {
             tags: true,
@@ -40,7 +39,7 @@ export async function GET(req: NextRequest, {
     });
 
     if (!post) {
-        return responses.notFound('Post ' + params.id);
+        return responses.notFound('Post ' + id);
     }
 
     return NextResponse.json(post);
@@ -49,11 +48,9 @@ export async function GET(req: NextRequest, {
 export async function PUT(req: NextRequest, {
     params
 }: {
-    params: {
-        id: string
-    }
+    params: Promise<{ id: string }>
 }) {
-    const user = await auth(req, cookies());
+    const user = await auth(req);
 
     if (!user) {
         return responses.unauthorized();
@@ -63,16 +60,18 @@ export async function PUT(req: NextRequest, {
         return responses.forbidden();
     }
 
+    const { id } = await params;
+
     var post = await prisma.post.findFirst({
         where: {
-            id: params.id
+            id
         }
     });
 
     const data: Prisma.postUpdateInput = {};
 
     if (!post) {
-        return responses.notFound('Post ' + params.id);
+        return responses.notFound('Post ' + id);
     }
 
     const { data: meta, error } = updateSchema.safeParse(await req.json());
@@ -111,7 +110,7 @@ export async function PUT(req: NextRequest, {
 
     await prisma.post.update({
         where: {
-            id: params.id
+            id
         },
         data: {
             ...data,
@@ -124,7 +123,7 @@ export async function PUT(req: NextRequest, {
 
     return NextResponse.json(await prisma.post.findFirst({
         where: {
-            id: params.id
+            id
         },
         include: {
             tags: true,
@@ -141,11 +140,9 @@ export async function PUT(req: NextRequest, {
 export async function DELETE(req: NextRequest, {
     params
 }: {
-    params: {
-        id: string
-    }
+    params: Promise<{ id: string }>
 }) {
-    const user = await auth(req, cookies());
+    const user = await auth(req);
 
     if (!user) {
         return responses.unauthorized();
@@ -155,21 +152,23 @@ export async function DELETE(req: NextRequest, {
         return responses.forbidden();
     }
 
+    const { id } = await params;
+
     const post = await prisma.post.findFirst({
         where: {
-            id: params.id
+            id
         }
     });
 
     if (!post) {
-        return responses.notFound('Post ' + params.id);
+        return responses.notFound('Post ' + id);
     }
 
     await fs.promises.rm(post.imagePath);
 
     await prisma.post.delete({
         where: {
-            id: params.id
+            id
         }
     });
 

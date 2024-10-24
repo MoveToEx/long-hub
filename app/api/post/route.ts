@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    const user = await auth(req, cookies());
+    const user = await auth(req);
 
     if (user === null) {
         return responses.unauthorized();
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
         }
     });
 
-    await fs.promises.writeFile(path.join(process.env.MEDIA_ROOT, 'posts', filename), buffer);
+    await fs.promises.writeFile(path.join(process.env.MEDIA_ROOT, 'posts', filename), new Uint8Array(buffer));
 
     revalidatePath('/admin');
     revalidatePath('/admin/posts');

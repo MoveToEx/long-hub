@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 import { cookieSettings } from '@/lib/server-util';
 
 export async function POST(req: NextRequest) {
-    const session = await getIronSession<Session>(cookies(), cookieSettings);
+    const session = await getIronSession<Session>(await cookies(), cookieSettings);
 
     const data = await req.json();
 

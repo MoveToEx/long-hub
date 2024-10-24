@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 import { Rating } from "@prisma/client";
 
 export async function EditPost(updatedRow: any, originalRow: any) {
-    const user = await authByCookies(cookies());
+    const user = await authByCookies();
 
     if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
         return Promise.reject(new Error('Forbidden'));
@@ -58,7 +58,7 @@ export async function EditPost(updatedRow: any, originalRow: any) {
 
 
 export async function DeletePost(id: string) {
-    const op = await authByCookies(cookies());
+    const op = await authByCookies();
 
     if (!op) return {
         ok: false,

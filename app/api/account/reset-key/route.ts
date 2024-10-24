@@ -5,7 +5,7 @@ import { auth } from "@/lib/server-util";
 import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
-    const user = await auth(req, cookies());
+    const user = await auth(req);
 
     if (user == null) {
         return NextResponse.json('unauthorized', {

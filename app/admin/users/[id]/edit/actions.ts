@@ -11,7 +11,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 export async function EditUser(fd: FormData) {
-    const op = await authByCookies(cookies());
+    const op = await authByCookies();
 
     if (!op) {
         return;

@@ -51,7 +51,7 @@ function FlexEndButton(props: ButtonProps) {
 
 
 export default async function AdminPage() {
-    const user = await authByCookies(cookies());
+    const user = await authByCookies();
 
     if (!user || (user.permission & C.Permission.Admin.base) == 0) {
         notFound();

@@ -15,7 +15,7 @@ import * as C from '@/lib/constants';
 export const dynamic = 'force-dynamic';
 
 export default async function TagsAdminPage() {
-    const user = await authByCookies(cookies());
+    const user = await authByCookies();
 
     if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
         return notFound();

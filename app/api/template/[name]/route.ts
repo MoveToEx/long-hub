@@ -10,18 +10,17 @@ import { cookies } from "next/headers";
 export async function GET(req: NextRequest, {
     params
 }: {
-    params: {
-        name: string
-    }
+    params: Promise<{ name: string }>
 }) {
+    const { name } = await params;
     const template = await prisma.template.findFirst({
         where: {
-            name: params.name
+            name
         }
     });
 
     if (!template) {
-        return NextResponse.json(params.name + ' not found', {
+        return NextResponse.json(name + ' not found', {
             status: 404
         });
     }
@@ -32,26 +31,25 @@ export async function GET(req: NextRequest, {
 export async function POST(req: NextRequest, {
     params
 }: {
-    params: {
-        name: string
-    }
+    params: Promise<{ name: string }>
 }) {
     if (process.env.MEDIA_ROOT === undefined) {
         return NextResponse.json('MEDIA_ROOT env not found', {
             status: 500
         });
     }
+    const { name } = await params;
     if (await prisma.template.count({
         where: {
-            name: params.name
+            name: name
         }
     })) {
-        return NextResponse.json(params.name + ' already exists', {
+        return NextResponse.json(name + ' already exists', {
             status: 409
         });
     }
 
-    const user = await auth(req, cookies());
+    const user = await auth(req);
 
     if (user == null) {
         return NextResponse.json('unauthorized', {
@@ -82,10 +80,10 @@ export async function POST(req: NextRequest, {
         });
     }
 
-    const filename = params.name + '.' + _.last(img.name.split('.'));
+    const filename = name + '.' + _.last(img.name.split('.'));
     const template = await prisma.template.create({
         data: {
-            name: params.name,
+            name: name,
             image: filename,
             createdAt: new Date(),
             uploaderId: user.id,
@@ -98,7 +96,7 @@ export async function POST(req: NextRequest, {
 
     var buffer = Buffer.from(await img.arrayBuffer());
 
-    fs.writeFileSync(template.imagePath, buffer);
+    fs.writeFileSync(template.imagePath, new Uint8Array(buffer));
 
     return NextResponse.json({
         name: template.name
@@ -110,19 +108,19 @@ export async function POST(req: NextRequest, {
 export async function PUT(req: NextRequest, {
     params
 }: {
-    params: {
-        name: string
-    }
+    params: Promise<{ name: string }>
 }) {
+    const { name } = await params;
+
     const template = await prisma.template.findFirst({
         where: {
-            name: params.name
+            name
         }
     });
     const data = await req.json();
 
     if (!template) {
-        return NextResponse.json(params.name + ' not found', {
+        return NextResponse.json(name + ' not found', {
             status: 404
         });
     }
@@ -133,7 +131,7 @@ export async function PUT(req: NextRequest, {
         });
     }
 
-    const user = await auth(req, cookies());
+    const user = await auth(req);
 
     if (user == null) {
         return NextResponse.json('unauthorized', {
@@ -156,7 +154,7 @@ export async function PUT(req: NextRequest, {
 
     await prisma.template.update({
         where: {
-            name: params.name
+            name: name
         },
         data: tmp
     });

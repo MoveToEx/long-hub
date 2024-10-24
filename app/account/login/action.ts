@@ -28,8 +28,7 @@ export default async function login(state: any, fd: FormData) {
     if (!bcrypt.compareSync(pswd, user.passwordHash)) {
         return 'Invalid credential';
     }
-
-    const session = await getIronSession<Session>(cookies(), cookieSettings);
+    const session = await getIronSession<Session>(await cookies(), cookieSettings);
 
     const expireDate = new Date();
 

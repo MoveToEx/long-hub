@@ -6,19 +6,18 @@ import _ from 'lodash';
 export async function POST(req: NextRequest, {
     params
 }: {
-    params: {
-        name: string
-    }
+    params: Promise<{ name: string }>
 }) {
+    const { name } = await params;
     const data = await req.json();
     const template = await prisma.template.findFirst({
         where: {
-            name: params.name
+            name
         }
     });
 
     if (!template) {
-        return NextResponse.json(params.name + ' not found', {
+        return NextResponse.json(name + ' not found', {
             status: 404
         });
     }
@@ -69,7 +68,7 @@ export async function POST(req: NextRequest, {
             status: 500
         });
     }
-    
+
     const buf = await sharp(template.imagePath).composite([
         {
             input: text,

@@ -4,17 +4,16 @@ import { prisma } from '@/lib/db';
 export async function GET(req: NextRequest, {
     params
 }: {
-    params: {
-        name: string
-    }
+    params: Promise<{ name: string }>
 }) {
     const { searchParams } = new URL(req.url);
     const offset = Number(searchParams.get('offset') ?? 0);
     const limit = Number(searchParams.get('limit') ?? 24);
+    const { name } = await params;
 
     const tag = await prisma.tag.findFirst({
         where: {
-            name: params.name
+            name
         },
         include: {
             posts: {
@@ -26,7 +25,7 @@ export async function GET(req: NextRequest, {
 
     const count = await prisma.tag.findFirst({
         where: {
-            name: params.name
+            name: name
         },
         select: {
             _count: {

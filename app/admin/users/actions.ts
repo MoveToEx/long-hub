@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import * as C from '@/lib/constants';
 
 export async function DeleteUser(fd: FormData) {
-    const op = await authByCookies(cookies());
+    const op = await authByCookies();
 
     if (!op) return;
 
@@ -37,7 +37,7 @@ export async function DeleteUser(fd: FormData) {
 }
 
 export async function ResetAccessKey(fd: FormData) {
-    const op = await authByCookies(cookies());
+    const op = await authByCookies();
 
     if (!op) return;
 

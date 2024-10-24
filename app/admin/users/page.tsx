@@ -29,12 +29,10 @@ const pageLimit = 24;
 export default async function UserPage({
     searchParams
 }: {
-    searchParams?: {
-        page?: string
-    }
+    searchParams: Promise<{ page?: string }>
 }) {
-    const page = Number(searchParams?.page ?? '1');
-    const offset = pageLimit * (page - 1);
+    const { page } = await searchParams;
+    const offset = pageLimit * (Number(page ?? '1') - 1);
     const users = await prisma.user.findMany({
         skip: offset,
         take: pageLimit
@@ -105,7 +103,7 @@ export default async function UserPage({
             </Box>
             <Pagination
                 count={Math.ceil(total / pageLimit)}
-                page={page} />
+                page={Number(page ?? '1')} />
         </Box>
     )
 }

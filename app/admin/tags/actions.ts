@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 import * as C from '@/lib/constants';
 
 export async function MigratePosts(_state: any, fd: FormData) {
-    const user = await authByCookies(cookies());
+    const user = await authByCookies();
 
     if (!user) {
         return 'Unauthorized';
@@ -102,7 +102,7 @@ export async function MigratePosts(_state: any, fd: FormData) {
 }
 
 export async function EditTag(updatedRow: any, originalRow: any) {
-    const user = await authByCookies(cookies());
+    const user = await authByCookies();
 
     if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
         return Promise.resolve(originalRow);

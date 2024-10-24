@@ -3,11 +3,16 @@ import { ReactNode } from 'react';
 import _ from 'lodash';
 
 export async function generateMetadata(
-    { params }: { params: { id: string } },
+    {
+        params
+    }: {
+        params: Promise<{ id: string }>
+    },
     parent: ResolvingMetadata
 ): Promise<Metadata> {
+    const { id } = await params;
     return {
-        title: 'Edit post ' + _.first(params.id.split('-'))
+        title: 'Edit post ' + _.first(id.split('-'))
     };
 }
 

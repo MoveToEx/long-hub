@@ -12,16 +12,12 @@ import Box from '@mui/material/Box';
 import SendIcon from '@mui/icons-material/Send';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
 import { useUser } from '@/app/context';
 import { usePost, useTags } from '@/app/context';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import { Rating } from '@prisma/client';
 import RatingComponent from '@/components/Rating';
 import ratingIcon from '@/public/rating.png';
@@ -29,10 +25,9 @@ import ratingIcon from '@/public/rating.png';
 export default function Post({
     params
 }: {
-    params: {
-        id: string
-    }
+    params: Promise<{ id: string }>
 }) {
+    const { id } = use(params);
     const [submitting, setSubmitting] = useState(false);
     const initialized = useRef(false);
     const [meta, setMeta] = useState({
@@ -41,7 +36,7 @@ export default function Post({
         tags: [] as string[],
     });
     const tags = useTags();
-    const post = usePost(params.id);
+    const post = usePost(id);
 
     const { enqueueSnackbar } = useSnackbar();
     const router = useRouter();
@@ -66,7 +61,7 @@ export default function Post({
 
     function submit() {
         setSubmitting(true);
-        fetch('/api/post/' + params.id, {
+        fetch('/api/post/' + id, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -77,7 +72,7 @@ export default function Post({
                 if (!response.ok) {
                     throw new Error(response.statusText);
                 }
-                router.push('/post/' + params.id);
+                router.push('/post/' + id);
             })
             .catch(reason => {
                 enqueueSnackbar(reason, { variant: 'error' });

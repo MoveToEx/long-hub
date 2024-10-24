@@ -24,6 +24,7 @@ import ratingIcon from '@/public/rating.png';
 import DownloadIcon from '@mui/icons-material/Download';
 import ImageIcon from '@mui/icons-material/Image';
 import RatingComponent from '@/components/Rating';
+import { use } from 'react';
 
 function LoadingSkeleton({ id }: { id: string }) {
     return (
@@ -100,18 +101,17 @@ function Error({ id }: { id: string }) {
 export default function PostPage({
     params
 }: {
-    params: {
-        id: string
-    }
+    params: Promise<{ id: string }>
 }) {
-    const { data, isLoading, error } = usePost(params.id);
+    const { id } = use(params);
+    const { data, isLoading, error } = usePost(id);
 
     if (isLoading || !data) {
-        return <LoadingSkeleton id={params.id} />;
+        return <LoadingSkeleton id={id} />;
     }
 
     if (error) {
-        return <Error id={params.id} />;
+        return <Error id={id} />;
     }
 
     return (
@@ -119,7 +119,7 @@ export default function PostPage({
             <Grid size={{ xs: 12, md: 4 }}>
                 <CopiableImage
                     src={data.imageURL}
-                    alt={params.id}
+                    alt={id}
                     ImageProps={{
                         loading: 'eager'
                     }}
@@ -131,7 +131,7 @@ export default function PostPage({
                     component={Paper}
                     sx={{ p: 2 }}
                 >
-                    <Typography variant="h5">Post #{params.id}</Typography>
+                    <Typography variant="h5">Post #{id}</Typography>
                     <Typography>{data.text ? data.text : <i>No text</i>}</Typography>
                     <div style={{ display: 'flex' }}>
                         <Tooltip title="Created at">
@@ -171,7 +171,7 @@ export default function PostPage({
                                 size="large"
                                 color="primary"
                                 LinkComponent={Link}
-                                href={`/post/${params.id}/edit`}
+                                href={`/post/${id}/edit`}
                             >
                                 <EditIcon />
                             </Fab>

@@ -9,7 +9,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Fab from '@mui/material/Fab';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import TextField from '@mui/material/TextField';
 import SendIcon from '@mui/icons-material/Send';
 import TemplateResponse from '@/lib/types/TemplateResponse';
@@ -22,10 +22,9 @@ import { useSnackbar } from 'notistack';
 export default function TemplatePage({
     params
 }: {
-    params: {
-        name: string
-    }
+    params: Promise<{ name: string }>
 }) {
+    const { name } = use(params);
     const image = useRef<HTMLImageElement>(null);
     const [template, setTemplate] = useState<TemplateResponse | null>(null);
     const [text, setText] = useState('');
@@ -54,7 +53,7 @@ export default function TemplatePage({
     }
 
     useEffect(() => {
-        fetch('/api/template/' + params.name)
+        fetch('/api/template/' + name)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(response.statusText);
@@ -74,7 +73,7 @@ export default function TemplatePage({
             .catch(reason => {
                 enqueueSnackbar(reason, { variant: 'error' });
             });
-    }, [params.name, enqueueSnackbar]);
+    }, [name, enqueueSnackbar]);
 
     function submit() {
         const data = {
@@ -82,7 +81,7 @@ export default function TemplatePage({
             rect: (overrideRect ? rect : {})
         };
 
-        fetch('/api/template/' + params.name + '/generate', {
+        fetch('/api/template/' + name + '/generate', {
             method: 'POST',
             body: JSON.stringify(data)
         }).then(response => {
@@ -132,7 +131,7 @@ export default function TemplatePage({
                             width={300}
                             className="preview-image"
                             src={template.imageURL}
-                            alt={params.name}
+                            alt={name}
                             style={{
                                 width: '100%',
                                 height: 'auto',
@@ -176,7 +175,7 @@ export default function TemplatePage({
                 <Grid size={{ xs: 12, md: 8 }} sx={{ mt: '16px' }}>
                     <Stack alignItems="right" spacing={1}>
                         <Typography variant="h4">
-                            Template {params.name}
+                            Template {name}
                         </Typography>
 
                         <TextField

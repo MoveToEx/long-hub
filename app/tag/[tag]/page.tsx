@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid2';
-import { useState, useEffect, useDeferredValue } from 'react';
+import { useState, useEffect, useDeferredValue, use } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useSnackbar } from 'notistack';
 import { useRouter } from 'next/navigation';
@@ -19,16 +19,15 @@ import { useTaggedPost } from '@/app/context';
 export default function TagPage({
     params
 }: {
-    params: {
-        tag: string
-    }
+    params: Promise<{ tag: string }>
 }) {
+    const { tag } = use(params);
     const searchParams = useSearchParams();
     const router = useRouter();
     const { enqueueSnackbar } = useSnackbar();
     const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
-    const { data, isLoading } = useTaggedPost(params.tag, page);
-	const deferredPage = useDeferredValue(C.pages(data?.count ?? 0));
+    const { data, isLoading } = useTaggedPost(tag, page);
+    const deferredPage = useDeferredValue(C.pages(data?.count ?? 0));
 
     useEffect(() => {
         setPage(Number(searchParams.get('page') ?? '1'));
@@ -38,7 +37,7 @@ export default function TagPage({
         <Box sx={{ m: 2 }}>
             <Box sx={{ m: 2 }}>
                 <Typography variant="h3">
-                    #{params.tag}
+                    #{tag}
                 </Typography>
             </Box>
             <Grid container spacing={2}>
@@ -68,7 +67,7 @@ export default function TagPage({
                     count={deferredPage}
                     page={page}
                     onChange={(_, val) => {
-                        router.push(createQueryString('/tag/' + params.tag, {
+                        router.push(createQueryString('/tag/' + tag, {
                             page: val
                         }));
                     }}
