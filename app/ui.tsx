@@ -14,7 +14,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemButton from '@mui/material/ListItemButton';
 import Menu from '@mui/material/Menu';
-import Alert, { AlertColor } from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
 import Container from '@mui/material/Container';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -374,16 +373,6 @@ function RootTemplate({
     )
 }
 
-function createSnackbarFactory(variant: AlertColor) {
-    const obj = forwardRef<HTMLDivElement, CustomContentProps>((props, ref) => {
-        const { id, message, action, variant: _variant, ...other } = props;
-        const actions = action && action instanceof Function ? action(id) : action;
-        return <Alert ref={ref} severity={variant} action={actions} {...other}> {message} </Alert>;
-    });
-    obj.displayName = variant + 'Snackbar';
-    return obj;
-}
-
 export default function ProviderWrapper({
     children
 }: {
@@ -403,14 +392,7 @@ export default function ProviderWrapper({
         <ThemeProvider theme={currentTheme}>
             <SnackbarProvider
                 maxSnack={5}
-                autoHideDuration={2000}
-                Components={{
-                    info: createSnackbarFactory('info'),
-                    default: createSnackbarFactory('info'),
-                    success: createSnackbarFactory('success'),
-                    warning: createSnackbarFactory('warning'),
-                    error: createSnackbarFactory('error'),
-                }}>
+                autoHideDuration={2000}>
                 <RootTemplate>
                     <Suspense>
                         {children}
