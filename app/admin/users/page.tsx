@@ -23,6 +23,9 @@ import { prisma } from "@/lib/db";
 import Link from 'next/link';
 import { DeleteUser, ResetAccessKey as ResetAccessKey } from './actions';
 import React from 'react';
+import { authByCookies } from '@/lib/server-util';
+import { notFound } from 'next/navigation';
+import * as C from '@/lib/constants';
 
 const pageLimit = 24;
 
@@ -31,6 +34,12 @@ export default async function UserPage({
 }: {
     searchParams: Promise<{ page?: string }>
 }) {
+    const user = await authByCookies();
+
+    if (!user || (user.permission & C.Permission.Admin.base) == 0) {
+        notFound();
+    }
+    
     const { page } = await searchParams;
     const offset = pageLimit * (Number(page ?? '1') - 1);
     const users = await prisma.user.findMany({

@@ -15,14 +15,22 @@ import { BitBoard } from './components';
 import _ from 'lodash';
 import { EditUser } from './actions';
 import Link from 'next/link';
+import { authByCookies } from '@/lib/server-util';
+import * as C from '@/lib/constants';
 
 export default async function EditUserPage({
     params
 }: {
     params: Promise<{ id: string }>
 }) {
-    const { id } = await params;
+    const u = await authByCookies();
+
+    if (!u || (u.permission & C.Permission.Admin.base) == 0) {
+        notFound();
+    }
     
+    const { id } = await params;
+
     const user = await prisma.user.findFirst({
         where: {
             id: Number(id)
