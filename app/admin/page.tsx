@@ -1,8 +1,7 @@
 
 import { prisma } from "@/lib/db";
-import { authByCookies } from "@/lib/server-util";
+import { auth } from '@/lib/dal';
 
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import Box from '@mui/material/Box';
@@ -51,7 +50,7 @@ function FlexEndButton(props: ButtonProps) {
 
 
 export default async function AdminPage() {
-    const user = await authByCookies();
+    const user = await auth();
 
     if (!user || (user.permission & C.Permission.Admin.base) == 0) {
         notFound();

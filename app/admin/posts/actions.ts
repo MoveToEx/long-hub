@@ -2,15 +2,14 @@
 
 import { prisma } from "@/lib/db";
 
-import { authByCookies } from "@/lib/server-util";
-import { cookies } from "next/headers";
+import { auth } from '@/lib/dal';
 
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
 import { Rating } from "@prisma/client";
 
 export async function EditPost(updatedRow: any, originalRow: any) {
-    const user = await authByCookies();
+    const user = await auth();
 
     if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
         return Promise.reject(new Error('Forbidden'));
@@ -58,7 +57,7 @@ export async function EditPost(updatedRow: any, originalRow: any) {
 
 
 export async function DeletePost(id: string) {
-    const op = await authByCookies();
+    const op = await auth();
 
     if (!op) return {
         ok: false,

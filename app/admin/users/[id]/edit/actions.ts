@@ -2,16 +2,15 @@
 
 import { prisma } from "@/lib/db";
 import bcrypt from 'bcryptjs';
-import { cookies } from "next/headers";
 
 import { Permission } from "@/lib/constants";
-import { authByCookies } from "@/lib/server-util";
+import { auth } from '@/lib/dal';
 import { saltRound } from "@/lib/constants";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 export async function EditUser(fd: FormData) {
-    const op = await authByCookies();
+    const op = await auth();
 
     if (!op) {
         return;

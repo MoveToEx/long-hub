@@ -6,8 +6,7 @@ import Button from '@mui/material/Button';
 import Link from "next/link";
 
 import { MigratePostsInput, TagsGrid } from './components';
-import { authByCookies } from "@/lib/server-util";
-import { cookies } from "next/headers";
+import { auth } from '@/lib/dal';
 import { notFound } from "next/navigation";
 
 import * as C from '@/lib/constants';
@@ -15,7 +14,7 @@ import * as C from '@/lib/constants';
 export const dynamic = 'force-dynamic';
 
 export default async function TagsAdminPage() {
-    const user = await authByCookies();
+    const user = await auth();
 
     if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
         return notFound();

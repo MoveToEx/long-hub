@@ -3,9 +3,8 @@ import { prisma } from '@/lib/db';
 import _ from 'lodash';
 import fs from 'fs';
 
-import { auth } from "@/lib/server-util";
+import { auth } from '@/lib/dal';
 import * as C from '@/lib/constants';
-import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest, {
     params

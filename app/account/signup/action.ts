@@ -7,8 +7,9 @@ import bcrypt from 'bcryptjs';
 import * as C from '@/lib/constants';
 import crypto from 'crypto';
 import { headers } from 'next/headers';
+import env from '@/lib/env';
 
-const turnstileSecret = process.env['CF_TURNSTILE_SECRET'];
+const turnstileSecret = env?.CF_TURNSTILE_SECRET;
 
 export default async function signUp(_state: string, fd: FormData) {
     const username = fd.get('username') as string;

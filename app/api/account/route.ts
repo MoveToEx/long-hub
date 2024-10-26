@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { auth } from "@/lib/server-util";
+import { auth } from '@/lib/dal';
 
 export async function GET(req: NextRequest) {
 

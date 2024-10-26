@@ -6,15 +6,14 @@ import { PostGrid } from './components';
 import Link from 'next/link';
 import React from 'react';
 import _ from 'lodash';
-import { authByCookies } from '@/lib/server-util';
-import { cookies } from 'next/headers';
+import { auth } from '@/lib/dal';
 import { notFound } from 'next/navigation';
 
 import * as C from '@/lib/constants';
 
 export default async function UserPage() {
 
-    const user = await authByCookies();
+    const user = await auth();
 
     if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
         return notFound();

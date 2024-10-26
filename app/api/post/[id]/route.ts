@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { cookies } from 'next/headers';
 import fs from 'fs';
 
-import { auth, formatZodError } from "@/lib/server-util";
+import { formatZodError } from "@/lib/server-util";
+import { auth } from '@/lib/dal';
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
 import { z } from 'zod';

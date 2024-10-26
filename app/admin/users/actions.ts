@@ -1,14 +1,13 @@
 'use server';
 
 import { prisma } from "@/lib/db";
-import { authByCookies } from "@/lib/server-util";
+import { auth } from '@/lib/dal';
 import crypto from 'crypto';
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import * as C from '@/lib/constants';
 
 export async function DeleteUser(fd: FormData) {
-    const op = await authByCookies();
+    const op = await auth();
 
     if (!op) return;
 
@@ -37,7 +36,7 @@ export async function DeleteUser(fd: FormData) {
 }
 
 export async function ResetAccessKey(fd: FormData) {
-    const op = await authByCookies();
+    const op = await auth();
 
     if (!op) return;
 

@@ -6,14 +6,14 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 
 import signUp from './action';
 import SubmitButton from '@/components/SubmitButton';
 import Turnstile from '@/components/Turnstile';
 
 export default function SignupPage({ turnstileKey }: { turnstileKey: string | undefined }) {
-    const [state, action] = useFormState(signUp, '');
+    const [state, action] = useActionState(signUp, '');
 
     return (
         <Box

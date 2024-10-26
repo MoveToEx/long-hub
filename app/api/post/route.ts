@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/db';
 import { NextRequest, NextResponse } from "next/server";
 import sharp from 'sharp';
-import Color from 'color';
 import _ from 'lodash';
 import fs from 'fs';
 import path from 'node:path';
@@ -13,8 +12,8 @@ import phash from 'sharp-phash';
 
 // @ts-expect-error
 import phashDistance from 'sharp-phash/distance';
-import { auth, formatZodError, responses } from '@/lib/server-util';
-import { cookies } from 'next/headers';
+import { formatZodError, responses } from '@/lib/server-util';
+import { auth } from '@/lib/dal';
 import { Permission } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 import { Rating } from '@prisma/client';

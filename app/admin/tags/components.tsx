@@ -13,7 +13,8 @@ import SendIcon from '@mui/icons-material/Send';
 import Button from '@mui/material/Button';
 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { EditTag, MigratePosts } from './actions';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 
@@ -68,7 +69,7 @@ export function MigratePostsInput({
 }: {
     tags: string[]
 }) {
-    const [state, action] = useFormState(MigratePosts, '');
+    const [state, action] = useActionState(MigratePosts, '');
     return (
         <Box sx={{ m: 1 }} component="form" action={action}>
             <Typography variant="h5" sx={{ m: 2 }}>

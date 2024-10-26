@@ -1,15 +1,13 @@
 'use server';
 
 import { prisma } from "@/lib/db";
-import { authByCookies } from "@/lib/server-util";
+import { auth } from '@/lib/dal';
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 
 import * as C from '@/lib/constants';
 
 export async function MigratePosts(_state: any, fd: FormData) {
-    const user = await authByCookies();
+    const user = await auth();
 
     if (!user) {
         return 'Unauthorized';
@@ -102,7 +100,7 @@ export async function MigratePosts(_state: any, fd: FormData) {
 }
 
 export async function EditTag(updatedRow: any, originalRow: any) {
-    const user = await authByCookies();
+    const user = await auth();
 
     if (!user || (user.permission & C.Permission.Admin.Post.edit) == 0) {
         return Promise.resolve(originalRow);

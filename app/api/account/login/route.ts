@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Session } from '@/lib/server-types';
+import { Session } from '@/lib/session';
 import { getIronSession } from 'iron-session';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!bcrypt.compareSync(data.password, user.passwordHash)) {
-        return NextResponse.json('invalid email/password', {
+        return NextResponse.json('invalid username/password', {
             status: 401
         });
     }
