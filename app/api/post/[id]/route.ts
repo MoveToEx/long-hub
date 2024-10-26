@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import fs from 'fs';
 
-import { formatZodError } from "@/lib/server-util";
 import { auth } from '@/lib/dal';
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
@@ -62,56 +61,44 @@ export async function PUT(req: NextRequest, {
 
     const { id } = await params;
 
-    var post = await prisma.post.findFirst({
-        where: {
-            id
-        }
-    });
-
-    const data: Prisma.postUpdateInput = {};
-
-    if (!post) {
+    if (await prisma.post.count({ where: { id } }) == 0) {
         return responses.notFound('Post ' + id);
     }
 
+    const data: Prisma.Args<typeof prisma.post, 'update'>['data'] = {};
     const { data: meta, error } = updateSchema.safeParse(await req.json());
 
     if (error) {
-        return new Response(formatZodError(error), {
+        return new Response(error.toString(), {
             status: 400
         });
     }
 
-    if (meta.rating !== undefined) data.rating = meta.rating;
-    if (meta.text !== undefined) data.text = meta.text;
+    if (meta.rating !== undefined) {
+        data.rating = meta.rating;
+    }
+    if (meta.text !== undefined) {
+        data.text = meta.text;
+    }
     if (meta.tags !== undefined) {
-        data.tags = {};
-        data.tags.set = [];
-
-        for (const tagName of meta.tags) {
-            const tag = await prisma.tag.findFirst({
-                where: {
-                    name: tagName
+        await prisma.post.update({
+            where: { id },
+            data: {
+                tags: {
+                    set: []
                 }
-            });
-
-            if (tag) {
-                data.tags.set.push(tag);
             }
-            else {
-                data.tags.set.push(await prisma.tag.create({
-                    data: {
-                        name: tagName
-                    }
-                }));
-            }
-        }
+        });
+        data.tags = {
+            connectOrCreate: meta.tags.map(name => ({
+                where: { name },
+                create: { name }
+            }))
+        };
     }
 
     await prisma.post.update({
-        where: {
-            id
-        },
+        where: { id },
         data: {
             ...data,
             updatedAt: new Date()
@@ -122,9 +109,7 @@ export async function PUT(req: NextRequest, {
     revalidatePath('/admin/posts');
 
     return NextResponse.json(await prisma.post.findFirst({
-        where: {
-            id
-        },
+        where: { id },
         include: {
             tags: true,
             uploader: {
