@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import _ from 'lodash';
 import { z } from "zod";
-import { Rating } from "@prisma/client";
+import { Prisma, Rating } from "@prisma/client";
 
 const operatorMapping = {
     'gt': 'gt',
@@ -21,34 +21,8 @@ function parseOperator(s: keyof typeof operatorMapping, val: number | string) {
     };
 }
 
-interface RatingSelector {
-    type: 'rating';
-    op: 'gt' | 'lt' | 'lte' | 'gte' | 'eq' | 'ne';
-    value: Rating
-}
-
-interface TagSelector {
-    type: 'tag';
-    op: 'include' | 'exclude';
-    value: string;
-}
-
-interface TextSelector {
-    type: 'text';
-    op: 'contains' | 'not_contains';
-    value: string;
-}
-
-interface IDSelector {
-    type: 'id';
-    op: 'contains';
-    value: string;
-}
-
-type Selector = RatingSelector | TagSelector | TextSelector | IDSelector;
-
 const schema = z.array(
-    z.union([
+    z.discriminatedUnion('type', [
         z.object({
             type: z.literal('text'),
             op: z.union([z.literal('contains'), z.literal('not_contains')]),
@@ -56,6 +30,7 @@ const schema = z.array(
         }),
         z.object({
             type: z.literal('rating'),
+            op: z.never(),
             value: z.nativeEnum(Rating)
         }),
         z.object({
@@ -92,80 +67,76 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    const { data: query, error } = schema.safeParse(raw);
+    const { data, error } = schema.safeParse(raw);
 
     if (error) {
-        const err = error.flatten();
-        const msg = _.concat(
-            err.formErrors,
-            _.toPairs(err.fieldErrors).map(([field, msg]) => `Error parsing ${field}: ${msg}`)
-        );
-
-        return new Response(msg.join('\n'), {
+        return new Response(error.toString(), {
             status: 400
         });
     }
 
-    let where = [];
+    const where = {
+        AND: [] as NonNullable<Prisma.Args<typeof prisma.post, 'findMany'>['where']>[]
+    };
 
-    for (const sel of query) {
-        if (sel.type == 'text') {
-            if (sel.op == 'contains') {
-                where.push({
+    for (const { type, op, value } of data) {
+        if (type == 'text') {
+            if (op == 'contains') {
+                where.AND.push({
                     text: {
-                        contains: sel.value
+                        contains: value
                     }
                 });
             }
-            else if (sel.op == 'not_contains') {
-                where.push({
+            else if (op == 'not_contains') {
+                where.AND.push({
                     NOT: {
                         text: {
-                            contains: sel.value
+                            contains: value
                         }
                     }
                 });
             }
         }
-        else if (sel.type == 'rating') {
-            where.push({
-                rating: sel.value
+        else if (type == 'rating') {
+            where.AND.push({
+                rating: value
             });
         }
-        else if (sel.type == 'tag') {
-            if (sel.op == 'include') {
-                where.push({
+        else if (type == 'tag') {
+            if (op == 'include') {
+                where.AND.push({
                     tags: {
                         some: {
-                            name: sel.value
+                            name: value
                         }
                     }
                 });
             }
-            else if (sel.op == 'exclude') {
-                where.push({
+            else if (op == 'exclude') {
+                where.AND.push({
                     tags: {
                         none: {
-                            name: sel.value
+                            name: value
                         }
                     }
                 });
             }
         }
-        else if (sel.type == 'id') {
-            if (sel.op == 'contains') {
-                where.push({
+        else if (type == 'id') {
+            if (op == 'contains') {
+                where.AND.push({
                     id: {
-                        contains: sel.value
+                        contains: value
                     }
                 });
             }
         }
-        else if (sel.type == 'uploader') {
-            if (sel.op == 'is') {
-                where.push({
+        else if (type == 'uploader') {
+            if (op == 'is') {
+                where.AND.push({
                     uploader: {
-                        name: sel.value
+                        name: value
                     }
                 });
             }
@@ -173,9 +144,7 @@ export async function POST(req: NextRequest) {
     }
 
     const posts = await prisma.post.findMany({
-        where: {
-            AND: where
-        },
+        where,
         skip: offset,
         take: limit,
         include: {
