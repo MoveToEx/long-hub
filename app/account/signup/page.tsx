@@ -1,10 +1,8 @@
 import Page from './component';
-
+import env from '@/lib/env';
 
 export default function SignupPage() {
-    const turnstileKey = process.env['CF_TURNSTILE_KEY'] as string | undefined;
-    
     return (
-        <Page turnstileKey={turnstileKey} />
+        <Page turnstileKey={env.CF_TURNSTILE_KEY} />
     );
 }

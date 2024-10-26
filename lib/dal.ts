@@ -1,17 +1,9 @@
 import 'server-only';
 
 import { prisma } from '@/lib/db';
-import { getIronSession } from "iron-session";
-import { Session } from "@/lib/session";
+import { getSession } from "@/lib/session";
 import { NextRequest } from "next/server";
 import _ from 'lodash';
-import { cookies } from 'next/headers';
-
-export const cookieSettings = {
-    password: process.env['COOKIE_SECRET'] as string,
-    cookieName: process.env['COOKIE_NAME'] as string,
-    ttl: 60 * 24 * 60 * 60,
-}
 
 export async function authByKey(request: NextRequest) {
     const key = request.headers.get('X-Access-Key');
@@ -28,7 +20,7 @@ export async function authByKey(request: NextRequest) {
 }
 
 export async function authByCookies() {
-    const session = await getIronSession<Session>(await cookies(), cookieSettings);
+    const session = await getSession();
 
     if (session.expire > new Date()) {
         session.destroy();

@@ -1,14 +1,10 @@
 'use server';
 
 import _ from 'lodash';
-import { cookies } from 'next/headers';
-import { getIronSession } from 'iron-session';
-import { Session } from '@/lib/session';
+import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-
-import { cookieSettings } from '@/lib/server-util';
 
 export default async function login(state: any, fd: FormData) {
     const username = fd.get('username') as string;
@@ -28,7 +24,7 @@ export default async function login(state: any, fd: FormData) {
     if (!bcrypt.compareSync(pswd, user.passwordHash)) {
         return 'Invalid credential';
     }
-    const session = await getIronSession<Session>(await cookies(), cookieSettings);
+    const session = await getSession();
 
     const expireDate = new Date();
 

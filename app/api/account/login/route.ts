@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Session } from '@/lib/session';
-import { getIronSession } from 'iron-session';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { cookies } from 'next/headers';
-import { cookieSettings } from '@/lib/server-util';
+import { getSession } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
-    const session = await getIronSession<Session>(await cookies(), cookieSettings);
+    const session = await getSession();
 
     const data = await req.json();
 

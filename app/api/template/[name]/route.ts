@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/db';
 import _ from 'lodash';
 import fs from 'fs';
+import env from '@/lib/env';
 
 import { auth } from '@/lib/dal';
 import * as C from '@/lib/constants';
@@ -32,11 +33,6 @@ export async function POST(req: NextRequest, {
 }: {
     params: Promise<{ name: string }>
 }) {
-    if (process.env.MEDIA_ROOT === undefined) {
-        return NextResponse.json('MEDIA_ROOT env not found', {
-            status: 500
-        });
-    }
     const { name } = await params;
     if (await prisma.template.count({
         where: {

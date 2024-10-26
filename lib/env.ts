@@ -7,14 +7,9 @@ const schema = z.object({
     MEDIA_URL_PREFIX: z.string(),
     CF_TURNSTILE_KEY: z.string(),
     CF_TURNSTILE_SECRET: z.string(),
-    DATABASE_URL: z.number()
+    DATABASE_URL: z.string()
 });
 
-const { data, success, error } = schema.safeParse(process.env);
-
-if (!success) {
-    console.error('Invalid environment variable', error.format());
-    process.exit(1);
-}
+const data = schema.parse(process.env);
 
 export default data;

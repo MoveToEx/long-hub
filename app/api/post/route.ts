@@ -12,6 +12,7 @@ import phash from 'sharp-phash';
 
 // @ts-expect-error
 import phashDistance from 'sharp-phash/distance';
+import env from '@/lib/env';
 import { formatZodError, responses } from '@/lib/server-util';
 import { auth } from '@/lib/dal';
 import { Permission } from '@/lib/constants';
@@ -61,12 +62,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    if (process.env.MEDIA_ROOT === undefined) {
-        return new Response('MEDIA_ROOT env not found on server', {
-            status: 500
-        });
-    }
-
     const user = await auth(req);
 
     if (user === null) {
@@ -165,7 +160,7 @@ export async function POST(req: NextRequest) {
         }
     });
 
-    await fs.promises.writeFile(path.join(process.env.MEDIA_ROOT, 'posts', filename), new Uint8Array(buffer));
+    await fs.promises.writeFile(path.join(env.MEDIA_ROOT, 'posts', filename), new Uint8Array(buffer));
 
     revalidatePath('/admin');
     revalidatePath('/admin/posts');

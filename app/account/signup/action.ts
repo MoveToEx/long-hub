@@ -9,35 +9,33 @@ import crypto from 'crypto';
 import { headers } from 'next/headers';
 import env from '@/lib/env';
 
-const turnstileSecret = env?.CF_TURNSTILE_SECRET;
+const turnstileSecret = env.CF_TURNSTILE_SECRET;
 
 export default async function signUp(_state: string, fd: FormData) {
     const username = fd.get('username') as string;
     const password = fd.get('password') as string;
     const confirmPassword = fd.get('password-confirm') as string;
 
-    if (turnstileSecret !== undefined) {
-        const token = fd.get('cf-turnstile-response') as string;
-        const header = await headers();
-        const ip = header.get('CF-Connecting-IP') as string;
+    const token = fd.get('cf-turnstile-response') as string;
+    const header = await headers();
+    const ip = header.get('CF-Connecting-IP') as string;
 
-        let tf = new FormData();
-        tf.append('secret', turnstileSecret);
-        tf.append('response', token);
-        tf.append('remoteip', ip);
+    let tf = new FormData();
+    tf.append('secret', turnstileSecret);
+    tf.append('response', token);
+    tf.append('remoteip', ip);
 
-        const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+    const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
-        const response = await fetch(url, {
-            body: tf,
-            method: 'POST'
-        });
+    const response = await fetch(url, {
+        body: tf,
+        method: 'POST'
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (!data.success) {
-            return 'Invalid captcha';
-        }
+    if (!data.success) {
+        return 'Invalid captcha';
     }
 
     if (!username || !password) {
