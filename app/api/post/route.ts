@@ -1,11 +1,14 @@
 import { prisma } from '@/lib/db';
 import { NextRequest, NextResponse } from "next/server";
 import sharp from 'sharp';
+import { Readable } from 'stream';
 import _ from 'lodash';
 import fs from 'fs';
 import path from 'node:path';
 import crypto from 'crypto';
+import mime from 'mime-types';
 import { z } from 'zod';
+import { parseWithZod } from '@conform-to/zod';
 
 // @ts-expect-error
 import phash from 'sharp-phash';
@@ -13,16 +16,35 @@ import phash from 'sharp-phash';
 // @ts-expect-error
 import phashDistance from 'sharp-phash/distance';
 import env from '@/lib/env';
-import { formatZodError, responses } from '@/lib/server-util';
+import { responses } from '@/lib/server-util';
 import { auth } from '@/lib/dal';
 import { Permission } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 import { Rating } from '@prisma/client';
 
+const json = z.string().transform((value, context) => {
+    try {
+        return JSON.parse(value);
+    }
+    catch (e) {
+        context.addIssue({
+            code: 'custom',
+            message: 'Invalid JSON'
+        });
+        return z.NEVER;
+    }
+});
+
 const schema = z.object({
-    text: z.string(),
-    rating: z.nativeEnum(Rating),
-    tags: z.array(z.string())
+    text: z.string().default(''),
+    rating: z.nativeEnum(Rating).default(Rating.none),
+    tags: z.array(z.string()).default([])
+});
+
+const postSchema = z.object({
+    image: z.instanceof(File),
+    metadata: json.pipe(schema),
+    force: z.coerce.boolean()
 });
 
 export async function GET(req: NextRequest) {
@@ -31,29 +53,30 @@ export async function GET(req: NextRequest) {
     const offset = Number(searchParams.get('offset') ?? 0);
     const limit = Number(searchParams.get('limit') ?? 24);
 
-    const posts = await prisma.post.findMany({
-        orderBy: [
-            {
-                createdAt: 'desc',
-            },
-            {
-                id: 'asc'
-            }
-        ],
-        include: {
-            tags: true,
-            uploader: {
-                select: {
-                    id: true,
-                    name: true
+    const [posts, count] = await prisma.$transaction([
+        prisma.post.findMany({
+            orderBy: [
+                {
+                    createdAt: 'desc',
+                },
+                {
+                    id: 'asc'
                 }
-            }
-        },
-        skip: offset,
-        take: limit
-    });
-
-    const count = await prisma.post.count();
+            ],
+            include: {
+                tags: true,
+                uploader: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            },
+            skip: offset,
+            take: limit
+        }),
+        prisma.post.count()
+    ])
 
     return NextResponse.json({
         count: count,
@@ -72,46 +95,21 @@ export async function POST(req: NextRequest) {
         return responses.forbidden();
     }
 
-    const fd = await req.formData();
+    const form = parseWithZod(await req.formData(), {
+        schema: postSchema
+    });
 
-    const img = fd.get('image') as File;
-    const _metadata = fd.get('metadata') as string;
-    const force = Number.parseInt(fd.get('force')?.toString() ?? '0');
-
-    let raw;
-
-    if (!_metadata) {
-        return new Response('Metadata field not found', {
+    if (form.status !== 'success') {
+        return NextResponse.json(form.reply(), {
             status: 400
         });
     }
 
-    if (!img) {
-        return new Response('Image not found', {
-            status: 400
-        });
-    }
+    const { image, metadata, force } = form.value;
 
-    try {
-        raw = JSON.parse(_metadata);
-    }
-    catch (e) {
-        return new Response('Failed when parsing JSON', {
-            status: 400
-        });
-    }
+    let buffer = Buffer.from(await image.arrayBuffer());
 
-    const { data: metadata, error } = schema.safeParse(raw);
-
-    if (error) {
-        return new Response(formatZodError(error), {
-            status: 400
-        });
-    }
-
-    var buffer = Buffer.from(await img.arrayBuffer());
-
-    if (img.type != 'image/gif') {
+    if (image.type != 'image/gif') {
         buffer = await sharp(buffer).trim({
             background: 'rgba(255,255,255,0.0)'
         }).trim().toBuffer();
@@ -135,8 +133,8 @@ export async function POST(req: NextRequest) {
     }
 
     const id = crypto.randomUUID();
-    const filename = id + '.' + _.last(img.name.split('.'));
-    
+    const filename = id + '.' + mime.extension(image.type);
+
     const post = await prisma.post.create({
         data: {
             id: id,
@@ -160,7 +158,7 @@ export async function POST(req: NextRequest) {
         }
     });
 
-    await fs.promises.writeFile(path.join(env.MEDIA_ROOT, 'posts', filename), new Uint8Array(buffer));
+    await fs.promises.writeFile(path.join(env.MEDIA_ROOT, 'posts', filename), Readable.from(buffer));
 
     revalidatePath('/admin');
     revalidatePath('/admin/posts');
