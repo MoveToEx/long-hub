@@ -30,7 +30,7 @@ const schema = z.array(
         }),
         z.object({
             type: z.literal('rating'),
-            op: z.never(),
+            op: z.undefined(),
             value: z.nativeEnum(Rating)
         }),
         z.object({
@@ -47,6 +47,11 @@ const schema = z.array(
             type: z.literal('uploader'),
             op: z.literal('is'),
             value: z.string()
+        }),
+        z.object({
+            type: z.literal('system'),
+            op: z.literal('untagged'),
+            value: z.undefined()
         })
     ])
 ).min(1).max(24);
@@ -70,7 +75,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = schema.safeParse(raw);
 
     if (error) {
-        return new Response(error.toString(), {
+        return NextResponse.json(error.errors, {
             status: 400
         });
     }
@@ -141,27 +146,40 @@ export async function POST(req: NextRequest) {
                 });
             }
         }
-    }
-
-    const posts = await prisma.post.findMany({
-        where,
-        skip: offset,
-        take: limit,
-        include: {
-            uploader: {
-                select: {
-                    id: true,
-                    name: true
-                }
+        else if (type == 'system') {
+            if (op == 'untagged') {
+                where.AND.push({
+                    tags: {
+                        none: {}
+                    }
+                });
             }
         }
-    });
+    }
 
-    const count = await prisma.post.count({
-        where: {
-            AND: where
-        }
-    });
+    const [posts, count] = await prisma.$transaction(
+        [
+            prisma.post.findMany({
+                where,
+                skip: offset,
+                take: limit,
+                include: {
+                    tags: true,
+                    uploader: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                }
+            }),
+            prisma.post.count({
+                where: {
+                    AND: where
+                }
+            })
+        ]
+    );
 
     return NextResponse.json({
         count: count,

@@ -66,10 +66,11 @@ export async function PUT(req: NextRequest, {
     }
 
     const data: Prisma.Args<typeof prisma.post, 'update'>['data'] = {};
+    const transactions: Prisma.PrismaPromise<any>[] = [];
     const { data: meta, error } = updateSchema.safeParse(await req.json());
 
     if (error) {
-        return new Response(error.toString(), {
+        return NextResponse.json(error.errors, {
             status: 400
         });
     }
@@ -81,14 +82,15 @@ export async function PUT(req: NextRequest, {
         data.text = meta.text;
     }
     if (meta.tags !== undefined) {
-        await prisma.post.update({
+        transactions.push(prisma.post.update({
             where: { id },
             data: {
                 tags: {
                     set: []
                 }
             }
-        });
+        }));
+
         data.tags = {
             connectOrCreate: meta.tags.map(name => ({
                 where: { name },
@@ -97,29 +99,33 @@ export async function PUT(req: NextRequest, {
         };
     }
 
-    await prisma.post.update({
-        where: { id },
-        data: {
-            ...data,
-            updatedAt: new Date()
-        }
-    });
+    const result = _.last(await prisma.$transaction([
+        ...transactions,
+        prisma.post.update({
+            where: { id },
+            data: {
+                ...data,
+                updatedAt: new Date()
+            }
+        }),
+        prisma.post.findFirst({
+            where: { id },
+            include: {
+                tags: true,
+                uploader: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        })
+    ]));
 
     revalidatePath('/admin');
     revalidatePath('/admin/posts');
 
-    return NextResponse.json(await prisma.post.findFirst({
-        where: { id },
-        include: {
-            tags: true,
-            uploader: {
-                select: {
-                    id: true,
-                    name: true
-                }
-            }
-        }
-    }));
+    return NextResponse.json(result);
 }
 
 export async function DELETE(req: NextRequest, {

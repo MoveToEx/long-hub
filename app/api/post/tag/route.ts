@@ -5,9 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
     const tags = await prisma.tag.findMany({
-        select: {
-            id: true,
-            name: true,
+        include: {
             _count: {
                 select: {
                     posts: true

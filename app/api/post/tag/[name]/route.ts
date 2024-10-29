@@ -11,30 +11,26 @@ export async function GET(req: NextRequest, {
     const limit = Number(searchParams.get('limit') ?? 24);
     const { name } = await params;
 
-    const tag = await prisma.tag.findFirst({
-        where: {
-            name
-        },
-        include: {
-            posts: {
-                take: limit,
-                skip: offset
-            }
-        }
-    });
-
-    const count = await prisma.tag.findFirst({
-        where: {
-            name: name
-        },
-        select: {
-            _count: {
-                select: {
-                    posts: true
+    const [tag, count] = await prisma.$transaction([
+        prisma.tag.findFirst({
+            where: { name },
+            include: {
+                posts: {
+                    take: limit,
+                    skip: offset
                 }
             }
-        }
-    });
+        }),
+        prisma.post.count({
+            where: {
+                tags: {
+                    some: {
+                        name
+                    }
+                }
+            }
+        })
+    ]);
 
     if (tag === null) {
         return NextResponse.json('tag not found', {
@@ -43,7 +39,7 @@ export async function GET(req: NextRequest, {
     }
 
     return NextResponse.json({
-        "count": count?._count.posts,
+        "count": count,
         "data": tag.posts
     });
 }

@@ -2,14 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { getSession } from '@/lib/session';
+import { z } from 'zod';
+
+const schema = z.object({
+    username: z.string(),
+    password: z.string()
+});
 
 export async function POST(req: NextRequest) {
-    const session = await getSession();
-
-    const data = await req.json();
-
-    if (!data.username || !data.password) {
-        return NextResponse.json('invalid request', {
+    const { data, success, error } = schema.safeParse(await req.json());
+    
+    if (!success) {
+        return NextResponse.json(error.errors, {
             status: 400
         });
     }
@@ -19,18 +23,20 @@ export async function POST(req: NextRequest) {
             name: data.username
         }
     });
-
-    if (user == null) {
+    
+    if (user === null) {
         return NextResponse.json('invalid username/password', {
             status: 401
         });
     }
-
+    
     if (!bcrypt.compareSync(data.password, user.passwordHash)) {
         return NextResponse.json('invalid username/password', {
             status: 401
         });
     }
+    
+    const session = await getSession();
 
     session.userId = user.id;
     session.username = user.name;
