@@ -5963,7 +5963,7 @@ __metadata:
     react-rnd: "npm:^10.4.1"
     server-only: "npm:^0.0.1"
     sharp: "npm:^0.33.5"
-    sharp-phash: "npm:^2.1.0"
+    sharp-phash: "npm:^2.2.0"
     swr: "npm:^2.2.4"
     tsconfig-paths: "npm:^4.2.0"
     tsx: "npm:^4.19.1"
@@ -7539,12 +7539,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sharp-phash@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "sharp-phash@npm:2.1.0"
+"sharp-phash@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "sharp-phash@npm:2.2.0"
   peerDependencies:
-    sharp: ">= 0.25.4"
-  checksum: 10c0/b2846fbf650ec3eb407cfa232790cee282cc1acb5ca938fe81bd430bd312c70060227e5df7cb88630140fecbf2e882cb098d94fbb1765a41d05b948a76048621
+    sharp: ">= 0.32.0"
+  checksum: 10c0/9094b231cc98581dc0bb846a7a8c7d776a1aa236336242685e7fdf15dd728d4b7f737d1a32f2fd80b0466d814655e63ef24de9ae4666dae49a3c95a13a3ad2f0
   languageName: node
   linkType: hard
 

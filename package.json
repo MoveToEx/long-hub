@@ -45,7 +45,7 @@
     "react-rnd": "^10.4.1",
     "server-only": "^0.0.1",
     "sharp": "^0.33.5",
-    "sharp-phash": "^2.1.0",
+    "sharp-phash": "^2.2.0",
     "swr": "^2.2.4",
     "tsconfig-paths": "^4.2.0",
     "webpack": "^5.94.0",

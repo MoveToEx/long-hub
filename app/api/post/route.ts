@@ -9,11 +9,7 @@ import crypto from 'crypto';
 import mime from 'mime-types';
 import { z } from 'zod';
 import { parseWithZod } from '@conform-to/zod';
-
-// @ts-expect-error
 import phash from 'sharp-phash';
-
-// @ts-expect-error
 import phashDistance from 'sharp-phash/distance';
 import env from '@/lib/env';
 import { responses } from '@/lib/server-util';

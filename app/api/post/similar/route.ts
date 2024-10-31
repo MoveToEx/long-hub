@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/db';
 import sharp from 'sharp';
-
-// @ts-expect-error
 import phash from 'sharp-phash';
-
-// @ts-expect-error
 import phashDistance from 'sharp-phash/distance';
 
 const SIMILAR_THRESHOLD = 8;
