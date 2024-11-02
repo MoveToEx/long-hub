@@ -3,6 +3,12 @@
 
 ## Setup
 
+### Prerequisites
+
+- A database supported by [Prisma](https://www.prisma.io/docs/orm/reference/supported-databases)
+- Node.js
+- [Yarn berry](https://yarnpkg.com/migration/overview) enabled
+
 Clone the repo:
 
 ```sh
@@ -40,11 +46,18 @@ Install dependencies:
 $ yarn
 ```
 
-Apply migrations:
+Initialize database:
 
 ```sh
-$ yarn prisma migrate deploy
+$ yarn run dotenv -e .env.local -- prisma migrate deploy
 ```
+
+> [!NOTE]
+> On powershell, you need to quote the double dash, so it looks like:
+> ```powershell
+> PS > yarn run dotenv -e .env.local "--" prisma migrate deploy
+> ```
+> This is because the double dash is a special token in Powershell which is offically called _end-of-parameters token_. Refer to [Powershell document](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_parsing?view=powershell-7.4#the-end-of-parameters-token) for details.
 
 Build and run:
 
