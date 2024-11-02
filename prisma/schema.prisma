@@ -61,7 +61,7 @@ model user {
   email        String?    @db.VarChar(255)
   name         String     @db.VarChar(255)
   permission   Int        @default(0)
-  accessKey    String     @db.VarChar(255)
+  accessKey    String     @db.VarChar(255) @unique
   passwordHash String     @db.VarChar(255)
   createdAt    DateTime   @db.DateTime(0)
   post         post[]
