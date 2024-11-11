@@ -31,9 +31,8 @@ export default async function login(state: any, fd: FormData) {
     if (expire) expireDate.setMonth(expireDate.getMonth() + 1);
     else expireDate.setDate(expireDate.getDate() + 1);
 
-    session.userId = user.id;
-    session.username = user.name;
-    session.expire = expireDate;
+    session.id = user.id;
+    session.expire = Number(expireDate);
 
     await session.save();
 

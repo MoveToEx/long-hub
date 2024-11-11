@@ -3,10 +3,9 @@ import env from '@/lib/env';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 
-export interface Session {
-    userId: number;
-    username: string;
-    expire: Date;
+export type Session =  {
+    id: number;
+    expire: number;
 }
 
 export const cookieSettings = {

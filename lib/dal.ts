@@ -22,16 +22,16 @@ export async function authByKey(request: NextRequest) {
 export async function authByCookies() {
     const session = await getSession();
 
-    if (session.expire > new Date()) {
+    if (session.expire > Number(new Date())) {
         session.destroy();
         return null;
     }
 
-    if (!session.userId) return null;
+    if (!session.id) return null;
 
     const user = await prisma.user.findFirst({
         where: {
-            id: session.userId
+            id: session.id
         }
     });
 

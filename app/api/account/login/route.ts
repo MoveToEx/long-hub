@@ -6,7 +6,8 @@ import { z } from 'zod';
 
 const schema = z.object({
     username: z.string(),
-    password: z.string()
+    password: z.string(),
+    ttl: z.number().max(2592000).default(2592000)
 });
 
 export async function POST(req: NextRequest) {
@@ -24,13 +25,7 @@ export async function POST(req: NextRequest) {
         }
     });
     
-    if (user === null) {
-        return NextResponse.json('invalid username/password', {
-            status: 401
-        });
-    }
-    
-    if (!bcrypt.compareSync(data.password, user.passwordHash)) {
+    if (user === null || !bcrypt.compareSync(data.password, user.passwordHash)) {
         return NextResponse.json('invalid username/password', {
             status: 401
         });
@@ -38,8 +33,11 @@ export async function POST(req: NextRequest) {
     
     const session = await getSession();
 
-    session.userId = user.id;
-    session.username = user.name;
+    session.id = user.id;
+
+    let date = new Date();
+    date.setSeconds(date.getSeconds() + data.ttl);
+    session.expire = Number(date);
 
     await session.save();
 
