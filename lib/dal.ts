@@ -22,7 +22,7 @@ export async function authByKey(request: NextRequest) {
 export async function authByCookies() {
     const session = await getSession();
 
-    if (session.expire > Number(new Date())) {
+    if (session.expire < Number(new Date())) {
         session.destroy();
         return null;
     }
