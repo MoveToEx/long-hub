@@ -12,19 +12,13 @@ export const prisma = new PrismaClient().$extends({
                 needs: {
                     image: true,
                 },
-                compute(post) {
-                    if (!post.image) return '';
-                    return env.MEDIA_URL_PREFIX + '/posts/' + post.image;
-                }
+                compute: post => env.MEDIA_URL_PREFIX + '/posts/' + post.image
             },
             imagePath: {
                 needs: {
                     image: true
                 },
-                compute(post) {
-                    if (!post.image) return '';
-                    return path.join(env.MEDIA_ROOT!, 'posts', post.image);
-                }
+                compute: post => path.join(env.MEDIA_ROOT, 'posts', post.image)
             }
         },
         template: {
@@ -33,7 +27,6 @@ export const prisma = new PrismaClient().$extends({
                     image: true,
                 },
                 compute(template) {
-                    if (!template.image) return '';
                     return env.MEDIA_URL_PREFIX + '/templates/' + template.image;
                 }
             },

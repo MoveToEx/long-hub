@@ -151,6 +151,10 @@ export async function POST(req: NextRequest) {
                     create: { name }
                 }))
             }
+        },
+        include: {
+            tags: true,
+            uploader: true
         }
     });
 

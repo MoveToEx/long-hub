@@ -146,9 +146,7 @@ export async function DELETE(req: NextRequest, {
     const { id } = await params;
 
     const post = await prisma.post.findFirst({
-        where: {
-            id
-        }
+        where: { id }
     });
 
     if (!post) {
@@ -158,10 +156,10 @@ export async function DELETE(req: NextRequest, {
     await fs.promises.rm(post.imagePath);
 
     await prisma.post.delete({
-        where: {
-            id
-        }
+        where: { id }
     });
 
-    return NextResponse.json('ok');
+    return new NextResponse(null, {
+        status: 204
+    });
 }
