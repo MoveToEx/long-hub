@@ -1,14 +1,14 @@
 'use client';
 
 import './globals.css'
-import { styled, Theme, CSSObject } from '@mui/material/styles';
-import { useState, useMemo, Suspense, ReactNode, ElementType, ComponentProps, forwardRef } from 'react';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
+import { styled } from '@mui/material/styles';
+import { useState, useMemo, Suspense, ReactNode, ElementType, ComponentProps, FunctionComponent } from 'react';
+import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import MuiDrawer, { DrawerProps as MuiDrawerProps } from '@mui/material/Drawer';
+import Typography, { TypographyProps } from '@mui/material/Typography';
+import MuiDrawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -22,6 +22,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import CircularProgress from '@mui/material/CircularProgress';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+import { SvgIconProps } from '@mui/material/SvgIcon';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import SecurityIcon from '@mui/icons-material/Security';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -35,9 +36,8 @@ import Logout from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import LoginIcon from '@mui/icons-material/Login';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
-import { SnackbarProvider, CustomContentProps } from 'notistack';
+import { SnackbarProvider } from 'notistack';
 
 import * as C from '@/lib/constants';
 import { usePathname } from 'next/navigation';
@@ -47,102 +47,57 @@ import { useUser } from './context';
 
 const drawerWidth = 256;
 
-const openedMixin = (theme: Theme): CSSObject => ({
-    width: drawerWidth,
-    transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen,
-    }),
-    overflowX: 'hidden',
-});
-
-const closedMixin = (theme: Theme): CSSObject => ({
-    transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-    }),
-    overflowX: 'hidden',
-    width: `calc(${theme.spacing(7)} + 1px)`,
-    [theme.breakpoints.up('sm')]: {
-        width: `calc(${theme.spacing(8)} + 1px)`,
+const Drawer = styled(MuiDrawer, {
+    shouldForwardProp: (prop) => prop !== 'open'
+})(({ theme, open }) => ({
+    whiteSpace: 'nowrap',
+    zIndex: theme.zIndex.drawer + 2,
+    '& .MuiDrawer-paper': {
+        width: open ? drawerWidth : `calc(${theme.spacing(7)} + 1px)`,
+        overflowX: 'hidden',
+        maxWidth: '100%',
+        transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.easeOut,
+            duration: theme.transitions.duration.standard,
+        })
     },
-});
-
-const invisibleMixin = (theme: Theme): CSSObject => ({
-    transition: theme.transitions.create('width', {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-    }),
-    width: 0,
-});
-
-interface AppBarProps extends MuiAppBarProps {
-    open?: boolean;
-}
-
-const AppBar = styled(MuiAppBar, {
-    shouldForwardProp: (prop) => prop !== 'open',
-})<AppBarProps>(({ theme, open }) => ({
-    zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-    }),
-    ...(open && {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
-    }),
 }));
 
-interface DrawerProps extends MuiDrawerProps {
-    visible?: boolean;
-};
-
-const Drawer = styled(MuiDrawer, {
-    shouldForwardProp: (prop) => prop !== 'visible' && prop !== 'open'
-})<DrawerProps>(({ theme, open, visible }) => ({
-    width: visible ? drawerWidth : 0,
-    whiteSpace: 'nowrap',
-    ...(open && {
-        ...openedMixin(theme),
-        '& .MuiDrawer-paper': openedMixin(theme),
+const AlterableTypography = styled(Typography, {
+    shouldForwardProp: prop => prop !== 'visible'
+})<TypographyProps & {
+    visible: Boolean
+}>(({ theme, visible }) => ({
+    height: visible ? '20px' : 0,
+    overflow: 'hidden',
+    marginTop: visible ? theme.spacing(0.5) : 0,
+    transition: theme.transitions.create(['height', 'margin-top'], {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.standard,
     }),
-    ...(!open && {
-        ...closedMixin(theme),
-        '& .MuiDrawer-paper': closedMixin(theme),
-    }),
-    ...(!visible && {
-        ...invisibleMixin(theme),
-        '& .MuiDrawer-paper': invisibleMixin(theme),
-    })
 }));
 
 function RootTemplate({
     children,
 }: {
-    children: React.ReactNode
+    children: ReactNode
 }) {
-    const [open, setOpen] = useState(true);
-    const [expand, setExpand] = useState(false);
+    const [open, setOpen] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const { data: user, isLoading, mutate } = useUser();
+    const { data: user, isLoading } = useUser();
     const pathname = usePathname();
 
     type ItemLinkProps<T extends ElementType> = {
         title: ReactNode;
         href: string;
-        icon: ReactNode;
+        IconComponent: FunctionComponent<SvgIconProps>;
         LinkComponent?: T;
         LinkProps?: ComponentProps<T>
     };
 
     function DrawerItem<T extends ElementType>({
-        title, href, icon, LinkComponent, LinkProps
+        title, href, IconComponent, LinkComponent, LinkProps
     }: ItemLinkProps<T>) {
         return (
             <ListItemButton
@@ -152,23 +107,16 @@ function RootTemplate({
                 selected={pathname == href}
                 onClick={() => setMobileOpen(false)}
             >
-                <ListItemIcon>{icon}</ListItemIcon>
-                <ListItemText
-                    primary={title}
-                    sx={{
-                        opacity: {
-                            xs: 1,
-                            md: expand ? 1 : 0
-                        }
-                    }} />
+                <ListItemIcon><IconComponent color={pathname == href ? 'primary' : undefined} /></ListItemIcon>
+                <ListItemText primary={title} />
             </ListItemButton>
         )
     }
 
     const drawerContent = (
         <List>
-            <DrawerItem title="Home" href="/" icon={<Home />} />
-            <DrawerItem title="Tag" href="/tag" icon={<TagIcon />} />
+            <DrawerItem title="Home" href="/" IconComponent={Home} />
+            <DrawerItem title="Tag" href="/tag" IconComponent={TagIcon} />
             <DrawerItem
                 LinkComponent="a"
                 LinkProps={{
@@ -176,35 +124,32 @@ function RootTemplate({
                 }}
                 title={<>Docs <OpenInNewIcon sx={{ fontSize: '14px' }} /></>}
                 href="https://doc.longhub.top"
-                icon={<TextSnippetIcon />} />
+                IconComponent={TextSnippetIcon} />
             <Divider component="li" />
-            <li>
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 2 }}>
-                    Post
-                </Typography>
-            </li>
-            <DrawerItem title="Upload" href="/post/upload" icon={<FileUploadIcon />} />
-            <DrawerItem title="Search" href="/post/search" icon={<Search />} />
-            <DrawerItem title="Find similar" href="/post/similar" icon={<ImageIcon />} />
+            <AlterableTypography visible={open} component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+                Post
+            </AlterableTypography>
+            <DrawerItem title="Upload" href="/post/upload" IconComponent={FileUploadIcon} />
+            <DrawerItem title="Search" href="/post/search" IconComponent={Search} />
+            <DrawerItem title="Find similar" href="/post/similar" IconComponent={ImageIcon} />
             <Divider component="li" />
-            <li>
-                <Typography component="div" variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 2 }}>
-                    {expand ? "Template" : "Temp."}
-                </Typography>
-            </li>
-            <DrawerItem title="List" href="/template" icon={<FormatListBulletedIcon />} />
-            <DrawerItem title="Upload" href="/template/upload" icon={<FileUploadIcon />} />
+            {/* <Typography component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+                Template
+            </Typography> */}
+            <AlterableTypography visible={open} component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+                Template
+            </AlterableTypography>
+            <DrawerItem title="List" href="/template" IconComponent={FormatListBulletedIcon} />
+            <DrawerItem title="Upload" href="/template/upload" IconComponent={FileUploadIcon} />
             {(!isLoading && ((user?.permission ?? 0) & C.Permission.Admin.base) != 0) &&
                 <>
                     <Divider component="li" />
-                    <li>
-                        <Typography component="div" variant="caption" color="text.secondary" sx={{ mt: 0.5, ml: 2 }}>
-                            Admin
-                        </Typography>
-                    </li>
-                    <DrawerItem title="Admin" href="/admin" icon={<SecurityIcon />} />
-
-                </>}
+                    <AlterableTypography visible={open} component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
+                        Admin
+                    </AlterableTypography>
+                    <DrawerItem title="Admin" href="/admin" IconComponent={SecurityIcon} />
+                </>
+            }
         </List>
     )
 
@@ -212,8 +157,7 @@ function RootTemplate({
         <>
             <CssBaseline />
             <Box sx={{ display: 'flex' }}>
-
-                <AppBar>
+                <AppBar sx={theme => ({ zIndex: theme.zIndex.drawer + 1 })}>
                     <Toolbar>
                         <IconButton
                             size="large"
@@ -256,15 +200,14 @@ function RootTemplate({
                             onClose={() => setAnchorEl(null)}
                         >
                             <div>
-                                {
-                                    isLoading &&
+                                {isLoading &&
                                     <MenuItem>
                                         <CircularProgress />
                                     </MenuItem>
                                 }
                             </div>
                             <div>
-                                {(!isLoading && user?.name) &&
+                                {user &&
                                     <>
                                         <MenuItem component={Link} href="/account" onClick={() => setAnchorEl(null)}>
                                             <ListItemIcon>
@@ -282,7 +225,7 @@ function RootTemplate({
                                 }
                             </div>
                             <div>
-                                {!isLoading && user?.name == null &&
+                                {user === undefined &&
                                     <>
                                         <MenuItem component={Link} href="/account/login" onClick={() => setAnchorEl(null)}>
                                             <ListItemIcon>
@@ -307,22 +250,14 @@ function RootTemplate({
 
             <Drawer
                 variant="permanent"
-                open={expand}
-                visible={open}
+                open={open}
                 sx={theme => ({
-                    [theme.breakpoints.up('md')]: {
-                        display: 'block'
-                    },
                     [theme.breakpoints.down('sm')]: {
                         display: 'none'
                     }
-                })}
-                onMouseEnter={() => setExpand(true)}
-                onMouseLeave={() => setExpand(false)}>
+                })}>
                 <Toolbar />
-
                 {drawerContent}
-
             </Drawer>
 
             <MuiDrawer
@@ -331,12 +266,8 @@ function RootTemplate({
                 open={mobileOpen}
                 onClose={() => setMobileOpen(false)}
                 sx={theme => ({
-                    zIndex: theme.zIndex.drawer + 1,
                     [theme.breakpoints.up('md')]: {
                         display: 'none'
-                    },
-                    [theme.breakpoints.down('sm')]: {
-                        display: 'block'
                     }
                 })}>
                 <Box sx={{ width: drawerWidth }}>
@@ -348,20 +279,11 @@ function RootTemplate({
                 component="main"
                 sx={theme => ({
                     [theme.breakpoints.up('md')]: {
-                        ml: open ? `calc(${theme.spacing(8)} + 1px)` : 0,
-                    },
-                    [theme.breakpoints.down('sm')]: {
-                        ml: 0
+                        ml: open ? `${drawerWidth}px` : theme.spacing(7),
                     },
                     transition: theme.transitions.create(['margin'], {
-                        easing: theme.transitions.easing.sharp,
-                        duration: theme.transitions.duration.leavingScreen,
-                    }),
-                    ...(open && {
-                        transition: theme.transitions.create(['margin'], {
-                            easing: theme.transitions.easing.sharp,
-                            duration: theme.transitions.duration.enteringScreen,
-                        }),
+                        easing: theme.transitions.easing.easeInOut,
+                        duration: theme.transitions.duration.standard,
                     })
                 })}>
                 <Container>
@@ -376,7 +298,7 @@ function RootTemplate({
 export default function ProviderWrapper({
     children
 }: {
-    children: React.ReactNode
+    children: ReactNode
 }) {
     const preferDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
     const currentTheme = useMemo(
