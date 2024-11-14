@@ -37,7 +37,7 @@ export function useUser() {
         const response = await fetch(url);
 
         if (!response.ok) {
-            throw new Error(response.statusText);
+            return undefined;
         }
 
         return response.json();
