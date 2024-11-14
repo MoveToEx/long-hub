@@ -133,9 +133,6 @@ function RootTemplate({
             <DrawerItem title="Search" href="/post/search" IconComponent={Search} />
             <DrawerItem title="Find similar" href="/post/similar" IconComponent={ImageIcon} />
             <Divider component="li" />
-            {/* <Typography component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                Template
-            </Typography> */}
             <AlterableTypography visible={open} component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
                 Template
             </AlterableTypography>
@@ -252,7 +249,7 @@ function RootTemplate({
                 variant="permanent"
                 open={open}
                 sx={theme => ({
-                    [theme.breakpoints.down('sm')]: {
+                    [theme.breakpoints.down('md')]: {
                         display: 'none'
                     }
                 })}>
@@ -270,6 +267,7 @@ function RootTemplate({
                         display: 'none'
                     }
                 })}>
+                <Toolbar />
                 <Box sx={{ width: drawerWidth }}>
                     {drawerContent}
                 </Box>
