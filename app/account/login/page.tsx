@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Alert from '@mui/material/Alert';
 import Checkbox from '@mui/material/Checkbox';
 import { useActionState } from 'react';
 import _ from 'lodash';
@@ -18,16 +19,19 @@ import { useUser } from '@/app/context';
 import SubmitButton from '@/components/SubmitButton';
 
 export default function SigninPage() {
-    const { data: user } = useUser();
+    const { data: user, mutate } = useUser();
     const router = useRouter();
-    const [state, action] = useActionState(login, '');
+    const [state, action] = useActionState(login, null);
+
+    if (state?.error === false) {
+        mutate();
+    }
 
     useEffect(() => {
         if (user) {
             router.push('/');
         }
     }, [user, router]);
-
 
     return (
         <Box
@@ -36,12 +40,19 @@ export default function SigninPage() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center',
             }}
         >
-            <Typography component="h1" variant="h5">
-                Log in
+            <Typography variant="h4">
+                Log in to LONG Hub
             </Typography>
-            <Box component="form" action={action} sx={{ mt: 1 }}>
+            <Typography variant="h6" color="text.secondary">
+                Welcome back, mother killer
+            </Typography>
+            <Box component="form" sx={{ mt: 1 }} action={action}>
+                {state &&
+                    <Alert severity={state.error ? 'error' : 'success'}>{state.message}</Alert>
+                }
                 <TextField
                     margin="normal"
                     required
@@ -59,18 +70,19 @@ export default function SigninPage() {
                     type="password"
                     autoComplete="current-password"
                 />
-                <FormControlLabel control={<Checkbox name='extend' />} label="Keep me logged in for a month" />
+                <FormControlLabel control={<Checkbox name='extend' />} label="Remember me" />
                 <SubmitButton label="Log in" />
-                <Typography color="error">
-                    {state}
-                </Typography>
-                <Grid container justifyContent="flex-end">
-                    <Grid>
-                        <Link href="/account/signup" variant="body2">
-                            {"Don't have an account? Sign Up"}
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end'
+                }}>
+                    <Typography variant="body2">
+                        Don&apos;t have an account?
+                        <Link href="/account/signup" >
+                            Sign Up
                         </Link>
-                    </Grid>
-                </Grid>
+                    </Typography>
+                </Box>
             </Box>
         </Box>
     )
