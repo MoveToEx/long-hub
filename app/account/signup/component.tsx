@@ -3,17 +3,23 @@
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid2';
 import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
-import { useActionState } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 
 import signUp from './action';
 import SubmitButton from '@/components/SubmitButton';
-import Turnstile from '@/components/Turnstile';
+import { Turnstile, TurnstileInstance } from '@marsidev/react-turnstile';
 
-export default function SignupPage({ turnstileKey }: { turnstileKey: string | undefined }) {
-    const [state, action] = useActionState(signUp, '');
+export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
+    const [state, action] = useActionState(signUp, null);
+    const ref = useRef<TurnstileInstance | null>(null);
+
+    useEffect(() => {
+        ref.current?.reset();
+    }, [state]);
 
     return (
         <Box
@@ -28,6 +34,11 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string | un
                 Sign up
             </Typography>
             <Box component="form" action={action} sx={{ mt: 1 }}>
+                {state &&
+                    <Alert severity={state.error ? 'error' : 'success'}>
+                        {state.message}
+                    </Alert>
+                }
                 <TextField
                     margin="normal"
                     required
@@ -54,23 +65,20 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string | un
                     type="password"
                     autoComplete="new-password"
                 />
-                {
-                    turnstileKey && <Turnstile clientKey={turnstileKey} />
-                }
+                <Turnstile ref={ref} siteKey={turnstileKey} />
                 <SubmitButton label="Sign up" />
 
-                <Typography color="error">
-                    {state}
-                </Typography>
-
-                <Grid container justifyContent="flex-end">
-                    <Grid>
+                <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end'
+                }}>
+                    <Typography variant="body2">
                         Already have an account?
                         <Link href="/account/login" variant="body2">
                             Log in
                         </Link>
-                    </Grid>
-                </Grid>
+                    </Typography>
+                </Box>
             </Box>
         </Box>
     )

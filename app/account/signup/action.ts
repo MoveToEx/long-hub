@@ -11,7 +11,7 @@ import env from '@/lib/env';
 
 const turnstileSecret = env.CF_TURNSTILE_SECRET;
 
-export default async function signUp(_state: string, fd: FormData) {
+export default async function signUp(_state: unknown, fd: FormData) {
     const username = fd.get('username') as string;
     const password = fd.get('password') as string;
     const confirmPassword = fd.get('password-confirm') as string;
@@ -35,29 +35,53 @@ export default async function signUp(_state: string, fd: FormData) {
     const data = await response.json();
 
     if (!data.success) {
-        return 'Invalid captcha';
+        return {
+            error: true,
+            message: 'Invalid captcha',
+            timestamp: Number(new Date())
+        };
     }
 
     if (!username || !password) {
-        return 'Missing required fields';
+        return {
+            error: true,
+            message: 'Missing required fields',
+            timestamp: Number(new Date())
+        };
     }
 
     if (!/^[a-zA-Z0-9_]{4,}$/.test(username)) {
-        return 'Invalid username';
+        return {
+            error: true,
+            message: 'Invalid username',
+            timestamp: Number(new Date())
+        };
     }
 
     if (password != confirmPassword) {
-        return 'Password does not match';
+        return {
+            error: true,
+            message: 'Password does not match',
+            timestamp: Number(new Date())
+        };
     }
 
     if (password.length < 8) {
-        return 'Password too short';
+        return {
+            error: true,
+            message: 'Password too short',
+            timestamp: Number(new Date())
+        };
     }
 
     if (await prisma.user.count({
         where: { name: username }
     })) {
-        return 'Username already taken';
+        return {
+            error: true,
+            message: 'Username already taken',
+            timestamp: Number(new Date())
+        };
     }
 
     const hash = bcrypt.hashSync(password, C.saltRound);
