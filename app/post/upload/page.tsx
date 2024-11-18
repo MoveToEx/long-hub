@@ -171,14 +171,17 @@ export default function UploadPage() {
     }, [user, router]);
 
     const next = useCallback(() => {
+        if (files.length == 0) return;
+
         setMeta({
             text: '',
             rating: Rating.none,
             tags: []
         });
         setIgnoreSimilar(false);
+        URL.revokeObjectURL(files[0].url);
         setFiles(files => _.slice(files, 1));
-    }, []);
+    }, [files]);
 
     const submit = useCallback(async (text: string, tags: string[], rating: Rating, force: boolean, blob: Blob) => {
         let fd = new FormData();
@@ -226,11 +229,6 @@ export default function UploadPage() {
         enqueueSnackbar('Failed: ' + response.statusText, {
             variant: 'error'
         });
-    }, [enqueueSnackbar, next]);
-
-    const skip = useCallback(() => {
-        next();
-        enqueueSnackbar('Skipped 1 image', { variant: 'info' });
     }, [enqueueSnackbar, next]);
 
     const paste = useCallback(async () => {
@@ -393,7 +391,10 @@ export default function UploadPage() {
 
                             <Tooltip title="Skip current image">
                                 <span>
-                                    <Fab onClick={skip} color="error" disabled={loading || files.length == 0}>
+                                    <Fab onClick={() => {
+                                        next();
+                                        enqueueSnackbar('Skipped 1 image', { variant: 'info' });
+                                    }} color="error" disabled={loading || files.length == 0}>
                                         <DeleteIcon />
                                     </Fab>
                                 </span>

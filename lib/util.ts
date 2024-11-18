@@ -88,13 +88,17 @@ export async function copyImage(
         return;
     }
 
+    const url = URL.createObjectURL(blob);
+
     const image: HTMLImageElement = await new Promise((resolve, reject) => {
         const element = document.createElement('img');
 
         element.onload = () => resolve(element);
         element.onerror = reject;
-        element.src = URL.createObjectURL(blob);
+        element.src = url;
     });
 
     await copyImageElem(image);
+
+    URL.revokeObjectURL(url);
 }
