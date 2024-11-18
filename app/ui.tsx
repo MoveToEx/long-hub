@@ -1,7 +1,7 @@
 'use client';
 
 import './globals.css'
-import { styled } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
 import { useState, useMemo, Suspense, ReactNode, ElementType, ComponentProps, FunctionComponent } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -9,6 +9,7 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography, { TypographyProps } from '@mui/material/Typography';
 import MuiDrawer from '@mui/material/Drawer';
+import InputBase from '@mui/material/InputBase';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -27,6 +28,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import SecurityIcon from '@mui/icons-material/Security';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import Home from '@mui/icons-material/Home';
 import TagIcon from '@mui/icons-material/Tag';
 import Search from '@mui/icons-material/Search';
@@ -40,7 +42,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import { SnackbarProvider } from 'notistack';
 
 import * as C from '@/lib/constants';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useUser } from './context';
@@ -53,13 +55,10 @@ const Drawer = styled(MuiDrawer, {
     whiteSpace: 'nowrap',
     zIndex: theme.zIndex.drawer + 2,
     '& .MuiDrawer-paper': {
-        width: open ? drawerWidth : `calc(${theme.spacing(7)} + 1px)`,
+        width: open ? drawerWidth : theme.spacing(7),
         overflowX: 'hidden',
         maxWidth: '100%',
-        transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.easeOut,
-            duration: theme.transitions.duration.standard,
-        })
+        transition: theme.transitions.create('width')
     },
 }));
 
@@ -68,14 +67,81 @@ const AlterableTypography = styled(Typography, {
 })<TypographyProps & {
     visible: Boolean
 }>(({ theme, visible }) => ({
-    height: visible ? '20px' : 0,
+    height: visible ? theme.spacing(2) : 0,
     overflow: 'hidden',
     marginTop: visible ? theme.spacing(0.5) : 0,
-    transition: theme.transitions.create(['height', 'margin-top'], {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.standard,
-    }),
+    transition: theme.transitions.create(['height', 'margin-top']),
 }));
+
+const SearchContainer = styled('div')(({ theme }) => ({
+    position: 'relative',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    '&:hover': {
+        backgroundColor: alpha(theme.palette.common.white, 0.25)
+    },
+    marginRight: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+        display: 'none'
+    },
+    transition: theme.transitions.create('background-color', {
+        duration: theme.transitions.duration.shortest
+    })
+}));
+
+const SearchIconContainer = styled('div')(({ theme }) => ({
+    padding: theme.spacing(0, 2),
+    height: '100%',
+    position: 'absolute',
+    pointerEvents: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+}));
+
+const SearchInput = styled(InputBase)(({ theme }) => ({
+    color: 'inherit',
+    width: '100%',
+    '& .MuiInputBase-input': {
+        transition: theme.transitions.create('width'),
+        padding: theme.spacing(1, 1, 1, 0),
+        paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+        [theme.breakpoints.up('sm')]: {
+            width: '16ch',
+            '&:focus': {
+                width: '24ch'
+            }
+        }
+    }
+}));
+
+function SearchBox() {
+    const router = useRouter();
+    const [value, setValue] = useState('');
+
+    return (
+        <SearchContainer>
+            <SearchIconContainer>
+                <Search />
+            </SearchIconContainer>
+            <SearchInput
+                placeholder="Quick search"
+                value={value}
+                onChange={(e) => {
+                    setValue(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                    if (e.key == 'Enter') {
+                        const url = new URL('/post/search', window.location.href);
+                        url.searchParams.set('s', value);
+                        setValue('');
+                        router.push(url.toString());
+                    }
+                }}
+            />
+        </SearchContainer>
+    )
+}
 
 function RootTemplate({
     children,
@@ -83,29 +149,26 @@ function RootTemplate({
     children: ReactNode
 }) {
     const [open, setOpen] = useState(false);
-    const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const { data: user, isLoading } = useUser();
     const pathname = usePathname();
 
-    type ItemLinkProps<T extends ElementType> = {
-        title: ReactNode;
-        href: string;
-        IconComponent: FunctionComponent<SvgIconProps>;
-        LinkComponent?: T;
-        LinkProps?: ComponentProps<T>
-    };
-
     function DrawerItem<T extends ElementType>({
         title, href, IconComponent, LinkComponent, LinkProps
-    }: ItemLinkProps<T>) {
+    }: {
+        title: ReactNode,
+        href: string,
+        IconComponent: FunctionComponent<SvgIconProps>,
+        LinkComponent?: T,
+        LinkProps?: ComponentProps<T>
+    }) {
         return (
             <ListItemButton
                 {...LinkProps}
                 href={href}
                 LinkComponent={LinkComponent ?? Link}
                 selected={pathname == href}
-                onClick={() => setMobileOpen(false)}
+                // onClick={() => setMobileOpen(false)}
             >
                 <ListItemIcon><IconComponent color={pathname == href ? 'primary' : undefined} /></ListItemIcon>
                 <ListItemText primary={title} />
@@ -162,10 +225,9 @@ function RootTemplate({
                             color="inherit"
                             onClick={() => {
                                 setOpen(!open);
-                                setMobileOpen(!mobileOpen);
                             }}
                             sx={{ mr: 2 }}>
-                            <MenuIcon />
+                            {open ? <MenuOpenIcon /> : <MenuIcon />}
                         </IconButton>
                         <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
                             <Link href="/">
@@ -174,6 +236,8 @@ function RootTemplate({
                                 NG Hub
                             </Link>
                         </Typography>
+
+                        <SearchBox />
 
                         <IconButton color="inherit" edge="end" onClick={e => {
                             setAnchorEl(e.currentTarget);
@@ -260,8 +324,10 @@ function RootTemplate({
             <MuiDrawer
                 variant="temporary"
                 disableScrollLock
-                open={mobileOpen}
-                onClose={() => setMobileOpen(false)}
+                open={open}
+                onClose={() => {
+                    setOpen(false);
+                }}
                 sx={theme => ({
                     [theme.breakpoints.up('md')]: {
                         display: 'none'
@@ -279,10 +345,7 @@ function RootTemplate({
                     [theme.breakpoints.up('md')]: {
                         ml: open ? `${drawerWidth}px` : theme.spacing(7),
                     },
-                    transition: theme.transitions.create(['margin'], {
-                        easing: theme.transitions.easing.easeInOut,
-                        duration: theme.transitions.duration.standard,
-                    })
+                    transition: theme.transitions.create(['margin'])
                 })}>
                 <Container>
                     <Toolbar sx={{ zIndex: -1 }} />

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import 'server-only';
 
 const schema = z.object({
     COOKIE_NAME: z.string(),
