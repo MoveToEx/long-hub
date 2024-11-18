@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
     const user = await auth(req);
 
     if (user == null) {
-        return NextResponse.json('unauthorized', {
+        return new NextResponse(null, {
             status: 401
         }); 
     }

@@ -62,7 +62,7 @@ export default function PostGrid({
                 objectFit: 'contain',
             }}
             onMouseOver={prefetch ? () => {
-                preload(value.id, PostFetcher);
+                preload('/api/post/' + value.id, PostFetcher);
             } : undefined}
             {...ImageProps}
         />

@@ -32,20 +32,6 @@ type PostsResponse = {
     data: Post[];
 };
 
-export function useUser() {
-    const fetcher = async (url: string) => {
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            return undefined;
-        }
-
-        return response.json();
-    };
-
-    return useSWR<User | undefined>('/api/account', fetcher);
-}
-
 function parseRating(s: string) {
     if (s == 'n') return 'none';
     else if (s == 'm') return 'moderate';
@@ -67,7 +53,7 @@ function parseFilter(params: string[]) {
             }
         }
         const [field, value] = s.split(':', 2);
-        if (field == 'rating') {
+        if (field == 'rating' || field == 'r') {
             return {
                 type: 'rating',
                 value: parseRating(value)
@@ -90,39 +76,46 @@ function parseFilter(params: string[]) {
     });
 }
 
-export const TagsFetcher = async (url: string) => {
+const fetcher = async (url: string) => {
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+        return undefined;
+    }
+    
+    return response.json();
+}
+
+const throwableFetcher = async (url: string) => {
     const response = await fetch(url);
 
     if (!response.ok) {
-        return null;
+        throw new Error(response.statusText);
     }
 
     return response.json();
-};
+}
+
+export const UserFetcher = fetcher;
+export const useUser = () => useSWR<User | undefined>('/api/account', UserFetcher);
+
+export const TagsFetcher = fetcher;
 export const useTags = () => useSWR<Tags>('/api/post/tag', TagsFetcher);
 
-export const PostsFetcher = async ({ offset, limit }: { offset: number, limit: number }) => {
-    const response = await fetch('/api/post?limit=' + limit + '&offset=' + offset);
+export const PostsFetcher = throwableFetcher;
+export function usePosts(page: number = 0) {
+    return useSWR<PostsResponse>('/api/post?limit=24&offset=' + 24 * (page - 1), PostsFetcher);
+}
 
-    if (!response.ok) {
-        throw new Error(response.statusText);
-    }
+export const PostFetcher = throwableFetcher;
+export const usePost = (id: string) => useSWR<Post>('/api/post/' + id, PostFetcher);
 
-    return response.json();
-};
-export const usePosts = (offset: number = 0, limit: number = 24) => useSWR<PostsResponse>({ offset, limit }, PostsFetcher, {});
+export const TaggedPostsFetcher = throwableFetcher;
+export function useTaggedPost(tag: string, page: number) {
+    return useSWR<PostsResponse>('/api/post/tag/' + tag + '?limit=24&offset=' + (page - 1) * 24, TaggedPostsFetcher);
+}
 
-export const PostFetcher = async (id: string) => {
-    const response = await fetch('/api/post/' + id);
-
-    if (!response.ok) {
-        throw new Error(response.statusText);
-    }
-
-    return response.json();
-};
-export const usePost = (id: string) => useSWR<Post>(id, PostFetcher);
-
+// export const SearchResultFetcher = throwableFetcher;
 export const SearchResultFetcher = async ([keyword, page]: [string[], number]) => {
     if (keyword.length == 0) {
         return {
@@ -140,19 +133,12 @@ export const SearchResultFetcher = async ([keyword, page]: [string[], number]) =
         body: data
     });
 
-    return response.json();
-}
-export function useSearchResult({ keyword, page }: { keyword: string[], page: number }) {
-    return useSWR<PostsResponse>([keyword, page], SearchResultFetcher, {});
-}
-
-export const TaggedPostsFetcher = async ([tag, page]: [string, number]) => {
-    const response = await fetch('/api/post/tag/' + tag + '?limit=24&offset=' + (page - 1) * 24);
-
     if (!response.ok) {
         throw new Error(response.statusText);
     }
 
     return response.json();
 }
-export const useTaggedPost = (tag: string, page: number) => useSWR<PostsResponse>([tag, page], TaggedPostsFetcher, {});
+export function useSearchResult({ keyword, page }: { keyword: string[], page: number }) {
+    return useSWR<PostsResponse>([keyword, page], SearchResultFetcher, {});
+}

@@ -13,7 +13,7 @@ import { useState, useEffect, useDeferredValue } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
-import { usePosts } from './context';
+import { PostsFetcher, usePosts } from './context';
 import PostGridItem from '@/components/PostGridItem';
 import PostListItem from '@/components/PostListItem';
 import { useSnackbar } from 'notistack';
@@ -21,6 +21,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import WindowIcon from '@mui/icons-material/Window';
 import ViewListIcon from '@mui/icons-material/ViewList';
+import { preload } from 'swr';
 
 function GridLayout({
 	isLoading,
@@ -130,7 +131,7 @@ export default function Home() {
 	const router = useRouter();
 	const [layout, setLayout] = useState<'grid' | 'list'>('grid');
 	const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
-	const { data, error, isLoading } = usePosts((page - 1) * 24, 24);
+	const { data, error, isLoading } = usePosts(page);
 	const { enqueueSnackbar } = useSnackbar();
 	const deferredPage = useDeferredValue(C.pages(data?.count ?? 0));
 
@@ -153,6 +154,8 @@ export default function Home() {
 	if (error) {
 		enqueueSnackbar(error, { variant: 'error' });
 	}
+
+	preload('/api/post?limit=24&offset=' + 24 * page, PostsFetcher);
 
 	return (
 		<Box sx={{ m: 2 }}>

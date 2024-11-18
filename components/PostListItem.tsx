@@ -27,7 +27,7 @@ export default function PostGrid({
 }: PostGridProps) {
     return (
         <Grid container spacing={1} onMouseOver={prefetch ? () => {
-            preload(value.id, PostFetcher);
+            preload('/api/post/' + value.id, PostFetcher);
         } : undefined}>
             <Grid size={4}>
                 <Link href={`/post/${value.id}`} style={{ maxWidth: '100%' }}>
