@@ -12,12 +12,22 @@ import Fab from '@mui/material/Fab';
 import { useState, useEffect, useRef, use } from 'react';
 import TextField from '@mui/material/TextField';
 import SendIcon from '@mui/icons-material/Send';
-import TemplateResponse from '@/lib/types/TemplateResponse';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { Rnd } from 'react-rnd';
 import { useSnackbar } from 'notistack';
+
+
+type TemplateResponse = {
+    name: string,
+    image: string,
+    imageURL: string,
+    rectHeight: number,
+    rectWidth: number,
+    offsetX: number,
+    offsetY: number,
+};
 
 export default function TemplatePage({
     params
