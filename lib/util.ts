@@ -86,6 +86,8 @@ async function fetchBlob(src: string, onProgress: (percentage: number) => void) 
         element.src = url;
     });
 
+    URL.revokeObjectURL(url);
+
     return toBlob(image);
 }
 
