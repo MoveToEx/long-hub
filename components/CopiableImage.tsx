@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
-import { copyImage, copyImageElem } from '@/lib/util';
+import { copyImage, copyImageElement } from '@/lib/util';
 import styles from './components.module.css';
 import { ImageProps } from 'next/image';
 import { useRef } from 'react';
@@ -46,7 +46,7 @@ export default function CopiableImage({
                 if (src.endsWith('gif')) enqueueSnackbar('Only the first frame will be copied', { variant: 'info' });
                 
                 try {
-                    await copyImageElem(image.current);
+                    await copyImageElement(image.current);
                     enqueueSnackbar('Copied to clipboard', { variant: 'success' });
                 }
                 catch (e) {

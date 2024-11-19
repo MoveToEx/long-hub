@@ -6,7 +6,7 @@ export function createQueryString(url: string, params: Record<string, any>) {
     return url + '?' + qs.toString();
 }
 
-export async function copyImageElem(element: HTMLImageElement) {
+async function toBlob(element: HTMLImageElement) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     if (context === null) {
@@ -19,7 +19,7 @@ export async function copyImageElem(element: HTMLImageElement) {
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(element, 0, 0);
 
-    const pngBlob: Blob | null = await new Promise((resolve, reject) => {
+    const blob: Blob | null = await new Promise((resolve, reject) => {
         canvas.toBlob(blob => {
             if (blob === null) {
                 reject('Cannot convert canvas to blob');
@@ -30,21 +30,14 @@ export async function copyImageElem(element: HTMLImageElement) {
         }, 'image/png');
     });
 
-    if (pngBlob === null) {
+    if (blob === null) {
         throw new Error('Failed fetching image');
     }
 
-    await navigator.clipboard.write([
-        new ClipboardItem({
-            [pngBlob.type]: pngBlob
-        })
-    ]);
+    return blob;
 }
 
-export async function copyImage(
-    src: string,
-    onProgress: (percentage: number) => void
-) {
+async function fetchBlob(src: string, onProgress: (percentage: number) => void) {
     const chunks = [];
     const response = await fetch(src);
 
@@ -71,7 +64,7 @@ export async function copyImage(
         if (done) {
             break;
         }
-        
+
         chunks.push(value);
         received += value.length;
         onProgress(received / contentLength * 100);
@@ -80,12 +73,7 @@ export async function copyImage(
     const blob = new Blob(chunks);
 
     if (blob.type === 'image/png') {
-        await navigator.clipboard.write([
-            new ClipboardItem({
-                [blob.type]: blob
-            })
-        ]);
-        return;
+        return blob;
     }
 
     const url = URL.createObjectURL(blob);
@@ -98,7 +86,24 @@ export async function copyImage(
         element.src = url;
     });
 
-    await copyImageElem(image);
+    return toBlob(image);
+}
 
-    URL.revokeObjectURL(url);
+export async function copyImageElement(element: HTMLImageElement) {
+    await navigator.clipboard.write([
+        new ClipboardItem({
+            'image/png': toBlob(element)
+        })
+    ]);
+}
+
+export async function copyImage(
+    src: string,
+    onProgress: (percentage: number) => void
+) {
+    await navigator.clipboard.write([
+        new ClipboardItem({
+            'image/png': fetchBlob(src, onProgress)
+        })
+    ]);
 }
