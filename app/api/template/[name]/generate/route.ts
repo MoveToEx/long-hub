@@ -22,8 +22,11 @@ export async function POST(req: NextRequest, {
         });
     }
 
+    const response = await fetch(template.imageURL);
+    const buffer = Buffer.from(await response.arrayBuffer());
+
     if (!data.text) {
-        const img = await sharp(template.imagePath).png().toBuffer();
+        const img = await sharp(buffer).png().toBuffer();
 
         return new Response(img, {
             headers: {
@@ -69,7 +72,7 @@ export async function POST(req: NextRequest, {
         });
     }
 
-    const buf = await sharp(template.imagePath).composite([
+    const buf = await sharp(buffer).composite([
         {
             input: text,
             left: Math.floor(offsetX + (rectWidth - textWidth) / 2),

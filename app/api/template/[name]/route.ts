@@ -3,6 +3,9 @@ import { prisma } from '@/lib/db';
 import _ from 'lodash';
 import fs from 'fs';
 import env from '@/lib/env';
+import storage from '@/lib/storage';
+import sharp from 'sharp';
+import mime from 'mime-types';
 
 import { auth } from '@/lib/dal';
 import * as C from '@/lib/constants';
@@ -76,10 +79,33 @@ export async function POST(req: NextRequest, {
     }
 
     const filename = name + '.' + _.last(img.name.split('.'));
+
+    var buffer = Buffer.from(await img.arrayBuffer());
+    const { format: extension } = await sharp(buffer).metadata();
+
+    if (extension === undefined) {
+        return new NextResponse(null, {
+            status: 400
+        });
+    }
+
+    const type = mime.contentType(extension);
+
+    if (type === false) {
+        return new NextResponse(null, {
+            status: 400
+        });
+    }
+
+    const url = await storage.create('template/' + filename, buffer, {
+        ContentType: type
+    });
+
     const template = await prisma.template.create({
         data: {
             name: name,
             image: filename,
+            imageURL: url,
             createdAt: new Date(),
             uploaderId: user.id,
             rectHeight: metadata.height,
@@ -88,10 +114,6 @@ export async function POST(req: NextRequest, {
             offsetY: metadata.y,
         },
     });
-
-    var buffer = Buffer.from(await img.arrayBuffer());
-
-    fs.writeFileSync(template.imagePath, new Uint8Array(buffer));
 
     return NextResponse.json({
         name: template.name
