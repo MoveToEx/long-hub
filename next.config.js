@@ -11,22 +11,14 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: 'https',
-                hostname: 'img.longhub.top',
-                port: '',
+                hostname: '*.longhub.top',
                 pathname: '/**'
             },
             {
-                protocol: 'http',
-                hostname: 'localhost',
-                port: '3042',
+                protocol: 'https',
+                hostname: '*.r2.dev',
                 pathname: '/**'
-            },
-            {
-                protocol: 'http',
-                hostname: '192.168.110.16',
-                port: '3042',
-                pathname: '/**'
-            },
+            }
         ]
     },
 };

@@ -23,9 +23,11 @@ export default function SigninPage() {
     const router = useRouter();
     const [state, action] = useActionState(login, null);
 
-    if (state?.error === false) {
-        mutate();
-    }
+    useEffect(() => {
+        if (state?.error === false) {
+            mutate();
+        }
+    }, [state, mutate])
 
     useEffect(() => {
         if (user) {

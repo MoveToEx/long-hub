@@ -1,17 +1,14 @@
 import { prisma } from '@/lib/db';
 import { NextRequest, NextResponse } from "next/server";
 import sharp from 'sharp';
-import { Readable } from 'stream';
 import _ from 'lodash';
-import fs from 'fs';
-import path from 'node:path';
+import storage from '@/lib/storage';
 import crypto from 'crypto';
 import mime from 'mime-types';
 import { z } from 'zod';
 import { parseWithZod } from '@conform-to/zod';
 import phash from 'sharp-phash';
 import phashDistance from 'sharp-phash/distance';
-import env from '@/lib/env';
 import { responses } from '@/lib/server-util';
 import { auth } from '@/lib/dal';
 import { Permission } from '@/lib/constants';
@@ -40,7 +37,7 @@ const schema = z.object({
 const postSchema = z.object({
     image: z.instanceof(File),
     metadata: json.pipe(schema),
-    force: z.coerce.boolean()
+    force: z.union([z.literal('0'), z.literal('1')])
 });
 
 export async function GET(req: NextRequest) {
@@ -105,7 +102,23 @@ export async function POST(req: NextRequest) {
 
     let buffer = Buffer.from(await image.arrayBuffer());
 
-    if (image.type != 'image/gif') {
+    const { format: extension } = await sharp(buffer).metadata();
+
+    if (extension === undefined) {
+        return new NextResponse('Unexpected image content', {
+            status: 400
+        });
+    }
+
+    const mimeType = mime.contentType(extension);
+
+    if (mimeType === false) {
+        return new NextResponse('Unexpected image content', {
+            status: 400
+        });
+    }
+
+    if (mimeType != 'image/gif') {
         buffer = await sharp(buffer).trim({
             background: 'rgba(255,255,255,0.0)'
         }).trim().toBuffer();
@@ -122,14 +135,18 @@ export async function POST(req: NextRequest) {
         }
     }).then(posts => posts.filter(post => phashDistance(post.imageHash, hash) < 4));
 
-    if (similar.length && !force) {
+    if (similar.length && force !== '1') {
         return NextResponse.json(similar, {
             status: 409
         });
     }
 
     const id = crypto.randomUUID();
-    const filename = id + '.' + mime.extension(image.type);
+    const filename = id + '.' + extension;
+
+    const url = await storage.create('post/' + filename, buffer, {
+        ContentType: mimeType
+    });
 
     const post = await prisma.post.create({
         data: {
@@ -140,6 +157,7 @@ export async function POST(req: NextRequest) {
             rating: metadata.rating,
             image: filename,
             imageHash: hash,
+            imageURL: url,
             uploader: {
                 connect: {
                     id: user.id
@@ -157,8 +175,6 @@ export async function POST(req: NextRequest) {
             uploader: true
         }
     });
-
-    await fs.promises.writeFile(path.join(env.MEDIA_ROOT, 'posts', filename), Readable.from(buffer));
 
     revalidatePath('/admin');
     revalidatePath('/admin/posts');

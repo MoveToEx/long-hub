@@ -51,6 +51,7 @@ export default function PostGrid({
             alt={value.text ?? value.id}
             height={300}
             width={300}
+            unoptimized
             loading="eager"
             className={copying ? styles['grid-image-fetching'] : ''}
             style={{

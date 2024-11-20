@@ -21,7 +21,6 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import WindowIcon from '@mui/icons-material/Window';
 import ViewListIcon from '@mui/icons-material/ViewList';
-import { preload } from 'swr';
 
 function GridLayout({
 	isLoading,
@@ -154,8 +153,6 @@ export default function Home() {
 	if (error) {
 		enqueueSnackbar(error, { variant: 'error' });
 	}
-
-	preload('/api/post?limit=24&offset=' + 24 * page, PostsFetcher);
 
 	return (
 		<Box sx={{ m: 2 }}>

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import fs from 'fs';
-
 import { auth } from '@/lib/dal';
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
@@ -9,6 +7,7 @@ import { z } from 'zod';
 import _ from 'lodash';
 import { responses } from "@/lib/server-util";
 import { Prisma, Rating } from "@prisma/client";
+import storage from '@/lib/storage';
 
 const updateSchema = z.object({
     text: z.optional(z.string()),
@@ -153,7 +152,7 @@ export async function DELETE(req: NextRequest, {
         return responses.notFound('Post ' + id);
     }
 
-    await fs.promises.rm(post.imagePath);
+    await storage.remove('post/' + post.image);
 
     await prisma.post.delete({
         where: { id }

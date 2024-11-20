@@ -19,6 +19,7 @@ model post {
   aliases    alias[]
   image      String   @db.VarChar(255)
   imageHash  String   @db.VarChar(255)
+  imageURL   String   @db.VarChar(128)
   aggr       Float    @default(0) @db.Float
   rating     Rating   @default(none)
   createdAt  DateTime @db.DateTime(0)

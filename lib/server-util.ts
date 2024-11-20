@@ -1,4 +1,4 @@
-import { ZodError } from 'zod';
+import { z } from 'zod';
 import _ from 'lodash';
 
 export const responses = {
@@ -23,3 +23,16 @@ export const responses = {
         });
     }
 }
+
+export const z_json = z.string().transform((value, context) => {
+    try {
+        return JSON.parse(value);
+    }
+    catch (e) {
+        context.addIssue({
+            code: 'custom',
+            message: 'Invalid JSON'
+        });
+        return z.NEVER;
+    }
+});

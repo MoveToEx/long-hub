@@ -23,19 +23,35 @@ $ cp .env_template .env.local
 $ vim .env.local
 ```
 
-Note that the `COOKIE_SECRET` is used for cookie encryption and is suggested to be a random string. And can be generated with:
+The `COOKIE_SECRET` env is used for cookie encryption and is suggested to be a random string. And can be generated with:
 
 ```sh
 $ dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64
+```
+
+The `STORAGE_PROVIDER` is used to specify storage method for images. Available values are `'local'` and [`'r2'`](https://developers.cloudflare.com/r2/).
+
+To use local storage which writes all images to an local directory, the following variables are required:
+
+```
+MEDIA_ROOT=             # Root directory that images will be saved to
+MEDIA_URL_PREFIX=       # Prefix of media URL. Must end with a slash.
+```
+
+To use [Cloudflare R2](https://developers.cloudflare.com/r2/), the following variables are required:
+
+```
+R2_ACCOUNT_ID=          # |
+R2_ACCESS_KEY_ID=       # |
+R2_SECRET_ACCESS_KEY=   # `- Refer to cloudflare for details
+R2_BUCKET_NAME=         # Storage bucket name
+R2_CUSTOM_DOMAIN=       # R2 custom domain
 ```
 
 Other environment variables are described below:
 
 ```
 COOKIE_NAME=        # Cookie name for session storage
-
-MEDIA_ROOT=         # Root directory to store user-uploaded images
-MEDIA_URL_PREFIX=   # Prefix of media URL, e.g. https://mysite.com/img/
 
 DATABASE_URL=       # Database connection. e.g. mysql://user:password@host:port/longhub
 ```

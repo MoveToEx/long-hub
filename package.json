@@ -13,6 +13,7 @@
     "dev:start-image-host": "node ./scripts/img-host.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.696.0",
     "@azure/msal-node": "^2.9.2",
     "@conform-to/react": "^1.2.2",
     "@conform-to/zod": "^1.2.2",
@@ -70,7 +71,8 @@
     "prisma": "^5.18.0",
     "tsx": "^4.19.1",
     "typescript": "^5",
-    "vitest": "^2.0.5"
+    "vitest": "^2.0.5",
+    "wrangler": "^3.88.0"
   },
   "packageManager": "yarn@4.2.1"
 }
