@@ -37,6 +37,7 @@ export default function PostGrid({
                         height={150}
                         width={150}
                         unoptimized
+                        crossOrigin="anonymous"
                         loading="eager"
                         style={{
                             maxWidth: '100%',

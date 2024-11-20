@@ -52,6 +52,7 @@ export default function PostGrid({
             height={300}
             width={300}
             unoptimized
+            crossOrigin="anonymous"
             loading="eager"
             className={copying ? styles['grid-image-fetching'] : ''}
             style={{
