@@ -88,6 +88,7 @@ export default function Post({
                 {post.data &&
                     <Image
                         id="preview-image"
+                        crossOrigin='anonymous'
                         alt="Preview"
                         unoptimized
                         src={post.data.imageURL}
