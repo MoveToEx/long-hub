@@ -71,6 +71,8 @@ export function PostGrid({ posts }: {
                     <Image
                         src={params.value}
                         alt={params.id.toString()}
+                        unoptimized
+                        crossOrigin='anonymous'
                         height={64}
                         width={64}
                         quality={25}
@@ -176,6 +178,8 @@ export function PostGrid({ posts }: {
                         <Image
                             src={deleteDialog.image}
                             alt="image"
+                            unoptimized
+                            crossOrigin='anonymous'
                             height={300}
                             width={300}
                             style={{
@@ -220,7 +224,7 @@ export function PostGrid({ posts }: {
                 sx={{
                     height: '700px'
                 }}
-                pageSizeOptions={[10, 20, 50]}
+                pageSizeOptions={[10, 20, 50, 100]}
                 columns={columns}
                 rows={posts}
                 processRowUpdate={EditPost}

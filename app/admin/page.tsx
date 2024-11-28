@@ -193,7 +193,9 @@ export default async function AdminPage() {
                                                 <TableCell align="center">{_.first(post.id.split('-'))}</TableCell>
                                                 <TableCell align="center">
                                                     <Image
-                                                        src={post.imageURL!}
+                                                        src={post.imageURL}
+                                                        unoptimized
+                                                        crossOrigin="anonymous"
                                                         width={64}
                                                         height={64}
                                                         alt="image"

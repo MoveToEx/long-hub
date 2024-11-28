@@ -149,6 +149,8 @@ export default function UploadPage() {
                     <Image
                         src={file.url}
                         alt='preview'
+                        unoptimized
+                        crossOrigin='anonymous'
                         height={300}
                         width={300}
                         style={{
