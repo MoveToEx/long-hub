@@ -106,11 +106,11 @@ export default function PostPage({
     const { id } = use(params);
     const { data, isLoading, error } = usePost(id);
 
-    if (isLoading || !data) {
+    if (isLoading) {
         return <LoadingSkeleton id={id} />;
     }
 
-    if (error) {
+    if (error || !data) {
         return <Error id={id} />;
     }
 
