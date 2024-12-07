@@ -46,6 +46,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useUser } from './context';
+import logout from './account/logout/action';
 
 const drawerWidth = 256;
 
@@ -150,7 +151,7 @@ function RootTemplate({
 }) {
     const [open, setOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const { data: user, isLoading } = useUser();
+    const { data: user, isLoading, mutate } = useUser();
     const pathname = usePathname();
 
     function DrawerItem<T extends ElementType>({
@@ -168,7 +169,7 @@ function RootTemplate({
                 href={href}
                 LinkComponent={LinkComponent ?? Link}
                 selected={pathname == href}
-                // onClick={() => setMobileOpen(false)}
+            // onClick={() => setMobileOpen(false)}
             >
                 <ListItemIcon><IconComponent color={pathname == href ? 'primary' : undefined} /></ListItemIcon>
                 <ListItemText primary={title} />
@@ -276,7 +277,10 @@ function RootTemplate({
                                             </ListItemIcon>
                                             <b>{user.name}</b>
                                         </MenuItem>
-                                        <MenuItem component="a" href="/account/logout">
+                                        <MenuItem onClick={async () => {
+                                            await logout();
+                                            await mutate();
+                                        }}>
                                             <ListItemIcon>
                                                 <Logout fontSize="small" />
                                             </ListItemIcon>
@@ -377,9 +381,7 @@ export default function ProviderWrapper({
                 maxSnack={5}
                 autoHideDuration={2000}>
                 <RootTemplate>
-                    <Suspense>
-                        {children}
-                    </Suspense>
+                    {children}
                 </RootTemplate>
             </SnackbarProvider>
         </ThemeProvider>

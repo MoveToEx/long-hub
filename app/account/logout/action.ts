@@ -1,10 +1,8 @@
-import { redirect } from "next/navigation";
+'use server';
+
 import { getSession } from "@/lib/session";
 
-export async function GET() {
+export default async function logout() {
     const session = await getSession();
-
     session.destroy();
-
-    redirect('/');
 }
