@@ -6,3 +6,6 @@
 */
 -- AlterTable
 ALTER TABLE `post` MODIFY `rating` ENUM('none', 'moderate', 'violent') NOT NULL DEFAULT 'none';
+UPDATE `post` SET rating = 'none' WHERE aggr = 0;
+UPDATE `post` SET rating = 'moderate' WHERE aggr > 0 AND aggr <= 5;
+UPDATE `post` SET rating = 'violent' WHERE aggr > 5;
