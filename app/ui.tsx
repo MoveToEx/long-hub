@@ -381,7 +381,9 @@ export default function ProviderWrapper({
                 maxSnack={5}
                 autoHideDuration={2000}>
                 <RootTemplate>
-                    {children}
+                    <Suspense>
+                        {children}
+                    </Suspense>
                 </RootTemplate>
             </SnackbarProvider>
         </ThemeProvider>
