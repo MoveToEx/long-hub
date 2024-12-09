@@ -193,6 +193,7 @@ function RootTemplate({
             <AlterableTypography visible={open} component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
                 Post
             </AlterableTypography>
+            <DrawerItem title="List" href="/post/list" IconComponent={FormatListBulletedIcon} />
             <DrawerItem title="Upload" href="/post/upload" IconComponent={FileUploadIcon} />
             <DrawerItem title="Search" href="/post/search" IconComponent={Search} />
             <DrawerItem title="Find similar" href="/post/similar" IconComponent={ImageIcon} />
@@ -233,7 +234,7 @@ function RootTemplate({
                         <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
                             <Link href="/">
                                 L
-                                <Image height={18} width={18} src="/o.png" alt="o" />
+                                <Image height={18} width={18} className="inline align-baseline h-[18px]" src="/o.png" alt="o" />
                                 NG Hub
                             </Link>
                         </Typography>
@@ -261,52 +262,47 @@ function RootTemplate({
                             }}
                             onClose={() => setAnchorEl(null)}
                         >
-                            <div>
-                                {isLoading &&
-                                    <MenuItem>
-                                        <CircularProgress />
+                            {isLoading &&
+                                <MenuItem>
+                                    <CircularProgress />
+                                </MenuItem>
+                            }
+                            {user &&
+                                <div>
+                                    <MenuItem component={Link} href="/account" onClick={() => setAnchorEl(null)}>
+                                        <ListItemIcon>
+                                            <AccountCircle fontSize="small" />
+                                        </ListItemIcon>
+                                        <b>{user.name}</b>
                                     </MenuItem>
-                                }
-                            </div>
-                            <div>
-                                {user &&
-                                    <>
-                                        <MenuItem component={Link} href="/account" onClick={() => setAnchorEl(null)}>
-                                            <ListItemIcon>
-                                                <AccountCircle fontSize="small" />
-                                            </ListItemIcon>
-                                            <b>{user.name}</b>
-                                        </MenuItem>
-                                        <MenuItem onClick={async () => {
-                                            await logout();
-                                            await mutate();
-                                        }}>
-                                            <ListItemIcon>
-                                                <Logout fontSize="small" />
-                                            </ListItemIcon>
-                                            Logout
-                                        </MenuItem>
-                                    </>
-                                }
-                            </div>
-                            <div>
-                                {user === undefined &&
-                                    <>
-                                        <MenuItem component={Link} href="/account/login" onClick={() => setAnchorEl(null)}>
-                                            <ListItemIcon>
-                                                <LoginIcon fontSize="small" />
-                                            </ListItemIcon>
-                                            Log in
-                                        </MenuItem>
-                                        <MenuItem component={Link} href="/account/signup" onClick={() => setAnchorEl(null)}>
-                                            <ListItemIcon>
-                                                <Logout fontSize="small" />
-                                            </ListItemIcon>
-                                            Sign up
-                                        </MenuItem>
-                                    </>
-                                }
-                            </div>
+                                    <MenuItem onClick={async () => {
+                                        await logout();
+                                        await mutate();
+                                        setAnchorEl(null);
+                                    }}>
+                                        <ListItemIcon>
+                                            <Logout fontSize="small" />
+                                        </ListItemIcon>
+                                        Logout
+                                    </MenuItem>
+                                </div>
+                            }
+                            {user === undefined &&
+                                <div>
+                                    <MenuItem component={Link} href="/account/login" onClick={() => setAnchorEl(null)}>
+                                        <ListItemIcon>
+                                            <LoginIcon fontSize="small" />
+                                        </ListItemIcon>
+                                        Log in
+                                    </MenuItem>
+                                    <MenuItem component={Link} href="/account/signup" onClick={() => setAnchorEl(null)}>
+                                        <ListItemIcon>
+                                            <Logout fontSize="small" />
+                                        </ListItemIcon>
+                                        Sign up
+                                    </MenuItem>
+                                </div>
+                            }
                         </Menu>
                     </Toolbar>
                 </AppBar>

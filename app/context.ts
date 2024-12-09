@@ -103,8 +103,8 @@ export const TagsFetcher = fetcher;
 export const useTags = () => useSWR<Tags>('/api/post/tag', TagsFetcher);
 
 export const PostsFetcher = throwableFetcher;
-export function usePosts(page: number = 0) {
-    return useSWR<PostsResponse>('/api/post?limit=24&offset=' + 24 * (page - 1), PostsFetcher);
+export function usePosts(limit: number = 24, offset: number = 0) {
+    return useSWR<PostsResponse>(`/api/post?limit=${limit}&offset=${offset}`, PostsFetcher);
 }
 
 export const PostFetcher = throwableFetcher;

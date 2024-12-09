@@ -3726,6 +3726,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-calendar-heatmap@npm:^1":
+  version: 1.9.0
+  resolution: "@types/react-calendar-heatmap@npm:1.9.0"
+  dependencies:
+    "@types/react": "npm:*"
+  checksum: 10c0/35eba62bf4092876f3e019867a620b17462519c9cd20f215bb366cf81524164ed9b948108978e27c01e14bcad7695a85856d490aa9a666519da31bef195a5ad5
+  languageName: node
+  linkType: hard
+
 "@types/react-dom@npm:^18.3.1":
   version: 18.3.1
   resolution: "@types/react-dom@npm:18.3.1"
@@ -7890,6 +7899,7 @@ __metadata:
     "@types/mime-types": "npm:^2"
     "@types/node": "npm:^20"
     "@types/react": "npm:^18.3.12"
+    "@types/react-calendar-heatmap": "npm:^1"
     "@types/react-dom": "npm:^18.3.1"
     "@uppy/core": "npm:^4.2.2"
     "@uppy/dashboard": "npm:^4.1.1"
@@ -7916,6 +7926,7 @@ __metadata:
     postcss: "npm:^8.4.49"
     prisma: "npm:^5.18.0"
     react: "npm:^18.3.1"
+    react-calendar-heatmap: "npm:^1.9.0"
     react-dom: "npm:^18.3.1"
     react-rnd: "npm:^10.4.1"
     server-only: "npm:^0.0.1"
@@ -8029,6 +8040,13 @@ __metadata:
   version: 0.3.0
   resolution: "media-typer@npm:0.3.0"
   checksum: 10c0/d160f31246907e79fed398470285f21bafb45a62869dc469b1c8877f3f064f5eabc4bcc122f9479b8b605bc5c76187d7871cf84c4ee3ecd3e487da1993279928
+  languageName: node
+  linkType: hard
+
+"memoize-one@npm:^5.0.0":
+  version: 5.2.1
+  resolution: "memoize-one@npm:5.2.1"
+  checksum: 10c0/fd22dbe9a978a2b4f30d6a491fc02fb90792432ad0dab840dc96c1734d2bd7c9cdeb6a26130ec60507eb43230559523615873168bcbe8fafab221c30b11d54c1
   languageName: node
   linkType: hard
 
@@ -9137,6 +9155,18 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
   checksum: 10c0/19a82a568ca41a7f3c48263c3b7cb9581005da85481b9ee8fe25dc0c01873ac1acc5b435398940ed7d054d5484e9445c7565c6ee4ce90f4b1fb0a366df745faf
+  languageName: node
+  linkType: hard
+
+"react-calendar-heatmap@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "react-calendar-heatmap@npm:1.9.0"
+  dependencies:
+    memoize-one: "npm:^5.0.0"
+    prop-types: "npm:^15.6.2"
+  peerDependencies:
+    react: ^0.14.0 || ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/e48a4144573d5dc7995bf150d8d0fe2d973ef365a2a44bd90b5362570e7c56ee0bd90bf10f502c1c5aa539d4dec7e641e504fb43f6082887cfea799aadd26590
   languageName: node
   linkType: hard
 

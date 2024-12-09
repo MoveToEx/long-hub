@@ -2,204 +2,122 @@
 
 import _ from 'lodash';
 import Box from '@mui/material/Box';
-import * as C from '@/lib/constants';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
+import Button from '@mui/material/Button';
+import Link from 'next/link';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid2';
-import { useState, useEffect, useDeferredValue } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/navigation';
-import { createQueryString } from '@/lib/util';
-import { PostsFetcher, usePosts } from './context';
-import PostGridItem from '@/components/PostGridItem';
-import PostListItem from '@/components/PostListItem';
+import { usePosts, useTags } from './context';
 import { useSnackbar } from 'notistack';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import WindowIcon from '@mui/icons-material/Window';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import { preload } from 'swr';
+import './page.module.css';
 
-function GridLayout({
-	isLoading,
-	page,
-	deferredPage,
-	posts,
-	onPagination
-}: {
-	isLoading: boolean,
-	page: number,
-	deferredPage: number,
-	posts: {
-		id: string,
-		text?: string,
-		imageURL: string,
-	}[] | undefined,
-	onPagination: (page: number) => void
-}) {
-	return (
-		<Box sx={{ m: 1 }}>
-			<Grid container spacing={2}>
-				{
-					isLoading && _.range(24).map(i => (
-						<Grid size={{ xs: 12, sm: 6, md: 3 }} key={i.toString()}>
-							<Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
-						</Grid>
-					))
-				}
-				{
-					posts && posts.map(post => (
-						<Grid size={{ xs: 12, sm: 6, md: 3 }} key={post.id}>
-							<PostGridItem value={post} />
-						</Grid>
-					))
-				}
-			</Grid>
-
-
-			<Stack alignItems="center" sx={{ m: 4 }}>
-				<Pagination
-					disabled={isLoading}
-					count={deferredPage}
-					page={page}
-					onChange={(_, val) => {
-						onPagination(val);
-					}}
-				/>
-			</Stack>
-		</Box>
-	)
-}
-
-function ListLayout({
-	isLoading,
-	page,
-	deferredPage,
-	posts,
-	onPagination
-}: {
-	isLoading: boolean,
-	page: number,
-	deferredPage: number,
-	posts: {
-		id: string,
-		text?: string,
-		imageURL: string,
-		tags: { name: string }[]
-	}[] | undefined,
-	onPagination: (page: number) => void
-}) {
-	return (
-		<Box sx={{ mt: 1, mb: 1 }}>
-			<Grid container spacing={2}>
-				{
-					isLoading && _.range(24).map(i => (
-						<Grid size={{ xs: 12, md: 8 }} offset={{ md: 2 }} key={i.toString()}>
-							<Skeleton variant="rectangular" height={150} sx={{ width: '100%' }} />
-						</Grid>
-					))
-				}
-				{
-					posts && posts.map(post => (
-						<Grid size={{ xs: 12, md: 8 }} offset={{ md: 2 }} key={post.id}>
-							<PostListItem value={post} />
-						</Grid>
-					))
-				}
-			</Grid>
-
-
-			<Stack alignItems="center" sx={{ m: 4 }}>
-				<Pagination
-					disabled={isLoading}
-					count={deferredPage}
-					page={page}
-					onChange={(_, val) => {
-						onPagination(val);
-					}}
-				/>
-			</Stack>
-		</Box>
-	)
-}
+import { ContributionChart, NewPostChart, RandomPostGrid, RecentPosts } from './component';
 
 export default function Home() {
-	const searchParams = useSearchParams();
-	const router = useRouter();
-	const [layout, setLayout] = useState<'grid' | 'list'>('grid');
-	const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
-	const { data, error, isLoading } = usePosts(page);
+	const tag = useTags();
+	const post = usePosts(4);
 	const { enqueueSnackbar } = useSnackbar();
-	const deferredPage = useDeferredValue(C.pages(data?.count ?? 0));
 
-	const onPagination = (val: number) => {
-		setPage(val);
-		window.scrollTo({
-			top: 0
-		});
-		router.push(createQueryString('/', {
-			page: val
-		}), {
-			scroll: false
-		});
-	}
-
-	useEffect(() => {
-		setPage(Number(searchParams.get('page') ?? '1'));
-	}, [searchParams]);
-
-	useEffect(() => {
-		if (page > 1) {
-			preload('/api/post?limit=24&offset=' + 24 * (page - 2), PostsFetcher);
-		}
-		preload('/api/post?limit=24&offset=' + 24 * page, PostsFetcher);
-	}, [page])
-
-	if (error) {
-		enqueueSnackbar(error, { variant: 'error' });
+	if (post.error) {
+		enqueueSnackbar(post.error, { variant: 'error' });
 	}
 
 	return (
-		<Box sx={{ m: 2 }}>
-			<Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px' }}>
-				<Typography variant="subtitle1">
-					{isLoading ? <Skeleton width={200} /> : <>Total: {data?.count} images</>}
-				</Typography>
-				<ToggleButtonGroup size="small" value={layout} exclusive onChange={(event, value) => {
-					if (value !== null) {
-						setLayout(value);
-					}
+		<Box>
+			<Grid container sx={{ m: 2, alignItems: 'stretch' }} spacing={2}>
+				<Grid size={{
+					xs: 12,
+					md: 8
 				}}>
-					<Tooltip title="Grid layout">
-						<ToggleButton value="grid">
-							<WindowIcon />
-						</ToggleButton>
-					</Tooltip>
-					<Tooltip title="List layout">
-						<ToggleButton value="list">
-							<ViewListIcon />
-						</ToggleButton>
-					</Tooltip>
-				</ToggleButtonGroup>
-			</Box>
-			{
-				layout == 'grid' ?
-					<GridLayout
-						isLoading={isLoading}
-						page={page}
-						deferredPage={deferredPage}
-						posts={data?.data}
-						onPagination={onPagination} /> :
-					<ListLayout
-						isLoading={isLoading}
-						page={page}
-						deferredPage={deferredPage}
-						posts={data?.data}
-						onPagination={onPagination} />
-			}
+					<Paper sx={{ p: 2 }}>
+						<Typography align="center" variant="h5" sx={{ pb: 2 }}>
+							New post trend
+						</Typography>
+						<NewPostChart height={128} />
+					</Paper>
+				</Grid>
+				<Grid size={{
+					xs: 12,
+					md: 4
+				}}>
+					<Paper sx={{ p: 2 }}>
+						<Typography align="center" variant="h5" sx={{ pb: 2 }}>
+							Site statistics
+						</Typography>
+						<Box className="flex flex-row items-center content-center h-32">
+							<Box className="flex flex-1 text-center flex-col items-center">
+								{tag.isLoading &&
+									<Skeleton component="span">
+										<Typography variant="h4" component="span">count</Typography>
+									</Skeleton>
+								}
+								{tag.data &&
+									<Typography variant="h4" component="span">
+										{tag.data.length}
+									</Typography>
+								}
+								<Typography variant="button">
+									tags
+								</Typography>
+							</Box>
+							<Divider orientation="vertical" flexItem />
+							<Box className="flex flex-1 text-center flex-col items-center">
+								{post.isLoading &&
+									<Skeleton component="span">
+										<Typography variant='h4' component="span">count</Typography>
+									</Skeleton>
+								}
+								{post.data &&
+									<Typography variant="h4" component="span">
+										{post.data.count}
+									</Typography>
+								}
+								<Typography variant="button">
+									posts
+								</Typography>
+							</Box>
+						</Box>
+					</Paper>
+				</Grid>
+
+				<Grid size={{
+					xs: 12,
+					md: 3
+				}}>
+					<Paper sx={{ p: 2 }}>
+						<Typography variant="h5" sx={{ mb: 2 }}>Random posts</Typography>
+						<RandomPostGrid />
+					</Paper>
+				</Grid>
+
+				<Grid size={{
+					xs: 12,
+					md: 9
+				}}>
+					<Paper sx={{ p: 2 }} className="h-full flex flex-col">
+						<Typography variant="h5" sx={{ mb: 2 }} align="center">Contribution</Typography>
+						<Box className="flex flex-1 items-center">
+							<ContributionChart />
+						</Box>
+					</Paper>
+				</Grid>
+			</Grid>
+
+			<Paper sx={{ p: 2, m: 2 }}>
+				<Box className="flex flex-row justify-between items-center">
+					<Typography variant="h5" component="span">
+						Recent posts
+					</Typography>
+					<Button component={Link} href="/post/list" variant="outlined">
+						View all ≫
+					</Button>
+				</Box>
+				<Box sx={{ m: 1 }}>
+					<RecentPosts />
+				</Box>
+			</Paper>
 		</Box>
 	);
 }

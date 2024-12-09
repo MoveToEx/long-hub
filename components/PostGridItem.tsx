@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useState, ElementType, ComponentProps, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useSnackbar } from 'notistack';
 import Link from 'next/link';
 import Image, { ImageProps } from 'next/image';
@@ -45,58 +45,52 @@ export default function PostGrid({
         setProgress(0);
     }, [enqueueSnackbar, value]);
 
-    const image = (
-        <Image
-            src={value.imageURL}
-            alt={value.text ?? value.id}
-            height={300}
-            width={300}
-            unoptimized
-            crossOrigin="anonymous"
-            loading="eager"
-            className={copying ? styles['grid-image-fetching'] : ''}
-            style={{
-                maxWidth: '100%',
-                maxHeight: '300px',
-                width: 'auto',
-                minWidth: '100%',
-                minHeight: '100%',
-                objectFit: 'contain',
-            }}
-            onMouseOver={prefetch ? () => {
-                preload('/api/post/' + value.id, PostFetcher);
-            } : undefined}
-            {...ImageProps}
-        />
-    );
-
     return (
-        <div className={styles['grid-image-container']} style={{ position: 'relative' }}>
+        <div className="group relative">
             <Fab
-                sx={{
+                sx={theme => ({
                     position: 'absolute',
-                    left: '10px',
-                    top: '10px',
-                }}
+                    transition: theme.transitions.create('opacity', {
+                        duration: theme.transitions.duration.shortest
+                    })
+                })}
                 onClick={async () => {
                     if (copying) return;
 
                     await copy();
                 }}
                 size="medium"
-                className={styles['copy-button']}>
+                className="left-2 top-2 opacity-0 group-hover:opacity-100">
                 <ContentCopyIcon />
             </Fab>
             <Link
                 href={`/post/${value.id}`}
                 prefetch={prefetch}
                 target={newTab ? '_blank' : undefined}
-                style={{
-                    display: 'block',
-                    position: 'relative'
-                }}>
-                {image}
-                {copying && <CircularProgress className={styles['progress']} variant="determinate" value={progress} />}
+                className="block relative">
+                <Image
+                    src={value.imageURL}
+                    alt={value.text ?? value.id}
+                    height={300}
+                    width={300}
+                    unoptimized
+                    crossOrigin="anonymous"
+                    loading="eager"
+                    className={
+                        (copying ? 'opacity-50 cursor-default ' : '') +
+                        "object-contain h-[300px] w-full"
+                    }
+                    onMouseOver={prefetch ? () => {
+                        preload('/api/post/' + value.id, PostFetcher);
+                    } : undefined}
+                    {...ImageProps}
+                />
+                {copying &&
+                    <CircularProgress
+                        className={styles['progress']}
+                        variant="determinate"
+                        value={progress} />
+                }
             </Link>
         </div>
     )
