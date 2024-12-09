@@ -5,7 +5,7 @@
 
 ### Prerequisites
 
-- A database supported by [Prisma](https://www.prisma.io/docs/orm/reference/supported-databases)
+- MySQL 8+
 - Node.js
 - [Yarn berry](https://yarnpkg.com/migration/overview) enabled
 
@@ -23,13 +23,7 @@ $ cp .env_template .env.local
 $ vim .env.local
 ```
 
-The `COOKIE_SECRET` env is used for cookie encryption and is suggested to be a random string. And can be generated with:
-
-```sh
-$ dd if=/dev/urandom bs=1 count=32 2>/dev/null | base64
-```
-
-The `STORAGE_PROVIDER` is used to specify storage method for images. Available values are `'local'` and [`'r2'`](https://developers.cloudflare.com/r2/).
+The `STORAGE_PROVIDER` is used to specify storage method for images. Available values are `local` and [`r2`](https://developers.cloudflare.com/r2/).
 
 To use local storage which writes all images to an local directory, the following variables are required:
 
@@ -45,13 +39,15 @@ R2_ACCOUNT_ID=          # |
 R2_ACCESS_KEY_ID=       # |
 R2_SECRET_ACCESS_KEY=   # `- Refer to cloudflare for details
 R2_BUCKET_NAME=         # Storage bucket name
-R2_CUSTOM_DOMAIN=       # R2 custom domain
+R2_PREFIX=              # R2 resource url prefix. Should end with a slash
+                        # Images will be assigned a url of form $prefix$key
 ```
 
 Other environment variables are described below:
 
 ```
 COOKIE_NAME=        # Cookie name for session storage
+COOKIE_SECRET=      # Key for cookie encryption. Should be a random string
 
 DATABASE_URL=       # Database connection. e.g. mysql://user:password@host:port/longhub
 ```
@@ -65,13 +61,13 @@ $ yarn
 Initialize database:
 
 ```sh
-$ yarn run dotenv -e .env.local -- prisma migrate deploy
+$ yarn dotenv -c -- prisma migrate deploy
 ```
 
 > [!NOTE]
 > On powershell, you need to quote the double dash, so it looks like:
 > ```powershell
-> PS > yarn run dotenv -e .env.local "--" prisma migrate deploy
+> PS > yarn dotenv -c '--' prisma migrate deploy
 > ```
 > This is because the double dash is a special token in Powershell which is offically called _end-of-parameters token_. Refer to [Powershell document](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_parsing?view=powershell-7.4#the-end-of-parameters-token) for details.
 
