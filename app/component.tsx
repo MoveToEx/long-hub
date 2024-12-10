@@ -136,7 +136,7 @@ export function ContributionChart() {
             return null;
         }
 
-        const list = _.range(-7 * 52, 0).map(value => {
+        const list = _.range(-7 * 52, 1).map(value => {
             const date = new Date();
             date.setUTCHours(0, 0, 0, 0);
             date.setDate(date.getDate() + value);
