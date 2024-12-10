@@ -7,9 +7,9 @@ import { Prisma } from "@prisma/client";
 export async function getPostsCount() {
     const result: {
         date: Date,
-        total: bigint
+        count: bigint
     }[] = await prisma.$queryRaw(Prisma.sql`
-        SELECT DATE(createdAt) AS date, COUNT(*) AS total
+        SELECT DATE(createdAt) AS date, COUNT(*) AS 'count'
         FROM post
         WHERE createdAt > DATE_SUB(NOW(), INTERVAL 28 DAY)
         GROUP BY date
@@ -38,12 +38,12 @@ export async function getContribution() {
     }
 
     const data: {
-        total: bigint,
+        count: bigint,
         date: Date
     }[] = await prisma.$queryRaw(Prisma.sql`
-        SELECT COUNT(*) AS total, DATE(createdAt) AS date
+        SELECT COUNT(*) AS 'count', DATE(createdAt) AS date
         FROM post
-        WHERE uploaderId = ${user.id}
+        WHERE uploaderId = ${user.id} AND createdAt > DATE_SUB(NOW(), INTERVAL 364 DAY)
         GROUP BY date
         ORDER BY date ASC`);
 

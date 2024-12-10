@@ -29,14 +29,14 @@ export function NewPostChart({
             const date = new Date();
             date.setUTCHours(0, 0, 0, 0);
             date.setDate(date.getDate() + value);
-            return { date, total: 0 };
+            return { date, count: 0 };
         });
 
         let i = 0, j = 0;
 
         while (j < result.length && i < data.data.length) {
             if (data.data[i].date.getTime() == result[j].date.getTime()) {
-                result[j].total = Number(data.data[i].total);
+                result[j].count = Number(data.data[i].count);
                 ++i
             }
             ++j;
@@ -59,7 +59,7 @@ export function NewPostChart({
 
     return (
         <SparkLineChart
-            data={serial.map(value => Number(value.total))}
+            data={serial.map(value => Number(value.count))}
             xAxis={{
                 scaleType: 'time',
                 data: serial.map(value => value.date),
@@ -140,17 +140,18 @@ export function ContributionChart() {
             const date = new Date();
             date.setUTCHours(0, 0, 0, 0);
             date.setDate(date.getDate() + value);
-            return { date, total: 0, div: 0 };
+            return { date, count: 0, div: 0 };
         });
-        const max = data.data.reduce((prev, curr) => Math.max(prev, Number(curr.total)), 0);
+        const max = data.data.reduce((prev, curr) => Math.max(prev, Number(curr.count)), 0);
 
         if (max === 0) return list;
 
         let i = 0, j = 0;
+
         while (i < list.length && j < data.data.length) {
             if (list[i].date.getTime() == data.data[j].date.getTime()) {
-                list[i].div = Math.ceil(Number(data.data[j].total) / max * 4);
-                list[i].total = Number(data.data[j].total);
+                list[i].div = Math.ceil(Number(data.data[j].count) / max * 4);
+                list[i].count = Number(data.data[j].count);
                 j++;
             }
             i++;
@@ -196,10 +197,7 @@ export function ContributionChart() {
                 }
                 return style[`contribution-grid-${value.div}`];
             }}
-            values={activities?.map(value => ({
-                date: value.date,
-                div: value.div
-            }))}
+            values={activities}
         />
     )
 }
