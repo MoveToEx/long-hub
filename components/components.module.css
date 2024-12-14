@@ -4,10 +4,3 @@
     top: 50%;
     transform: rotate(-90deg) translate(50%, -50%) !important;
 }
-
-.copiable {
-    font-family: 'Consolas';
-    cursor: pointer;
-    user-select: none;
-    max-width: 100%;
-}

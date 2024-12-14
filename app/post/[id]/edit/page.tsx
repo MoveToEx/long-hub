@@ -20,7 +20,7 @@ import { useUser } from '@/app/context';
 import { usePost, useTags } from '@/app/context';
 import { Rating } from '@prisma/client';
 import RatingComponent from '@/components/Rating';
-import ratingIcon from '@/public/rating.png';
+import RatingIcon from '@/components/RatingIcon';
 
 export default function Post({
     params
@@ -40,13 +40,13 @@ export default function Post({
 
     const { enqueueSnackbar } = useSnackbar();
     const router = useRouter();
-    const { data: user } = useUser();
+    const { data: user, isLoading } = useUser();
 
     useEffect(() => {
-        if (!user) {
+        if (!isLoading && !user) {
             router.push('/account/login');
         }
-    }, [user, router]);
+    }, [user, router, isLoading]);
 
     useEffect(() => {
         if (post.data && !initialized.current) {
@@ -87,19 +87,13 @@ export default function Post({
             <Grid size={{ xs: 12, md: 4 }}>
                 {post.data &&
                     <Image
-                        id="preview-image"
+                        className="w-full h-auto max-h-80 object-contain"
                         crossOrigin='anonymous'
                         alt="Preview"
                         unoptimized
                         src={post.data.imageURL}
-                        height={500}
-                        width={500}
-                        style={{
-                            width: '100%',
-                            height: 'auto',
-                            maxHeight: '500px',
-                            objectFit: 'contain'
-                        }} />}
+                        height={320}
+                        width={320} />}
             </Grid>
             <Grid size={{ xs: 12, md: 8 }} sx={{ mt: 2 }}>
                 <Stack spacing={2} alignItems="center" sx={{ mb: 2 }}>
@@ -162,9 +156,7 @@ export default function Post({
                     />
                     <Box alignItems="center" sx={{ width: '100%', display: 'flex' }}>
                         <Tooltip title="Rating">
-                            <Image src={ratingIcon} alt="rating" width={24} height={24} style={{
-                                margin: '4px 8px 4px 8px'
-                            }} />
+                            <RatingIcon />
                         </Tooltip>
                         <RatingComponent
                             value={meta.rating}

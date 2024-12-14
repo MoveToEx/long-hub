@@ -2,16 +2,13 @@
 
 import Typography from "@mui/material/Typography";
 import { useSnackbar } from "notistack";
-import styles from './components.module.css';
 
 export default function CopiableText({
     text,
-    maxLength,
-    displayText
+    maxLength
 }: {
     text: string,
-    maxLength?: number,
-    displayText?: string,
+    maxLength?: number
 }) {
     const { enqueueSnackbar } = useSnackbar();
 
@@ -25,11 +22,9 @@ export default function CopiableText({
         }
     }
     return (
-        <Typography onClick={copy} className={styles.copiable} component="pre" noWrap>
+        <Typography onClick={copy} className="cursor-pointer select-none" component="pre" noWrap>
             {
-                displayText === undefined ?
-                    (maxLength && text.length > maxLength ? text.slice(0, maxLength) + '...' : text) :
-                    displayText
+                (maxLength && text.length > maxLength) ? text.slice(0, maxLength) + '...' : text
             }
         </Typography>
     )

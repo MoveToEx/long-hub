@@ -16,33 +16,12 @@ import TagIcon from '@mui/icons-material/Tag';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
+import CopiableText from "@/components/CopiableText";
 import { useUser } from "../context";
 import { useRouter } from "next/navigation";
 import Skeleton from '@mui/material/Skeleton';
 
 import { useSnackbar } from "notistack";
-
-import style from './page.module.css';
-
-function CopiableText({
-    text
-}: {
-    text: string
-}) {
-    const { enqueueSnackbar } = useSnackbar();
-
-    const copy = async () => {
-        await navigator.clipboard.writeText(text);
-        enqueueSnackbar('Copied to clipboard', { variant: 'success' });
-    }
-    return (
-        <Tooltip title="Click to copy">
-            <span className={style.copiable} onClick={() => { copy() }}>
-                {text}
-            </span>
-        </Tooltip>
-    )
-}
 
 export default function AccountPage() {
     const { data: user, isLoading, mutate } = useUser();

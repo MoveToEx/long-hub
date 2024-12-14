@@ -19,9 +19,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePost } from '@/app/context';
-import { ReverseRatingsMapping } from '@/lib/constants';
-import ratingIcon from '@/public/rating.png';
-import DownloadIcon from '@mui/icons-material/Download';
+import RatingIcon from '@/components/RatingIcon';
 import ImageIcon from '@mui/icons-material/Image';
 import RatingComponent from '@/components/Rating';
 import { use } from 'react';
@@ -40,11 +38,11 @@ function LoadingSkeleton({ id }: { id: string }) {
                 >
                     <Typography variant="h5">Post #{id}</Typography>
                     <Skeleton />
-                    <div style={{ display: 'flex' }}>
+                    <div className="flex">
                         <TodayIcon sx={{ ml: 1, mr: 1 }} />
                         <Skeleton sx={{ flexGrow: 1 }} />
                     </div>
-                    <div style={{ display: 'flex' }}>
+                    <div className="flex">
                         <PersonIcon sx={{ ml: 1, mr: 1 }} />
                         <Skeleton sx={{ flexGrow: 1 }} />
                     </div>
@@ -53,20 +51,25 @@ function LoadingSkeleton({ id }: { id: string }) {
                         <Skeleton sx={{ flexGrow: 1 }} />
                     </div>
                     <div style={{ display: 'flex', height: '30px' }}>
-                        <Image src={ratingIcon} alt="rating" width={24} height={24} style={{
-                            margin: '4px 8px 4px 8px'
-                        }} />
+                        <RatingIcon />
                         <Skeleton sx={{ flexGrow: 1 }} />
                     </div>
                     <Divider />
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className='flex items-center justify-evenly'>
                         <Tooltip title="Edit metadata">
                             <Fab
                                 disabled
                                 size="large"
-                                color="primary"
-                            >
+                                color="primary">
                                 <EditIcon />
+                            </Fab>
+                        </Tooltip>
+                        <Tooltip title="Original file">
+                            <Fab
+                                disabled
+                                size="large"
+                                color="primary">
+                                <ImageIcon />
                             </Fab>
                         </Tooltip>
                     </div>
@@ -129,17 +132,16 @@ export default function PostPage({
                 <Stack
                     spacing={1}
                     component={Paper}
-                    sx={{ p: 2 }}
-                >
+                    sx={{ p: 2 }}>
                     <Typography variant="h5">Post #{id}</Typography>
                     <Typography>{data.text ? data.text : <i>No text</i>}</Typography>
-                    <div style={{ display: 'flex' }}>
+                    <div className="flex">
                         <Tooltip title="Created at">
                             <TodayIcon sx={{ ml: 1, mr: 1 }} />
                         </Tooltip>
                         <Typography>{data.createdAt}</Typography>
                     </div>
-                    <div style={{ display: 'flex' }}>
+                    <div className="flex">
                         <Tooltip title="Uploader">
                             <PersonIcon sx={{ ml: 1, mr: 1 }} />
                         </Tooltip>
@@ -147,17 +149,15 @@ export default function PostPage({
                             {data.uploader?.name ?? <i style={{ fontSize: '16px', color: 'darkgray' }}>(Disowned)</i>}
                         </Typography>
                     </div>
-                    <div style={{ display: 'flex' }}>
+                    <div className="flex">
                         <Tooltip title="Tags">
                             <TagIcon sx={{ ml: 1, mr: 1, mt: 'auto', mb: 'auto' }} />
                         </Tooltip>
                         <TagRow tags={data.tags.map(e => e.name) ?? []} noicon />
                     </div>
-                    <div style={{ display: 'flex' }}>
+                    <div className="flex">
                         <Tooltip title="Rating">
-                            <Image src={ratingIcon} alt="rating" width={24} height={24} style={{
-                                margin: '4px 8px 4px 8px'
-                            }} />
+                            <RatingIcon />
                         </Tooltip>
                         <RatingComponent value={data.rating} readOnly />
                         <Box sx={{ ml: 1 }}>
@@ -165,14 +165,13 @@ export default function PostPage({
                         </Box>
                     </div>
                     <Divider />
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', gap: '10px' }}>
+                    <div className='flex items-center justify-evenly'>
                         <Tooltip title="Edit metadata">
                             <Fab
                                 size="large"
                                 color="primary"
                                 LinkComponent={Link}
-                                href={`/post/${id}/edit`}
-                            >
+                                href={`/post/${id}/edit`}>
                                 <EditIcon />
                             </Fab>
                         </Tooltip>
@@ -181,8 +180,7 @@ export default function PostPage({
                                 size="large"
                                 color="primary"
                                 target="_blank"
-                                href={data.imageURL}
-                            >
+                                href={data.imageURL}>
                                 <ImageIcon />
                             </Fab>
                         </Tooltip>

@@ -23,18 +23,13 @@ export default function CopiableImage({
         <Image
             {...ImageProps}
             ref={image}
+            className="w-full h-auto max-h-80 object-contain"
             unoptimized
             crossOrigin="anonymous"
             src={src}
-            width={300}
-            height={300}
+            width={320}
+            height={320}
             alt={alt}
-            style={{
-                width: '100%',
-                height: 'auto',
-                maxHeight: '300px',
-                objectFit: 'contain'
-            }}
             onClick={async (e) => {
                 if (image.current === null) return;
 
