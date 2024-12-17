@@ -35,8 +35,8 @@ import { useUser, useTags } from '@/app/context';
 import { Rating } from '@prisma/client';
 
 import RatingComponent from '@/components/Rating';
-import ratingIcon from '@/public/rating.png';
 import Container from '@mui/material/Container';
+import RatingIcon from '@/components/RatingIcon';
 
 const DragDrop = dynamic(() => import('@/components/DragDrop'), {
     ssr: false
@@ -348,9 +348,7 @@ export default function UploadPage() {
                     />
                     <Box alignItems="center" sx={{ width: '100%', display: 'flex' }}>
                         <Tooltip title="Rating">
-                            <Image src={ratingIcon} alt="rating" width={24} height={24} style={{
-                                margin: '4px 8px 4px 8px'
-                            }} />
+                            <RatingIcon />
                         </Tooltip>
                         <RatingComponent
                             value={meta.rating}
