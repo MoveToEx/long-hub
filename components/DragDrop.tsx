@@ -1,34 +1,105 @@
-import { useMemo, useEffect } from 'react';
-import Uppy from '@uppy/core';
+import { useEffect, useState, useRef } from 'react';
 
-import { DragDrop as UppyDragDrop, useUppyState } from '@uppy/react';
+import wcmatch from 'wildcard-match';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
+import Container from '@mui/material/Container';
+import _ from 'lodash';
 
-import '@uppy/core/dist/style.min.css';
-import '@uppy/drag-drop/dist/style.min.css';
-
-export default function DragDrop({ onChange }: {
+export default function DragDrop({
+    multiple = false,
+    accept = '*/*',
+    onChange
+}: {
+    multiple?: boolean,
+    accept?: string | string[],
     onChange: (files: Blob[]) => void
 }) {
-    const uppy = useMemo(() => new Uppy({
-        restrictions: {
-            allowedFileTypes: ['image/*']
-        }
-    }), []);
-    const files = useUppyState(uppy, state => state.files);
+    const [files, setFiles] = useState<Blob[]>([]);
+    const [dragging, setDragging] = useState(false);
+    const ref = useRef<HTMLInputElement>(null);
+    const match = wcmatch(accept);
 
     useEffect(() => {
-        const a = Object.values(files);
-        if (a.length == 0) {
+        if (files.length == 0) {
             return;
         }
 
-        onChange(a.map(item => item.data));
+        onChange(files);
     }, [onChange, files]);
 
     return (
-        <UppyDragDrop
-            uppy={uppy}
-            allowMultipleFiles
-            width="100%" />
+        <Container
+            className={
+                'flex flex-col items-center justify-center rounded border-2 border-dashed border-gray-400 dark:border-gray-700 w-full h-64 ' +
+                (dragging ? 'bg-gray-200 dark:bg-gray-800 border-blue-400 dark:border-blue-900' : '')
+            }
+            sx={{
+                '& *': {
+                    pointerEvents: dragging ? 'none' : 'auto'
+                }
+            }}
+            onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }}
+            onDragEnter={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!dragging) setDragging(true);
+            }}
+            onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (dragging) setDragging(false);
+            }}
+            onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setDragging(false);
+
+                const items = [...e.dataTransfer.items].filter(item => {
+                    return item.kind === 'file' && match(item.type);
+                });
+
+                const result = _.compact(items.map(item => item.getAsFile()));
+
+                if (result.length > 0) {
+                    setFiles(result);
+                }
+            }}>
+            <input
+                ref={ref}
+                className='hidden'
+                type='file'
+                accept={typeof accept === 'string' ? accept : accept.join(',')}
+                onChange={(e) => {
+                    if (e.target.files) setFiles([...e.target.files]);
+                }}
+                multiple={multiple} />
+            <FileUploadIcon sx={{ fontSize: '64px' }} />
+            <Typography variant="h6">
+                Drop files here,&nbsp;
+                <Link onClick={() => {
+                    if (ref.current) {
+                        ref.current.click();
+                    }
+                }}>browse</Link>, or&nbsp;
+                <Link onClick={async () => {
+                    const items = await navigator.clipboard.read();
+                    const result = [];
+                    for (const item of items) {
+                        for (const type of item.types) {
+                            if (match(type)) {
+                                result.push(await item.getType(type));
+                                break;
+                            }
+                        }
+                    }
+                    setFiles(result);
+                }}>paste</Link>
+            </Typography>
+        </Container>
     );
 }

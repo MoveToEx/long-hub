@@ -24,12 +24,10 @@ import { useSnackbar } from 'notistack';
 import _ from 'lodash';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
 
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 
 import { useUser, useTags } from '@/app/context';
 import { Rating } from '@prisma/client';
@@ -37,10 +35,7 @@ import { Rating } from '@prisma/client';
 import RatingComponent from '@/components/Rating';
 import Container from '@mui/material/Container';
 import RatingIcon from '@/components/RatingIcon';
-
-const DragDrop = dynamic(() => import('@/components/DragDrop'), {
-    ssr: false
-});
+import DragDrop from '@/components/DragDrop';
 
 type Preview = {
     blob: Blob,
@@ -231,50 +226,19 @@ export default function UploadPage() {
         });
     }, [enqueueSnackbar, next]);
 
-    const paste = useCallback(async () => {
-        if (navigator.clipboard === null) {
-            enqueueSnackbar('Clipboard API not available', { variant: 'error' });
-            return;
-        }
-
-        const items = await navigator.clipboard.read();
-        const result: Preview[] = [];
-        for (const item of items) {
-            const type = _.first(item.types.filter(value => value.startsWith('image')));
-
-            if (type === undefined) continue;
-
-            const blob = await item.getType(type);
-            result.push({
-                blob,
-                url: URL.createObjectURL(blob)
-            });
-            break;
-        }
-
-        if (result.length == 0) {
-            enqueueSnackbar('No image found in clipboard', { variant: 'info' });
-        }
-        setFiles(files => [...files, ...result]);
-    }, [enqueueSnackbar]);
-
     return (
         <Grid container spacing={2} sx={{ pt: 2 }}>
             <Grid size={{ xs: 12, md: 6 }}>
                 {files.length == 0 ?
-                    <Container sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <Tooltip title="Paste from clipboard" placement="left">
-                            <Button onClick={paste} color="inherit" variant="outlined" sx={{ alignSelf: 'flex-end' }}>
-                                <ContentPasteIcon />
-                            </Button>
-                        </Tooltip>
-                        <DragDrop onChange={files => {
+                    <DragDrop
+                        accept={"image/*"}
+                        multiple
+                        onChange={files => {
                             setFiles(files.map(blob => ({
                                 blob,
                                 url: URL.createObjectURL(blob)
                             })));
                         }} />
-                    </Container>
                     : <Image
                         alt="Preview"
                         src={files[0].url}
