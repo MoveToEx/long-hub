@@ -239,7 +239,7 @@ export default function SearchPage() {
                             count={totalPages}
                             page={page}
                             onChange={(_, val) => {
-                                setPage(page);
+                                setPage(val);
                                 router.push(createQueryString('/post/search', {
                                     s: keyword.join(' '),
                                     page: val,
