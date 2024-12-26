@@ -163,6 +163,9 @@ export default function SearchPage() {
                     <FormControl fullWidth size="small">
                         <InputLabel>Sort by</InputLabel>
                         <Select
+                            MenuProps={{
+                                disableScrollLock: true
+                            }}
                             value={order}
                             label="Sort by"
                             onChange={(event) => {
