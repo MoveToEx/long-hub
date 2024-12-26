@@ -32,50 +32,6 @@ type PostsResponse = {
     data: Post[];
 };
 
-function parseRating(s: string) {
-    if (s == 'n') return 'none';
-    else if (s == 'm') return 'moderate';
-    else if (s == 'v') return 'violent';
-    return s;
-}
-
-function startsWith(s: string, ch: string[]) {
-    return ch.map(val => s.startsWith(val)).reduce((x, y) => x || y);
-}
-
-function parseFilter(params: string[]) {
-    return params.map(s => {
-        if (startsWith(s, ['+', '-'])) {
-            return {
-                type: 'tag',
-                op: s.startsWith('+') ? 'include' : 'exclude',
-                value: _.trimStart(s, '+-')
-            }
-        }
-        const [field, value] = s.split(':', 2);
-        if (field == 'rating' || field == 'r') {
-            return {
-                type: 'rating',
-                value: parseRating(value)
-            }
-        }
-        else if (field == 'uploader') {
-            return {
-                type: 'uploader',
-                op: 'is',
-                value
-            }
-        }
-        else {
-            return {
-                type: 'text',
-                op: 'contains',
-                value: s
-            }
-        }
-    });
-}
-
 const fetcher = async (url: string) => {
     const response = await fetch(url);
     
@@ -115,17 +71,33 @@ export function useTaggedPost(tag: string, page: number) {
     return useSWR<PostsResponse>('/api/post/tag/' + tag + '?limit=24&offset=' + (page - 1) * 24, TaggedPostsFetcher);
 }
 
+export type SearchQuery = {
+    filter: {
+        type: string,
+        op: string | undefined,
+        value: string
+    }[],
+    order?: {
+        key: string,
+        direction: 'asc' | 'desc'
+    } | undefined,
+    page?: number | undefined
+}
+
 // export const SearchResultFetcher = throwableFetcher;
-export const SearchResultFetcher = async ([keyword, page]: [string[], number]) => {
-    if (keyword.length == 0) {
+export const SearchResultFetcher = async ({ filter, order, page }: SearchQuery) => {
+    if (filter.length == 0) {
         return {
             count: 0,
             data: []
         };
     }
 
-    const data = JSON.stringify(parseFilter(keyword));
-    const response = await fetch('/api/post/search?limit=24&offset=' + (page - 1) * 24, {
+    const data = JSON.stringify({
+        filter,
+        order: order ? [order] : undefined
+    });
+    const response = await fetch('/api/post/search?limit=24&offset=' + ((page ?? 1) - 1) * 24, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -139,6 +111,6 @@ export const SearchResultFetcher = async ([keyword, page]: [string[], number]) =
 
     return response.json();
 }
-export function useSearchResult({ keyword, page }: { keyword: string[], page: number }) {
-    return useSWR<PostsResponse>([keyword, page], SearchResultFetcher, {});
+export function useSearchResult(query: SearchQuery | null) {
+    return useSWR<PostsResponse>(query, SearchResultFetcher, {});
 }

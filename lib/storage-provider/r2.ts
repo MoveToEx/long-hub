@@ -1,5 +1,4 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
-import crypto from 'node:crypto';
 
 export default class R2Provider {
     client: S3Client;
@@ -13,7 +12,6 @@ export default class R2Provider {
         R2_BUCKET_NAME: string
         R2_PREFIX: string
     }) {
-        // const hashedSecretKey = crypto.createHash('sha256').update(env.R2_SECRET_ACCESS_KEY).digest('hex');
         this.client = new S3Client({
             endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
             region: 'auto',

@@ -27,6 +27,7 @@
     "@mui/x-data-grid": "^7.22.0",
     "@prisma/client": "^5.18.0",
     "@types/lodash": "^4.14.201",
+    "autosuggest-highlight": "^3.3.4",
     "bcryptjs": "^2.4.3",
     "csstype": "^3.1.2",
     "dotenv-cli": "^7.4.2",
@@ -52,6 +53,7 @@
     "@next/bundle-analyzer": "^14.0.3",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.0.0",
+    "@types/autosuggest-highlight": "^3",
     "@types/bcryptjs": "^2",
     "@types/mime-types": "^2",
     "@types/node": "^20",
@@ -70,7 +72,7 @@
     "prisma": "^5.18.0",
     "tailwindcss": "^3.4.16",
     "tsx": "^4.19.1",
-    "typescript": "^5",
+    "typescript": "^5.7.2",
     "vitest": "^2.0.5"
   },
   "packageManager": "yarn@4.2.1"

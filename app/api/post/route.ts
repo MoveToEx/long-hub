@@ -9,24 +9,11 @@ import { z } from 'zod';
 import { parseWithZod } from '@conform-to/zod';
 import phash from 'sharp-phash';
 import phashDistance from 'sharp-phash/distance';
-import { responses } from '@/lib/server-util';
+import { responses, zjson } from '@/lib/server-util';
 import { auth } from '@/lib/dal';
 import { Permission } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 import { Rating } from '@prisma/client';
-
-const json = z.string().transform((value, context) => {
-    try {
-        return JSON.parse(value);
-    }
-    catch (e) {
-        context.addIssue({
-            code: 'custom',
-            message: 'Invalid JSON'
-        });
-        return z.NEVER;
-    }
-});
 
 const schema = z.object({
     text: z.string().default(''),
@@ -36,7 +23,7 @@ const schema = z.object({
 
 const postSchema = z.object({
     image: z.instanceof(File),
-    metadata: json.pipe(schema),
+    metadata: zjson.pipe(schema),
     force: z.union([z.literal('0'), z.literal('1')])
 });
 
@@ -93,7 +80,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (form.status !== 'success') {
-        return NextResponse.json(form.reply(), {
+        return NextResponse.json({
+            message: 'Invalid request',
+            error: form.reply()
+        }, {
             status: 400
         });
     }

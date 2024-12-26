@@ -29,7 +29,7 @@ import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { useUser, useTags } from '@/app/context';
+import { useUser, useTags, useSearchResult, SearchQuery } from '@/app/context';
 import { Rating } from '@prisma/client';
 
 import RatingComponent from '@/components/Rating';
@@ -56,77 +56,53 @@ function SearchButton({
     text: string,
     tags: string[]
 }) {
-    type PostResponse = {
-        count: number;
-        data: {
-            id: string,
-            imageURL: string
-        }[]
-    };
-    const { enqueueSnackbar } = useSnackbar();
-    const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [result, setResult] = useState<PostResponse | null>(null);
-
-    const search = useCallback(async (text: string, tags: string[]) => {
-        const selector = tags.map(val => ({
-            type: 'tag',
-            op: 'include',
-            value: val
-        }));
-
+    const transform = useCallback((text: string, tags: string[]) => {
+        const filter = [];
         if (text) {
-            selector.push({
+            filter.push({
                 type: 'text',
                 op: 'contains',
                 value: text
             });
         }
+        tags.forEach(tag => {
+            filter.push({
+                type: 'tag',
+                op: 'include',
+                value: tag
+            });
+        });
+        return { filter }
+    }, []);
+    const { enqueueSnackbar } = useSnackbar();
+    const [query, setQuery] = useState<SearchQuery | null>(null);
+    const [open, setOpen] = useState(false);
+    const { data, error, isLoading } = useSearchResult(query);
 
-        if (selector.length == 0) {
-            enqueueSnackbar('No filter given', { variant: 'info' });
-            return;
-        }
-
-        setLoading(true);
-
-        const response = await fetch('/api/post/search?offset=0&limit=24', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(selector)
-        })
-
-        if (!response.ok) {
-            enqueueSnackbar('Failed: ' + response.statusText, { variant: 'error' });
-            setLoading(false);
-            return;
-        }
-
-        setResult(await response.json());
-        setOpen(true);
-        setLoading(false);
-
-    }, [enqueueSnackbar]);
+    if (error) {
+        enqueueSnackbar('Failed: ' + error, { variant: 'error' });
+    }
 
     return (
         <>
             <Tooltip title="Search with current conditions">
-                <Fab onClick={() => search(text, tags)} color="secondary" disabled={loading}>
+                <Fab onClick={() => {
+                    setQuery(transform(text, tags));
+                    setOpen(true);
+                }} color="secondary" disabled={isLoading}>
                     <SearchIcon />
                 </Fab>
             </Tooltip>
-            <Dialog onClose={() => setOpen(false)} open={open} maxWidth="md" fullWidth>
+            <Dialog onClose={() => setOpen(false)} open={open && !isLoading && data !== undefined} maxWidth="md" fullWidth>
                 <DialogTitle>Search Result</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        {`${result?.count} result(s) in total`}
+                        {`${data?.count} result(s) in total`}
                     </DialogContentText>
                     <Box sx={{ m: 2 }}>
                         <Grid container>
                             {
-                                result?.data.map(post => (
+                                data?.data.map(post => (
                                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
                                         <PostGrid value={post} newTab />
                                     </Grid>
@@ -179,7 +155,7 @@ export default function UploadPage() {
     }, [files]);
 
     const submit = useCallback(async (text: string, tags: string[], rating: Rating, force: boolean, blob: Blob) => {
-        let fd = new FormData();
+        const fd = new FormData();
         fd.append('force', force ? '1' : '0');
         fd.append('image', blob);
         fd.append('metadata', JSON.stringify({ text, tags, rating }));
@@ -229,7 +205,7 @@ export default function UploadPage() {
     return (
         <Grid container spacing={2} sx={{ pt: 2 }}>
             <Grid size={{ xs: 12, md: 6 }}>
-                {files.length == 0 ?
+                {files.length == 0 &&
                     <DragDrop
                         accept={"image/*"}
                         multiple
@@ -239,17 +215,14 @@ export default function UploadPage() {
                                 url: URL.createObjectURL(blob)
                             })));
                         }} />
-                    : <Image
+                }
+                {!_.isEmpty(files) &&
+                    <Image
                         alt="Preview"
+                        className="w-full h-auto max-h-96 object-contain"
                         src={files[0].url}
                         height={300}
-                        width={0}
-                        style={{
-                            width: '100%',
-                            height: 'auto',
-                            maxHeight: '300px',
-                            objectFit: 'contain'
-                        }} />
+                        width={300} />
                 }
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -310,7 +283,7 @@ export default function UploadPage() {
                             )
                         }
                     />
-                    <Box alignItems="center" sx={{ width: '100%', display: 'flex' }}>
+                    <Box className="flex w-full items-center">
                         <Tooltip title="Rating">
                             <RatingIcon />
                         </Tooltip>
@@ -327,8 +300,8 @@ export default function UploadPage() {
                         </Box>
                     </Box>
 
-                    <Box alignItems="center" sx={{ width: '100%', display: 'flex' }}>
-                        <Typography variant="subtitle2" sx={{ alignItems: 'center' }}>
+                    <Box className="w-full">
+                        <Typography variant="subtitle2">
                             File type: {files.length == 0 ? 'None' : files[0].blob.type}
                         </Typography>
                     </Box>

@@ -19,23 +19,25 @@ type PostGridProps = {
     },
     ImageProps?: Omit<ImageProps, 'src' | 'alt'>,
     newTab?: boolean,
-    prefetch?: boolean
+    prefetch?: boolean,
+    copy?: boolean
 };
 
 export default function PostGrid({
     value,
     ImageProps,
     newTab,
-    prefetch = true
+    prefetch = true,
+    copy = true
 }: PostGridProps) {
     const { enqueueSnackbar } = useSnackbar();
     const [copying, setCopying] = useState(false);
     const [progress, setProgress] = useState(0);
 
-    const copy = useCallback(async () => {
+    const copyUrl = useCallback(async (url: string) => {
         setCopying(true);
         try {
-            await copyImage(value.imageURL, (val) => setProgress(val));
+            await copyImage(url, (val) => setProgress(val));
             enqueueSnackbar('Copied to clipboard', { variant: 'success' });
         }
         catch (e) {
@@ -43,7 +45,7 @@ export default function PostGrid({
         }
         setCopying(false);
         setProgress(0);
-    }, [enqueueSnackbar, value]);
+    }, [enqueueSnackbar]);
 
     return (
         <div className="group relative">
@@ -57,7 +59,7 @@ export default function PostGrid({
                 onClick={async () => {
                     if (copying) return;
 
-                    await copy();
+                    await copyUrl(value.imageURL);
                 }}
                 size="medium"
                 className="left-2 top-2 opacity-0 group-hover:opacity-100">

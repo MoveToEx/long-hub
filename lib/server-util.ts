@@ -24,7 +24,7 @@ export const responses = {
     }
 }
 
-export const z_json = z.string().transform((value, context) => {
+export const zjson = z.string().transform((value, context) => {
     try {
         return JSON.parse(value);
     }
