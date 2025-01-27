@@ -13,7 +13,8 @@ import Box from '@mui/material/Box';
 import Link from "next/link";
 import Image from 'next/image';
 import style from './page.module.css';
-import { usePosts } from "./context";
+import { preload } from "swr";
+import { PostFetcher, usePosts } from "./context";
 import PostGridItem from "@/components/PostGridItem";
 
 export function NewPostChart({
@@ -75,16 +76,19 @@ export function RandomPostGrid() {
         id: string,
         text: string,
         imageURL: string
-    }[]>([]);
+    }[] | null>(null);
 
     useEffect(() => {
         (async () => {
             const result = await getRandomPost();
+            for (const post of result) {
+                preload(`/api/post/${post.id}`, PostFetcher);
+            }
             setRandomPost(result);
         })();
     }, []);
 
-    if (randomPost.length == 0) {
+    if (randomPost === null) {
         return (
             <Grid container spacing={1}>
                 <Grid size={6}>
@@ -99,6 +103,17 @@ export function RandomPostGrid() {
                 <Grid size={6}>
                     <Skeleton height={128} />
                 </Grid>
+            </Grid>
+        )
+    }
+
+    if (randomPost.length == 0) {
+        return (
+            <Grid container spacing={1}>
+                <Grid size={6} height={128} />
+                <Grid size={6} height={128} />
+                <Grid size={6} height={128} />
+                <Grid size={6} height={128} />
             </Grid>
         )
     }
@@ -130,7 +145,7 @@ export function RandomPostGrid() {
 }
 
 export function ContributionChart() {
-    const data = useSWR('__action', () => getContribution());
+    const data = useSWR('__action_getContribution', () => getContribution());
     const activities = useMemo(() => {
         if (!data.data) {
             return null;

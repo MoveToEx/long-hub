@@ -9,16 +9,24 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid2';
-import { usePosts, useTags } from './context';
+import { PostsFetcher, usePosts, useTags } from './context';
 import { useSnackbar } from 'notistack';
+import { preload } from 'swr';
 import './page.module.css';
 
 import { ContributionChart, NewPostChart, RandomPostGrid, RecentPosts } from './component';
+import { useEffect } from 'react';
+
+preload('/api/post?limit=4&offset=0', PostsFetcher);
 
 export default function Home() {
 	const tag = useTags();
 	const post = usePosts(4);
 	const { enqueueSnackbar } = useSnackbar();
+
+	useEffect(() => {
+		preload('/api/post?limit=24&offset=0', PostsFetcher);
+	}, []);
 
 	if (post.error) {
 		enqueueSnackbar(post.error, { variant: 'error' });
