@@ -21,7 +21,7 @@ import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
 import { useEffect, useState, useDeferredValue } from 'react';
 import { useSnackbar } from 'notistack';
-import { ReadonlyURLSearchParams, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
 
 import { useSearchResult, SearchQuery } from '@/app/context';
@@ -102,28 +102,32 @@ function parseQuery(keyword: string[], order: string, page: number) {
     } as SearchQuery;
 }
 
-function fromSearchParams<T>(
-    searchParams: ReadonlyURLSearchParams,
-    key: string,
-    defaultValue: T,
-    proc: (value: string) => T
-) {
-    return () => {
-        const val = searchParams.get(key);
-        if (val) {
-            return proc(val);
-        }
-        return defaultValue;
-    };
-}
-
 export default function SearchPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const [order, setOrder] = useState(fromSearchParams(searchParams, 'order', '+id', x => x));
-    const [keyword, setKeyword] = useState(fromSearchParams(searchParams, 's', [], x => x.split(' ')));
-    const [page, setPage] = useState(fromSearchParams(searchParams, 'page', 0, x => Number(x)));
+    const [order, setOrder] = useState(() => {
+        const order = searchParams.get('o');
+        if (order === null) {
+            return '+id';
+        }
+        return order;
+    });
+    const [keyword, setKeyword] = useState(() => {
+        const s = searchParams.get('s');
+        if (s === null) {
+            return [];
+        }
+        return s.split(' ');
+    });
+    const [page, setPage] = useState(() => {
+        const p = searchParams.get('p');
+        if (p === null) {
+            return 1;
+        }
+        return Number(p);
+    });
+
     const [layout, setLayout] = useState<'grid' | 'list'>('grid');
 
     const result = useSearchResult(parseQuery(keyword, order, page));
@@ -132,14 +136,33 @@ export default function SearchPage() {
     const { enqueueSnackbar } = useSnackbar();
 
     useEffect(() => {
-        const o = searchParams.get('order');
-        const kw = searchParams.get('s');
-        const p = searchParams.get('page');
+        const order = searchParams.get('o');
+        const keyword = searchParams.get('s');
+        const page = searchParams.get('p');
 
-        setOrder(o ?? '+id');
-        setKeyword(kw ? kw.split(' ') : []);
-        setPage(Number(p ?? 1));
+        if (order !== null) setOrder(order);
+        if (keyword !== null) setKeyword(keyword.split(' '));
+        if (page !== null) setPage(Number(page));
     }, [searchParams]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(searchParams);
+        
+        if (page !== 1) params.set('p', page.toString());
+        else params.delete('p');
+
+        if (order != '+id') params.set('o', order);
+        else params.delete('o');
+
+        if (keyword.length > 0) params.set('s', keyword.join(' '));
+        else params.delete('s');
+
+        const qs = params.toString();
+
+        if (qs !== searchParams.toString()) {
+            window.history.pushState(null, '', '?' + qs);
+        }
+    }, [page, order, keyword, searchParams, router]);
 
     if (result.error) {
         enqueueSnackbar('Failed', { variant: 'error' });
@@ -149,13 +172,6 @@ export default function SearchPage() {
         <Box sx={{ mt: 2, mb: 2 }}>
             <SearchInput value={keyword} onChange={(_, val) => {
                 setKeyword(val);
-                router.push(createQueryString('/post/search', {
-                    s: val.join(' '),
-                    page,
-                    order
-                }), {
-                    scroll: false
-                });
             }} />
 
             <Grid container spacing={1} sx={{ mb: 2 }}>
@@ -170,13 +186,7 @@ export default function SearchPage() {
                             label="Sort by"
                             onChange={(event) => {
                                 setOrder(event.target.value as string);
-                                router.push(createQueryString('/post/search', {
-                                    s: keyword.join(' '),
-                                    page,
-                                    order: event.target.value
-                                }), {
-                                    scroll: false
-                                });
+                                setPage(1);
                             }}>
                             <MenuItem value="+id">ID ascending</MenuItem>
                             <MenuItem value="-id">ID descending</MenuItem>
