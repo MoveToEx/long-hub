@@ -25,7 +25,7 @@
     "@mui/system": "^6.1.5",
     "@mui/x-charts": "^7.22.0",
     "@mui/x-data-grid": "^7.22.0",
-    "@prisma/client": "^5.18.0",
+    "@prisma/client": "^6.1.0",
     "@types/lodash": "^4.14.201",
     "autosuggest-highlight": "^3.3.4",
     "bcryptjs": "^2.4.3",
@@ -69,11 +69,11 @@
     "express": "^4.21.2",
     "jsdom": "^24.1.1",
     "postcss": "^8.4.49",
-    "prisma": "^5.18.0",
+    "prisma": "^6.1.0",
     "tailwindcss": "^3.4.16",
     "tsx": "^4.19.1",
     "typescript": "^5.7.2",
     "vitest": "^2.0.5"
   },
-  "packageManager": "yarn@4.2.1"
+  "packageManager": "yarn@4.6.0"
 }
