@@ -1,39 +1,45 @@
 'use client';
 
 import TextField from '@mui/material/TextField';
-import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
+import MUILink from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Alert from '@mui/material/Alert';
 import Checkbox from '@mui/material/Checkbox';
-import { useActionState } from 'react';
+import { useActionState, useContext } from 'react';
 import _ from 'lodash';
 
-
+import Link from 'next/link';
 import login from './action';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context';
 import SubmitButton from '@/components/SubmitButton';
+import { ModalContext } from '@/components/Modal';
 
 export default function SigninPage() {
     const { data: user, mutate } = useUser();
     const router = useRouter();
     const [state, action] = useActionState(login, null);
+    const modalContext = useContext(ModalContext);
 
     useEffect(() => {
         if (state?.error === false) {
             mutate();
         }
-    }, [state, mutate])
+    }, [state, mutate]);
 
     useEffect(() => {
         if (user) {
-            router.back();
+            if (modalContext) {
+                modalContext.close();
+            }
+            else {
+                router.back();
+            }
         }
-    }, [user, router]);
+    }, [user, router, modalContext]);
 
     return (
         <Box className="flex flex-col items-center content-center">
@@ -72,8 +78,10 @@ export default function SigninPage() {
                 }}>
                     <Typography variant="body2">
                         Don&apos;t have an account?
-                        <Link href="/account/signup" >
-                            Sign Up
+                        <Link href="/account/signup">
+                            <MUILink>
+                                Sign Up
+                            </MUILink>
                         </Link>
                     </Typography>
                 </Box>

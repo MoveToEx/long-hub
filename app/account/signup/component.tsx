@@ -3,10 +3,11 @@
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
+import MUILink from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import { useActionState, useEffect, useRef } from 'react';
 
+import Link from 'next/link';
 import signUp from './action';
 import SubmitButton from '@/components/SubmitButton';
 import { Turnstile, TurnstileInstance } from '@marsidev/react-turnstile';
@@ -21,7 +22,7 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
 
     return (
         <Box className="flex flex-col items-center">
-            <Typography component="h1" variant="h5">
+            <Typography variant="h4">
                 Sign up
             </Typography>
             <Box component="form" action={action} sx={{ mt: 1 }}>
@@ -36,8 +37,7 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
                     fullWidth
                     label="User name"
                     name="username"
-                    autoComplete="off"
-                />
+                    autoComplete="off" />
                 <TextField
                     margin="normal"
                     required
@@ -45,8 +45,7 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
                     name="password"
                     label="Password"
                     type="password"
-                    autoComplete="new-password"
-                />
+                    autoComplete="new-password" />
                 <TextField
                     margin="normal"
                     required
@@ -54,19 +53,17 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
                     name="password-confirm"
                     label="Confirm Password"
                     type="password"
-                    autoComplete="new-password"
-                />
+                    autoComplete="new-password" />
                 <Turnstile ref={ref} siteKey={turnstileKey} />
                 <SubmitButton label="Sign up" />
 
-                <Box sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end'
-                }}>
+                <Box className="flex justify-end">
                     <Typography variant="body2">
                         Already have an account?
-                        <Link href="/account/login" variant="body2">
-                            Log in
+                        <Link href="/account/login">
+                            <MUILink>
+                                Log in
+                            </MUILink>
                         </Link>
                     </Typography>
                 </Box>
