@@ -14,7 +14,7 @@ import Link from "next/link";
 import Image from 'next/image';
 import style from './page.module.css';
 import { preload } from "swr";
-import { PostFetcher, usePosts } from "./context";
+import { PostFetcher, usePosts, useUser } from "./context";
 import PostGridItem from "@/components/PostGridItem";
 
 export function NewPostChart({
@@ -145,7 +145,8 @@ export function RandomPostGrid() {
 }
 
 export function ContributionChart() {
-    const data = useSWR('__action_getContribution', () => getContribution());
+    const user = useUser();
+    const data = useSWR(['__action_getContribution', user.data], () => getContribution());
     const activities = useMemo(() => {
         if (!data.data) {
             return null;
