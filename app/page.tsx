@@ -17,8 +17,6 @@ import './page.module.css';
 import { ContributionChart, NewPostChart, RandomPostGrid, RecentPosts } from './component';
 import { useEffect } from 'react';
 
-preload('/api/post?limit=4&offset=0', PostsFetcher);
-
 export default function Home() {
 	const tag = useTags();
 	const post = usePosts(4);
