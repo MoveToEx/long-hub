@@ -1,8 +1,6 @@
 'use client';
 
 import TextField from '@mui/material/TextField';
-import Grid from '@mui/material/Grid2';
-import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -22,14 +20,7 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
     }, [state]);
 
     return (
-        <Box
-            sx={{
-                marginTop: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-            }}
-        >
+        <Box className="flex flex-col items-center">
             <Typography component="h1" variant="h5">
                 Sign up
             </Typography>

@@ -15,8 +15,10 @@ const inter = Inter({ subsets: ['latin'] })
 
 export default function RootLayout({
 	children,
+	modal,
 }: {
-	children: React.ReactNode
+	children: React.ReactNode,
+	modal: React.ReactNode
 }) {
 	return (
 		<html lang="en">
@@ -26,6 +28,7 @@ export default function RootLayout({
 			<body className={inter.className}>
 				<UI>
 					{children}
+					{modal}
 				</UI>
 			</body>
 		</html>

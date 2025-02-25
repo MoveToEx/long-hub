@@ -50,6 +50,6 @@ export default async function login(state: unknown, fd: FormData) {
 
     return {
         error: false,
-        message: ''
+        message: 'Successfully logged in'
     };
 }

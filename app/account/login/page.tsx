@@ -31,20 +31,12 @@ export default function SigninPage() {
 
     useEffect(() => {
         if (user) {
-            router.push('/');
+            router.back();
         }
     }, [user, router]);
 
     return (
-        <Box
-            sx={{
-                marginTop: 8,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}
-        >
+        <Box className="flex flex-col items-center content-center">
             <Typography variant="h4">
                 Log in to LONG Hub
             </Typography>
