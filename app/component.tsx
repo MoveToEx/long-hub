@@ -146,7 +146,7 @@ export function RandomPostGrid() {
 
 export function ContributionChart() {
     const user = useUser();
-    const data = useSWR(['__action_getContribution', user.data], () => getContribution());
+    const data = useSWR(['__action_getContribution', user.data], ([_, u]) => !u ? null : getContribution());
     const activities = useMemo(() => {
         if (!data.data) {
             return null;
