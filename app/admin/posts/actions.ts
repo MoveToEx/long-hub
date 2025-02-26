@@ -36,9 +36,12 @@ export async function EditPost(updatedRow: any, originalRow: any) {
             id: originalRow.id as string
         },
         data: {
-            text: updatedRow.text as string,
-            rating: updatedRow.rating as Rating,
-            uploaderId: updatedRow.uploaderId as number
+            deletedAt: updatedRow.deletedAt,
+            deletionReason: updatedRow.deletionReason,
+            text: updatedRow.text,
+            rating: updatedRow.rating,
+            uploaderId: updatedRow.uploaderId,
+            updatedAt: new Date()
         },
         include: {
             uploader: {
@@ -56,7 +59,7 @@ export async function EditPost(updatedRow: any, originalRow: any) {
 }
 
 
-export async function DeletePost(id: string) {
+export async function DeletePost(id: string, reason: string) {
     const op = await auth();
 
     if (!op) return {
@@ -77,19 +80,68 @@ export async function DeletePost(id: string) {
         }
     });
 
-    if (!post) {
+    if (!post || post.deletedAt !== null) {
         return {
             ok: false,
             message: 'Invalid post id'
         };
     }
 
-    await prisma.post.delete({
+    await prisma.post.update({
+        where: { id },
+        data: {
+            deletedAt: new Date(),
+            updatedAt: new Date(),
+            deletionReason: reason
+        }
+    })
+
+    revalidatePath('/admin/posts');
+
+    return {
+        ok: true
+    };
+}
+
+
+
+export async function RecoverPost(id: string) {
+    const op = await auth();
+
+    if (!op) return {
+        ok: false,
+        message: 'Invalid session'
+    };
+
+    if ((op.permission & C.Permission.Admin.Post.delete) == 0) {
+        return {
+            ok: false,
+            message: 'Forbidden'
+        };
+    }
+
+    const post = await prisma.post.findFirst({
         where: {
             id: id
         }
     });
-    
+
+    if (!post || post.deletedAt === null) {
+        return {
+            ok: false,
+            message: 'Invalid post id'
+        };
+    }
+
+    await prisma.post.update({
+        where: { id },
+        data: {
+            deletedAt: null,
+            updatedAt: new Date(),
+            deletionReason: null
+        }
+    })
+
     revalidatePath('/admin/posts');
 
     return {

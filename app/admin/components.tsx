@@ -1,53 +1,136 @@
 'use client';
 
 import MUIPagination from '@mui/material/Pagination';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Box from '@mui/material/Box';
+
 import Stack from '@mui/material/Stack';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
-import { LineChart } from '@mui/x-charts/LineChart';
-import { PieChart } from '@mui/x-charts/PieChart';
+import { LinePlot } from '@mui/x-charts/LineChart';
+import { ChartsLegend, ChartsTooltip, ChartsXAxis, ChartsYAxis, ResponsiveChartContainer } from '@mui/x-charts';
+import { PiePlot } from '@mui/x-charts';
 import _ from 'lodash';
+import { ReactNode, useState } from 'react';
+import { eachDayOfInterval, isSameDay, subDays } from 'date-fns';
 
-
-export function NewPostChart({ count }: { count: number[] }) {
-    const date = new Date().getDate();
-    const dates = _.rangeRight(count.length).map(val => new Date(new Date().setDate(date - val)).getDate());
-    return (
-        <LineChart
-            xAxis={[
-                {
-                    scaleType: 'band',
-                    data: dates,
-                }
-            ]}
-            series={[{ data: count }]}
-            width={1000}
-            height={300}
-        />
-    )
-}
-
-export function PostContributionChart({
-    data,
-    labels
-}: {
-    data: number[],
-    labels: string[]
+export function ContributionChart({ data }: {
+    data: {
+        value: number,
+        label: string
+    }[]
 }) {
     return (
-        <PieChart
+        <ResponsiveChartContainer
+            height={300}
             series={[
                 {
-                    data: data.map((val, idx) => ({ value: val, label: labels[idx] })),
+                    type: 'pie',
+                    data,
                     innerRadius: 75,
                     outerRadius: 100
                 }
-            ]}
-            width={600}
-            height={300}
-        />
+            ]}>
+            <PiePlot />
+            <ChartsTooltip trigger='item' />
+            <ChartsLegend
+                direction='column'
+                position={{
+                    vertical: 'middle',
+                    horizontal: 'left'
+                }}
+                padding={2} />
+        </ResponsiveChartContainer>
     )
+}
+
+export function NewPostChart({ data }: {
+    data: {
+        date: Date,
+        count: number
+    }[]
+}) {
+    const dateRange = eachDayOfInterval({
+        start: subDays(new Date(), 28),
+        end: new Date()
+    });
+
+    const series = dateRange.map((value) => {
+        return data
+            .filter(item => isSameDay(item.date, value))
+            .map(item => Number(item.count))
+            .reduce((a, b) => a + b, 0);
+    });
+
+    return (
+        <ResponsiveChartContainer
+            height={300}
+            series={[{
+                type: 'line',
+                data: series,
+            }]}
+            xAxis={[{
+
+                scaleType: 'time',
+                data: dateRange,
+                valueFormatter: value => (value as Date).toLocaleDateString()
+
+            }]}>
+            <LinePlot />
+            <ChartsXAxis />
+            <ChartsYAxis />
+            <ChartsTooltip />
+        </ResponsiveChartContainer>
+    )
+}
+
+function TabPanel(props: {
+    children?: ReactNode,
+    value: number,
+    index: number
+}) {
+    const { children, value, index, ...other } = props;
+
+    return (
+        <div role="tabpanel" hidden={index !== value} {...other}>
+            {index === value && <Box sx={{ p: 2 }}>{children}</Box>}
+        </div>
+    )
+}
+
+export function PanelTabs({
+    slots,
+    titles
+}: {
+    slots: ReactNode[],
+    titles: string[]
+}) {
+    const [value, setValue] = useState(0);
+    return (
+        <Box>
+            <Box>
+                <Tabs
+                    value={value}
+                    onChange={(_, newValue) => setValue(newValue)}
+                    sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    {
+                        titles.map(value => (
+                            <Tab label={value} key={value} />
+                        ))
+                    }
+                </Tabs>
+            </Box>
+            {
+                slots.map((children, index) => (
+                    <TabPanel value={value} index={index} key={index}>
+                        {children}
+                    </TabPanel>
+                ))
+            }
+        </Box>
+    );
 }
 
 export function Pagination({

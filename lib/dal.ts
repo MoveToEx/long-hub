@@ -2,11 +2,13 @@ import 'server-only';
 
 import { prisma } from '@/lib/db';
 import { getSession } from "@/lib/session";
-import { NextRequest } from "next/server";
 import _ from 'lodash';
+import { headers } from 'next/headers';
 
-export async function authByKey(request: NextRequest) {
-    const key = request.headers.get('X-Access-Key');
+export async function authByKey() {
+    const hdr = await headers();
+
+    const key = hdr.get('X-Access-Key');
 
     if (!key) return null;
 
@@ -38,15 +40,19 @@ export async function authByCookies() {
     return user;
 }
 
-export async function auth(req: NextRequest | undefined = undefined) {
-    let user;
-
-    if (req !== undefined) {
-        user = await authByKey(req);
-    }
+export async function auth(permission: number | undefined = undefined) {
+    let user = await authByKey();
 
     if (!user) {
         user = await authByCookies();
+    }
+
+    if (!user) {
+        return null;
+    }
+
+    if (permission !== undefined && (user.permission & permission) != permission) {
+        return null;
     }
 
     return user;

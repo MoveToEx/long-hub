@@ -5,109 +5,103 @@ import { auth } from '@/lib/dal';
 import { notFound } from "next/navigation";
 
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Button, { ButtonProps } from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
-
-import Tooltip from '@mui/material/Tooltip';
-
+import Button from '@mui/material/Button';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Grid from '@mui/material/Grid2';
+import Divider from '@mui/material/Divider';
 
 import SettingsIcon from '@mui/icons-material/Settings';
 
 import * as C from '@/lib/constants';
-
-import { DeletePost } from "./posts/actions";
-import { DeleteUser, ResetAccessKey } from "./users/actions";
-import { NewPostChart, PostContributionChart } from './components';
+import { NewPostChart, PanelTabs } from './components';
 import _ from "lodash";
 import Link from "next/link";
-import Image from "next/image";
+import { Prisma, RequestStatus } from "@prisma/client";
+import { ContributionChart } from "./components";
 
-const MAX_DATE_DIF = 28;
+async function PostTab() {
+    const contribution: {
+        name: string,
+        count: bigint
+    }[] = await prisma.$queryRaw(Prisma.sql`
+        SELECT user.name AS 'name', COUNT(*) AS 'count' FROM post
+        INNER JOIN user ON post.uploaderId = user.id AND post.deletedAt IS NULL
+        WHERE post.createdAt >= DATE_SUB(NOW(), INTERVAL 28 DAY)
+        GROUP BY uploaderId`);
 
-type Contribution = Record<string, number>;
+    const series: {
+        date: Date,
+        count: bigint
+    }[] = await prisma.$queryRaw(Prisma.sql`
+        SELECT DATE(createdAt) AS 'date', COUNT(*) AS 'count'
+        FROM post
+        WHERE createdAt > DATE_SUB(NOW(), INTERVAL 28 DAY) AND post.deletedAt IS NULL
+        GROUP BY date
+        ORDER BY date ASC`);
 
-function FlexEndButton(props: ButtonProps) {
-    return (
-        <Grid container sx={{ justifyContent: 'flex-end' }}>
-            <Grid>
-                <Button {...props} />
-            </Grid>
-        </Grid>
-    )
-}
-
-
-export default async function AdminPage() {
-    const user = await auth();
-
-    if (!user || (user.permission & C.Permission.Admin.base) == 0) {
-        notFound();
-    }
-
-    const begin = new Date();
-    begin.setDate(begin.getDate() - MAX_DATE_DIF);
-    begin.setHours(0);
-    begin.setMinutes(0);
-    begin.setSeconds(0);
-    begin.setMilliseconds(0);
-
-    const posts = await prisma.post.findMany({
+    const count = await prisma.post.count({
         where: {
-            createdAt: {
-                gt: begin
-            }
-        },
-        include: {
-            uploader: true
+            deletedAt: null
         }
     });
 
-    const data: number[] = _.range(MAX_DATE_DIF + 1).map(x => 0);
-    const contribution: Contribution = {};
+    return (
+        <Box>
+            <Box className="flex justify-between">
+                <Typography variant='h5'>
+                    Posts
+                </Typography>
+                <Button
+                    variant='contained'
+                    startIcon={<SettingsIcon />}
+                    LinkComponent={Link}
+                    href="/admin/posts">
+                    MANAGE
+                </Button>
+            </Box>
+            <Typography>
+                {count} posts in total
+            </Typography>
 
-    posts.forEach(post => {
-        const dd = Math.floor((post.createdAt.getTime() - begin.getTime()) / 1000 / 60 / 60 / 24);
-        data[dd]++;
+            <Grid container>
+                <Grid size={{ md: 6, xs: 12 }}>
+                    <ContributionChart
+                        data={contribution.map(item => ({
+                            label: item.name,
+                            value: Number(item.count),
+                        }))} />
+                </Grid>
 
-        if (!post.uploader) return;
+                <Grid size={{ md: 6, xs: 12 }}>
+                    <NewPostChart data={series.map(item => ({
+                        count: Number(item.count),
+                        date: item.date
+                    }))} />
+                </Grid>
+            </Grid>
 
-        contribution[post.uploader.name] = (contribution[post.uploader.name] ?? 0) + 1;
-    });
+        </Box>
+    )
+}
 
-    const postCount = await prisma.post.count();
-    const userCount = await prisma.user.count();
-    const tagCount = await prisma.tag.count();
-
-    const latestPost = await prisma.post.findMany({
-        take: 6,
-        orderBy: [
-            {
-                createdAt: 'desc',
-            },
-            {
-                id: 'asc'
-            }
-        ]
-    });
-
-    const largestTag = await prisma.tag.findMany({
-        take: 3,
+async function TagTab() {
+    const tags = await prisma.tag.findMany({
+        take: 12,
         include: {
             _count: {
                 select: {
-                    posts: true
+                    posts: {
+                        where: {
+                            deletedAt: null
+                        }
+                    }
                 }
             }
         },
@@ -122,9 +116,55 @@ export default async function AdminPage() {
             }
         ]
     });
+    const count = await prisma.tag.count();
 
-    const latestUser = await prisma.user.findMany({
-        take: 3,
+    return (
+        <Box>
+            <Box className="flex justify-between">
+                <Typography variant='h5'>
+                    Tags
+                </Typography>
+                <Button
+                    variant='contained'
+                    startIcon={<SettingsIcon />}
+                    LinkComponent={Link}
+                    href="/admin/tags">
+                    MANAGE
+                </Button>
+            </Box>
+            <Typography>
+                {count} tags in total.
+            </Typography>
+            <TableContainer sx={{ height: '500px', overflowY: 'auto' }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell align="center">#</TableCell>
+                            <TableCell align="center">Name</TableCell>
+                            <TableCell align="center">Posts</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {
+                            tags.map(tag => (
+                                <TableRow key={tag.id}>
+                                    <TableCell align="center">{tag.id}</TableCell>
+                                    <TableCell align="center">{tag.name}</TableCell>
+                                    <TableCell align="center">{tag._count.posts}</TableCell>
+                                </TableRow>
+                            ))
+                        }
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        </Box>
+    )
+}
+
+async function UserTab() {
+    const count = await prisma.user.count();
+    const user = await prisma.user.findMany({
+        take: 12,
         orderBy: [
             {
                 createdAt: 'desc',
@@ -134,221 +174,141 @@ export default async function AdminPage() {
             }
         ]
     });
+    return (
+        <Box>
+            <Box className="flex justify-between">
+                <Typography variant='h5'>
+                    Users
+                </Typography>
+                <Button
+                    variant='contained'
+                    startIcon={<SettingsIcon />}
+                    LinkComponent={Link}
+                    href="/admin/users">
+                    MANAGE
+                </Button>
+            </Box>
+            <Typography>
+                {count} users in total.
+            </Typography>
+            <TableContainer sx={{ height: '500px', overflowY: 'auto' }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell align="center">#</TableCell>
+                            <TableCell align="center">Username</TableCell>
+                            <TableCell align="center">Permission</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {
+                            user.map(user => (
+                                <TableRow key={user.id}>
+                                    <TableCell align="center">{user.id}</TableCell>
+                                    <TableCell align="center">{user.name}</TableCell>
+                                    <TableCell align="center">{user.permission.toString(16)}</TableCell>
+                                </TableRow>
+                            ))
+                        }
+                    </TableBody>
+                </Table>
+            </TableContainer>
+
+        </Box>
+    );
+}
+
+async function DelTab() {
+    const [count, deletedPostCount, processedRequestCount] = await prisma.$transaction([
+        prisma.deletion_request.count({
+            where: {
+                status: RequestStatus.pending
+            }
+        }),
+        prisma.post.count({
+            where: {
+                deletedAt: {
+                    not: null
+                }
+            }
+        }),
+        prisma.deletion_request.count({
+            where: {
+                status: {
+                    not: RequestStatus.pending
+                }
+            }
+        })
+    ]);
 
     return (
-        <Box sx={{
-            m: 2
-        }}>
+        <Box>
+            <Box className="flex justify-between">
+                <Typography variant='h5'>
+                    Deletion requests
+                </Typography>
+                <Button
+                    variant='contained'
+                    startIcon={<SettingsIcon />}
+                    LinkComponent={Link}
+                    href="/admin/deletion_requests">
+                    MANAGE
+                </Button>
+            </Box>
+            <Typography>
+                {count} pending requests
+            </Typography>
+
+            <Box className="flex flex-row items-center content-center h-32">
+                <Box className="flex flex-1 text-center flex-col items-center">
+                    <Typography variant="h4" component="span">
+                        {processedRequestCount}
+                    </Typography>
+                    <Typography variant="button">
+                        processed requests
+                    </Typography>
+                </Box>
+                <Divider orientation="vertical" flexItem />
+                <Box className="flex flex-1 text-center flex-col items-center">
+                    <Typography variant="h4" component="span">
+                        {deletedPostCount}
+                    </Typography>
+                    <Typography variant="button">
+                        deleted posts
+                    </Typography>
+                </Box>
+            </Box>
+        </Box>
+    )
+}
+
+
+export default async function AdminPage() {
+    const user = await auth();
+
+    if (!user || (user.permission & C.Permission.Admin.base) == 0) {
+        notFound();
+    }
+
+    return (
+        <Box sx={{ m: 2 }}>
             <Paper sx={{
                 m: {
                     md: 2,
                     xs: 0,
                 },
-                p: {
-                    md: 2,
-                    xs: 0
-                },
                 overflowX: 'auto'
             }}>
-                <Typography variant='h5'>
-                    New post trend for 4 weeks
-                </Typography>
-                <NewPostChart count={data} />
-                <PostContributionChart data={Object.values(contribution)} labels={Object.keys(contribution)} />
+                <PanelTabs
+                    titles={['post', 'user', 'tag', 'deletion']}
+                    slots={[
+                        <PostTab key="post" />,
+                        <UserTab key="user" />,
+                        <TagTab key="tag" />,
+                        <DelTab key="req" />
+                    ]}
+                />
             </Paper>
-
-            <Grid container>
-                <Grid size={{ xs: 12, md: 6 }}>
-                    <Paper sx={{
-                        m: {
-                            md: 2
-                        },
-                        p: {
-                            md: 2
-                        }
-                    }}>
-                        <Typography variant='h5'>
-                            Posts
-                        </Typography>
-                        <Typography>
-                            {postCount} posts in total.
-                        </Typography>
-                        <Typography>
-                            Latest 6 posts:
-                        </Typography>
-
-                        <TableContainer sx={{ mb: 2 }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell align="center">#</TableCell>
-                                        <TableCell align="center">Image</TableCell>
-                                        <TableCell align="center">Text</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {
-                                        latestPost.map(post => (
-                                            <TableRow key={post.id}>
-                                                <TableCell align="center">{_.first(post.id.split('-'))}</TableCell>
-                                                <TableCell align="center">
-                                                    <Image
-                                                        src={post.imageURL}
-                                                        unoptimized
-                                                        crossOrigin="anonymous"
-                                                        width={64}
-                                                        height={64}
-                                                        alt="image"
-                                                        style={{
-                                                            objectFit: 'contain'
-                                                        }}
-                                                    />
-                                                </TableCell>
-                                                <TableCell align="center">
-                                                    {post.text}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    }
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-
-                        <FlexEndButton
-                            variant='contained'
-                            startIcon={<SettingsIcon />}
-                            LinkComponent={Link}
-                            href="/admin/posts" >
-                            MANAGE
-                        </FlexEndButton>
-                    </Paper>
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                    <Paper sx={{
-                        m: {
-                            md: 2
-                        },
-                        p: {
-                            md: 2
-                        }
-                    }}>
-                        <Typography variant='h5'>
-                            Users
-                        </Typography>
-                        <Typography>
-                            {userCount} users in total.
-                        </Typography>
-                        <Typography>
-                            Latest 3 users:
-                        </Typography>
-
-                        <TableContainer sx={{ mb: 2 }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell align="center">#</TableCell>
-                                        <TableCell align="center">Username</TableCell>
-                                        <TableCell align="center">Permission</TableCell>
-                                        <TableCell align="center">Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {
-                                        latestUser.map(user => (
-                                            <TableRow key={user.id}>
-                                                <TableCell align="center">{user.id}</TableCell>
-                                                <TableCell align="center">{user.name}</TableCell>
-                                                <TableCell align="center">{user.permission.toString(16)}</TableCell>
-                                                <TableCell align="center">
-                                                    <Tooltip title="Edit user">
-                                                        <IconButton LinkComponent={Link} href={"/admin/users/" + user.id.toString() + '/edit'} size="small">
-                                                            <EditIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <form action={DeleteUser} style={{ display: 'inline-block' }}>
-                                                        <input type="hidden" name="id" value={user.id} />
-                                                        <Tooltip title="Delete user">
-                                                            <IconButton size="small" type="submit">
-                                                                <DeleteIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </form>
-                                                    <form action={ResetAccessKey} style={{ display: 'inline-block' }}>
-                                                        <input type="hidden" name="id" value={user.id} />
-                                                        <Tooltip title="Reset access key">
-                                                            <IconButton size="small" type="submit">
-                                                                <AutorenewIcon />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </form>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    }
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-
-                        <FlexEndButton
-                            variant='contained'
-                            startIcon={<SettingsIcon />}
-                            LinkComponent={Link}
-                            href="/admin/users" >
-                            MANAGE
-                        </FlexEndButton>
-
-                    </Paper>
-
-                    <Paper sx={{
-                        m: {
-                            md: 2
-                        },
-                        p: {
-                            md: 2
-                        }
-                    }}>
-                        <Typography variant='h5'>
-                            Tags
-                        </Typography>
-                        <Typography>
-                            {tagCount} tags in total.
-                        </Typography>
-                        <Typography>
-                            3 tags with the most posts:
-                        </Typography>
-                        <TableContainer sx={{ mb: 2 }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell align="center">#</TableCell>
-                                        <TableCell align="center">Name</TableCell>
-                                        <TableCell align="center">Posts</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {
-                                        largestTag.map(tag => (
-                                            <TableRow key={tag.id}>
-                                                <TableCell align="center">{tag.id}</TableCell>
-                                                <TableCell align="center">{tag.name}</TableCell>
-                                                <TableCell align="center">{tag._count.posts}</TableCell>
-                                            </TableRow>
-                                        ))
-                                    }
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-
-                        <FlexEndButton
-                            variant='contained'
-                            startIcon={<SettingsIcon />}
-                            LinkComponent={Link}
-                            href="/admin/tags" >
-                            MANAGE
-                        </FlexEndButton>
-                    </Paper>
-                </Grid>
-            </Grid>
         </Box>
     )
 }

@@ -1,3 +1,5 @@
+'use client';
+
 import { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import Button from '@mui/material/Button';

@@ -26,22 +26,9 @@ export default async function UserPage() {
                 createdAt: 'desc'
             }
         ],
-        select: {
-            id: true,
-            image: true,
-            imageURL: true,
-            text: true,
-            rating: true,
-            createdAt: true,
-            imageHash: true,
-            uploaderId: true,
-            uploader: {
-                select: {
-                    id: true,
-                    name: true
-                }
-            }
-        }
+        include: {
+            uploader: true
+        },
     });
     
     return (

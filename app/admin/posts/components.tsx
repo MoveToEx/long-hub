@@ -1,160 +1,253 @@
 'use client';
 
 import { prisma } from '@/lib/db';
-import { DataGrid, GridColDef, GridToolbar, GridActionsCellItem } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridToolbar, GridActionsCellItem, useGridApiContext, getGridDateOperators } from '@mui/x-data-grid';
 import { Prisma, Rating } from '@prisma/client';
-import { EditPost, DeletePost } from './actions';
+import { EditPost, DeletePost, RecoverPost } from './actions';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Image from 'next/image';
+import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import UndoIcon from '@mui/icons-material/Undo';
+
 
 import { useSnackbar } from 'notistack';
 import { useCallback, useState } from 'react';
 import Link from 'next/link';
 
-type Post = Prisma.Result<typeof prisma.post, {
-    select: {
-        id: true,
-        image: true,
-        imageURL: true,
-        text: true,
-        rating: true,
-        createdAt: true,
-        imageHash: true,
-        uploaderId: true,
+type Post = NonNullable<Prisma.Result<typeof prisma.post, {
+    include: {
         uploader: {
             select: {
+                id: true,
                 name: true
             }
         }
     }
-}, 'findMany'>;
+}, 'findFirst'>>;
 
-
-export function PostGrid({ posts }: {
-    posts: Post
-}) {
-    const [deleteDialog, setDeleteDialog] = useState({
-        open: false,
-        id: '',
-        image: '',
-        pending: false,
-    });
-    const { enqueueSnackbar } = useSnackbar();
-    const columns: GridColDef[] = [
-        {
-            field: 'id',
-            headerName: 'ID',
-            align: 'center',
-            headerAlign: 'left',
-            width: 300,
-            renderCell: (params) => {
-                if (params.value == null) return <></>;
-                return <Link href={"/post/" + params.value}>{params.value}</Link>
+const columns: GridColDef[] = [
+    {
+        field: 'id',
+        headerName: 'ID',
+        align: 'center',
+        headerAlign: 'left',
+        width: 300,
+        renderCell: (params) => {
+            if (params.value == null) return <></>;
+            return <Link href={"/post/" + params.value}>{params.value}</Link>
+        }
+    },
+    {
+        field: 'imageURL',
+        headerName: 'Image',
+        align: 'center',
+        width: 100,
+        filterable: false,
+        sortable: false,
+        renderCell: (params) => {
+            if (params.value == null) return <></>;
+            return (
+                <Image
+                    src={params.value}
+                    alt={params.id.toString()}
+                    unoptimized
+                    crossOrigin='anonymous'
+                    height={64}
+                    width={64}
+                    quality={25}
+                    style={{
+                        objectFit: 'contain',
+                        maxHeight: '100%'
+                    }}
+                />
+            );
+        }
+    },
+    {
+        field: 'text',
+        headerName: 'Text',
+        width: 200,
+        align: 'center',
+        headerAlign: 'center',
+        type: 'string',
+        editable: true,
+    },
+    {
+        field: 'rating',
+        headerName: 'Rating',
+        width: 100,
+        align: 'center',
+        headerAlign: 'center',
+        type: 'singleSelect',
+        valueOptions: Object.values(Rating),
+        editable: true
+    },
+    {
+        field: 'createdAt',
+        headerName: 'Created',
+        width: 150,
+        align: 'center',
+        headerAlign: 'center',
+        type: 'dateTime',
+    },
+    {
+        field: 'imageHash',
+        headerName: 'Image Hash',
+        width: 200,
+        align: 'center',
+        headerAlign: 'center',
+        type: 'string',
+        valueFormatter: (val) => parseInt(val, 2).toString(16).toUpperCase()
+    },
+    {
+        field: 'deletedAt',
+        headerName: 'Deleted At',
+        width: 200,
+        align: 'center',
+        headerAlign: 'center',
+        type: 'dateTime',
+        editable: true,
+    },
+    {
+        field: 'deletionReason',
+        headerName: 'Deleted Reason',
+        width: 200,
+        align: 'center',
+        headerAlign: 'center',
+        type: 'string',
+        editable: true,
+    },
+    {
+        field: 'uploaderId',
+        headerName: 'Uploader',
+        width: 100,
+        align: 'center',
+        headerAlign: 'center',
+        type: 'number',
+        editable: true,
+        renderCell: (params) => {
+            if (params.row.uploader !== null) {
+                return <span>{params.value} ({params.row.uploader.name})</span>;
             }
-        },
-        {
-            field: 'imageURL',
-            headerName: 'Image',
-            align: 'center',
-            width: 100,
-            filterable: false,
-            sortable: false,
-            renderCell: (params) => {
-                if (params.value == null) return <></>;
-                return (
+            return <span>(NULL)</span>;
+        }
+    },
+    {
+        field: 'actions',
+        type: 'actions',
+        headerName: 'Action',
+        getActions: (params) => RowAction(params.row)
+    }
+];
+
+function DeleteAction({
+    id,
+    src
+}: {
+    id: string,
+    src: string
+}) {
+    const [open, setOpen] = useState(false);
+    const ctx = useGridApiContext();
+    const [reason, setReason] = useState('');
+
+    return (
+        <>
+            <GridActionsCellItem
+                label="Delete"
+                icon={<DeleteIcon />}
+                onClick={() => setOpen(true)} />
+            <Dialog
+                open={open}
+                maxWidth="lg"
+                onClose={() => setOpen(false)}>
+                <DialogTitle id="alert-dialog-title">Confirm deletion</DialogTitle>
+                <DialogContent>
                     <Image
-                        src={params.value}
-                        alt={params.id.toString()}
+                        src={src}
+                        alt="image"
                         unoptimized
                         crossOrigin='anonymous'
-                        height={64}
-                        width={64}
-                        quality={25}
+                        height={300}
+                        width={300}
                         style={{
                             objectFit: 'contain',
-                            maxHeight: '100%'
+                            maxHeight: '300px',
+                            width: '100%',
+                        }} />
+                    <TextField
+                        sx={{
+                            mt: 2
                         }}
-                    />
-                );
-            }
-        },
-        {
-            field: 'text',
-            headerName: 'Text',
-            width: 200,
-            align: 'center',
-            headerAlign: 'center',
-            type: 'string',
-            editable: true,
-        },
-        {
-            field: 'rating',
-            headerName: 'Rating',
-            width: 100,
-            align: 'center',
-            headerAlign: 'center',
-            type: 'singleSelect',
-            valueOptions: Object.values(Rating),
-            editable: true
-        },
-        {
-            field: 'createdAt',
-            headerName: 'Created',
-            width: 150,
-            align: 'center',
-            headerAlign: 'center',
-            type: 'dateTime',
-        },
-        {
-            field: 'imageHash',
-            headerName: 'Image Hash',
-            width: 200,
-            align: 'center',
-            headerAlign: 'center',
-            type: 'string',
-            valueFormatter: (val) => parseInt(val, 2).toString(16).toUpperCase()
-        },
-        {
-            field: 'uploaderId',
-            headerName: 'Uploader ID',
-            width: 100,
-            align: 'center',
-            headerAlign: 'center',
-            type: 'number',
-            editable: true,
-        },
-        {
-            field: 'uploader',
-            headerName: 'Uploader',
-            width: 150,
-            align: 'center',
-            headerAlign: 'center',
-            editable: false,
-            valueFormatter: (val?: { name: string }) => val?.name ?? "(NULL)"
-        },
-        {
-            field: 'actions',
-            type: 'actions',
-            getActions: (params) => [
-                <GridActionsCellItem
-                    key="delete"
-                    label="Delete"
-                    icon={<DeleteIcon />}
-                    onClick={() => setDeleteDialog({
-                        open: true,
-                        id: params.row.id,
-                        image: params.row.imageURL,
-                        pending: false,
-                    })} />
-            ]
-        }
-    ];
+                        fullWidth
+                        multiline
+                        rows={3}
+                        value={reason}
+                        onChange={(event) => {
+                            setReason(event.currentTarget.value);
+                        }}
+                        label="Additional details" />
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={async () => {
+                            setOpen(false);
+                            ctx.current.setLoading(true);
+                            await DeletePost(id, reason);
+                        }}
+                        color="error"
+                        autoFocus>
+                        confirm
+                    </Button>
+                    <Button
+                        onClick={() => setOpen(false)}
+                        autoFocus>
+                        cancel
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
+    )
+}
+
+function RevokeAction({ id }: {
+    id: string
+}) {
+    const ctx = useGridApiContext();
+
+    return (
+        <GridActionsCellItem
+            label="Revoke deletion"
+            icon={<UndoIcon />}
+            onClick={async () => {
+                ctx.current.setLoading(true);
+                await RecoverPost(id);
+            }} />
+    )
+}
+
+function RowAction(post: Post) {
+    const result = [];
+
+    if (post.deletedAt === null) {
+        result.push(<DeleteAction id={post.id} src={post.imageURL} key="delete" />);
+    }
+    else {
+        result.push(<RevokeAction id={post.id} key="revoke" />)
+    }
+    return result;
+}
+
+export function PostGrid({ posts }: {
+    posts: Post[]
+}) {
+    const { enqueueSnackbar } = useSnackbar();
 
     const onError = useCallback((err: Error) => {
         enqueueSnackbar('Failed: ' + err.message, { variant: 'error' });
@@ -162,64 +255,6 @@ export function PostGrid({ posts }: {
 
     return (
         <>
-            <Dialog
-                open={deleteDialog.open}
-                onClose={() => setDeleteDialog({
-                    ...deleteDialog,
-                    open: false
-                })}
-            >
-                <DialogTitle id="alert-dialog-title">Delete post {deleteDialog.id}?</DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        This action cannot be undone.
-                    </DialogContentText>
-                    {deleteDialog.image &&
-                        <Image
-                            src={deleteDialog.image}
-                            alt="image"
-                            unoptimized
-                            crossOrigin='anonymous'
-                            height={300}
-                            width={300}
-                            style={{
-                                objectFit: 'contain',
-                                maxHeight: '300px',
-                                width: '100%',
-                            }} />}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteDialog({
-                        ...deleteDialog,
-                        open: false
-                    })}>Cancel</Button>
-                    <Button
-                        onClick={async () => {
-                            setDeleteDialog({
-                                ...deleteDialog,
-                                pending: true
-                            });
-                            const { ok, message } = await DeletePost(deleteDialog.id);
-                            if (ok) {
-                                enqueueSnackbar('Deleted ' + deleteDialog.id, { variant: 'success' });
-                            }
-                            else {
-                                enqueueSnackbar('Failed: ' + message, { variant: 'error' });
-                            }
-                            setDeleteDialog({
-                                ...deleteDialog,
-                                open: false,
-                                pending: false,
-                            });
-                        }}
-                        color="warning"
-                        disabled={deleteDialog.pending}
-                        autoFocus
-                    >
-                        Delete
-                    </Button>
-                </DialogActions>
-            </Dialog>
             <DataGrid
                 sx={{
                     height: '700px'
@@ -239,7 +274,19 @@ export function PostGrid({ posts }: {
                     columns: {
                         columnVisibilityModel: {
                             imageHash: false,
-                            uploaderId: false
+                            uploaderId: false,
+                            deletedAt: false,
+                            deletionReason: false
+                        }
+                    },
+                    filter: {
+                        filterModel: {
+                            items: [
+                                {
+                                    field: 'deletedAt',
+                                    operator: 'isEmpty'
+                                }
+                            ]
                         }
                     },
                     density: 'comfortable'

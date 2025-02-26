@@ -9,12 +9,9 @@ import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid2';
-import { useState, useEffect, useDeferredValue, use } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useSnackbar } from 'notistack';
-import { useRouter } from 'next/navigation';
-import { createQueryString } from '@/lib/util';
+import { useDeferredValue, use } from 'react';
 import { useTaggedPost } from '@/app/context';
+import { useSearchParam } from '@/lib/hooks';
 
 export default function TagPage({
     params
@@ -22,16 +19,9 @@ export default function TagPage({
     params: Promise<{ tag: string }>
 }) {
     const { tag } = use(params);
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const { enqueueSnackbar } = useSnackbar();
-    const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
+    const [page, setPage] = useSearchParam('page', 1, val => Number(val));
     const { data, isLoading } = useTaggedPost(tag, page);
     const deferredPage = useDeferredValue(C.pages(data?.count ?? 0));
-
-    useEffect(() => {
-        setPage(Number(searchParams.get('page') ?? '1'));
-    }, [searchParams]);
 
     return (
         <Box sx={{ m: 2 }}>
@@ -67,9 +57,7 @@ export default function TagPage({
                     count={deferredPage}
                     page={page}
                     onChange={(_, val) => {
-                        router.push(createQueryString('/tag/' + tag, {
-                            page: val
-                        }));
+                        setPage(val);
                     }}
                 />
             </Stack>

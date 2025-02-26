@@ -22,7 +22,8 @@ export async function GET(req: NextRequest, {
             where: {
                 tags: {
                     some: { name }
-                }
+                },
+                deletedAt: null
             },
             include: {
                 tags: true,

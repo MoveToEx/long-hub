@@ -42,7 +42,7 @@ export default function SigninPage() {
     }, [user, router, modalContext]);
 
     return (
-        <Box className="flex flex-col items-center content-center">
+        <Box className="flex flex-col items-center justify-center">
             <Typography variant="h4">
                 Log in to LONG Hub
             </Typography>

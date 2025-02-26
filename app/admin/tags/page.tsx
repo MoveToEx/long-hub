@@ -24,7 +24,11 @@ export default async function TagsAdminPage() {
         include: {
             _count: {
                 select: {
-                    posts: true
+                    posts: {
+                        where: {
+                            deletedAt: null
+                        }
+                    }
                 }
             }
         }

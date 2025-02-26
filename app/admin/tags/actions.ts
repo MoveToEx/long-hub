@@ -82,7 +82,8 @@ export async function MigratePosts(_state: any, fd: FormData) {
                     connect: {
                         id: to.id
                     }
-                }
+                },
+                updatedAt: new Date()
             }
         });
     }

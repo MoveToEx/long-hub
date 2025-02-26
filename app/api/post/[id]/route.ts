@@ -7,12 +7,15 @@ import { z } from 'zod';
 import _ from 'lodash';
 import { responses } from "@/lib/server-util";
 import { Prisma, Rating } from "@prisma/client";
-import storage from '@/lib/storage';
 
 const updateSchema = z.object({
     text: z.optional(z.string()),
     rating: z.optional(z.nativeEnum(Rating)),
     tags: z.optional(z.array(z.string()))
+});
+
+const deleteSchema = z.object({
+    reason: z.string().default('')
 });
 
 export async function GET(req: NextRequest, {
@@ -32,6 +35,16 @@ export async function GET(req: NextRequest, {
                     name: true,
                     id: true
                 }
+            },
+            deletion_requests: {
+                include: {
+                    user: {
+                        select: {
+                            name: true,
+                            id: true
+                        }
+                    }
+                }
             }
         }
     });
@@ -48,7 +61,7 @@ export async function PUT(req: NextRequest, {
 }: {
     params: Promise<{ id: string }>
 }) {
-    const user = await auth(req);
+    const user = await auth();
 
     if (!user) {
         return responses.unauthorized();
@@ -60,8 +73,18 @@ export async function PUT(req: NextRequest, {
 
     const { id } = await params;
 
-    if (await prisma.post.count({ where: { id } }) == 0) {
+    const post = await prisma.post.findFirst({
+        where: { id }
+    });
+
+    if (post === null) {
         return responses.notFound('Post ' + id);
+    }
+
+    if (post.deletedAt !== null) {
+        return new Response('post deleted', {
+            status: 409
+        });
     }
 
     const data: Prisma.Args<typeof prisma.post, 'update'>['data'] = {};
@@ -132,7 +155,7 @@ export async function DELETE(req: NextRequest, {
 }: {
     params: Promise<{ id: string }>
 }) {
-    const user = await auth(req);
+    const user = await auth();
 
     if (!user) {
         return responses.unauthorized();
@@ -144,18 +167,29 @@ export async function DELETE(req: NextRequest, {
 
     const { id } = await params;
 
+    const { data, error } = deleteSchema.safeParse(await req.json());
+
+    if (error) {
+        return NextResponse.json(error.errors, {
+            status: 400
+        });
+    }
+
     const post = await prisma.post.findFirst({
         where: { id }
     });
 
-    if (!post) {
+    if (!post || post.deletedAt !== null) {
         return responses.notFound('Post ' + id);
     }
 
-    await storage.remove('post/' + post.image);
-
-    await prisma.post.delete({
-        where: { id }
+    await prisma.post.update({
+        where: { id },
+        data: {
+            deletedAt: new Date(),
+            deletionReason: data.reason,
+            updatedAt: new Date()
+        }
     });
 
     return new NextResponse(null, {

@@ -28,6 +28,7 @@ const schema = z.object({
             z.literal('desc')
         ]).default('asc')
     }).array().default([{ key: 'id', direction: 'asc' }]),
+    deleted: z.boolean().default(false),
     filter: z.discriminatedUnion('type', [
         z.object({
             type: z.literal('text'),
@@ -80,7 +81,10 @@ const schema = z.object({
         }),
         z.object({
             type: z.literal('system'),
-            op: z.union([z.literal('untagged'), z.literal('disowned')]),
+            op: z.union([
+                z.literal('untagged'),
+                z.literal('disowned')
+            ]),
             value: z.undefined()
         })
     ]).array().min(1).max(24)
@@ -233,6 +237,19 @@ export async function POST(req: NextRequest) {
 
     for (const item of data.filter) {
         where.AND.push(transform(item));
+    }
+
+    if (data.deleted === true) {
+        where.AND.push({
+            deletedAt: {
+                not: null
+            }
+        });
+    }
+    else {
+        where.AND.push({
+            deletedAt: null
+        });
     }
 
     const [posts, count] = await prisma.$transaction([

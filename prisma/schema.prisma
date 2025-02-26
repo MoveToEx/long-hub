@@ -14,20 +14,48 @@ enum Rating {
 }
 
 model post {
-  id         String   @id @db.Char(36)
-  text       String   @db.Text
-  aliases    alias[]
-  image      String   @db.VarChar(255)
-  imageHash  String   @db.VarChar(255)
-  imageURL   String   @db.VarChar(128)
-  rating     Rating   @default(none)
-  createdAt  DateTime @db.DateTime(0)
-  updatedAt  DateTime @db.DateTime(0)
+  id        String   @id @db.Char(36)
+  text      String   @db.Text
+  image     String   @db.VarChar(255)
+  imageHash String   @db.VarChar(255)
+  imageURL  String   @db.VarChar(128)
+  rating    Rating   @default(none)
+  createdAt DateTime @db.DateTime(0)
+  updatedAt DateTime @db.DateTime(0)
+
+  deletedAt      DateTime?
+  deletionReason String?   @db.Text
+
   uploaderId Int?
-  uploader   user?    @relation(fields: [uploaderId], references: [id], map: "post_ibfk_1")
-  tags       tag[]
+
+  aliases           alias[]
+  uploader          user?              @relation(fields: [uploaderId], references: [id], map: "post_ibfk_1")
+  tags              tag[]
+  deletion_requests deletion_request[]
 
   @@index([uploaderId], map: "uploaderId")
+}
+
+enum RequestStatus {
+  pending
+  cancelled
+  dismissed
+  approved
+  revoked
+}
+
+model deletion_request {
+  id          Int           @id @default(autoincrement())
+  reason      String        @db.Text
+  status      RequestStatus @default(pending)
+  createdAt   DateTime      @default(now())
+  processedAt DateTime?
+
+  postId String @db.Char(36)
+  userId Int
+
+  post post @relation(fields: [postId], references: [id])
+  user user @relation(fields: [userId], references: [id])
 }
 
 model alias {
@@ -39,7 +67,7 @@ model alias {
 
 model tag {
   id    Int    @id @default(autoincrement())
-  name  String @db.VarChar(255) @unique
+  name  String @unique @db.VarChar(255)
   posts post[]
 }
 
@@ -58,13 +86,15 @@ model template {
 }
 
 model user {
-  id           Int        @id @default(autoincrement())
-  email        String?    @db.VarChar(255)
-  name         String     @db.VarChar(255)
-  permission   Int        @default(0)
-  accessKey    String     @db.VarChar(255) @unique
-  passwordHash String     @db.VarChar(255)
-  createdAt    DateTime   @db.DateTime(0)
-  post         post[]
-  template     template[]
+  id           Int      @id @default(autoincrement())
+  email        String?  @db.VarChar(255)
+  name         String   @db.VarChar(255)
+  permission   Int      @default(0)
+  accessKey    String   @unique @db.VarChar(255)
+  passwordHash String   @db.VarChar(255)
+  createdAt    DateTime @db.DateTime(0)
+
+  post              post[]
+  template          template[]
+  deletion_requests deletion_request[]
 }

@@ -3,7 +3,7 @@ import { auth } from '@/lib/dal';
 
 export async function GET(req: NextRequest) {
 
-    const user = await auth(req);
+    const user = await auth();
 
     if (user == null) {
         return new NextResponse(null, {

@@ -3,11 +3,23 @@ import _ from 'lodash';
 import { Prisma } from '@prisma/client';
 import { prisma } from "@/lib/db";
 
-type ReplaceByValue<T, U, V> = {
-    [K in keyof T]: T[K] extends U ? V : T[K];
+type NonSerializable = Date;
+
+type Serialized<T> = T extends NonSerializable ? string : (
+    T extends (infer U)[] ? SerializedArray<U> : (
+        T extends object ? SerializedObject<T> : T
+    )
+);
+
+type SerializedArray<T> = T extends NonSerializable ? string[] : (
+    T extends object ? SerializedObject<T>[] : T[]
+);
+
+type SerializedObject<T> = {
+    [K in keyof T]: Serialized<T[K]>
 };
 
-type User = NonNullable<ReplaceByValue<Prisma.Result<typeof prisma.user, {}, 'findFirst'>, Date, String>>;
+type User = NonNullable<Serialized<Prisma.Result<typeof prisma.user, {}, 'findFirst'>>>;
 
 type Tag = NonNullable<Prisma.Result<typeof prisma.tag, {}, 'findFirst'>>;
 
@@ -15,7 +27,7 @@ type Tags = (Tag & {
     count: number
 })[];
 
-type Post = NonNullable<ReplaceByValue<Prisma.Result<typeof prisma.post, {
+type Post = NonNullable<Serialized<Prisma.Result<typeof prisma.post, {
     include: {
         tags: true,
         uploader: {
@@ -23,22 +35,42 @@ type Post = NonNullable<ReplaceByValue<Prisma.Result<typeof prisma.post, {
                 id: true,
                 name: true
             }
+        },
+        deletion_requests: {
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        id: true
+                    }
+                }
+            }
         }
     },
-}, 'findFirst'>, Date, string>>;
+}, 'findFirst'>>>;
 
 type PostsResponse = {
     count: number;
-    data: Post[];
+    data: NonNullable<Serialized<Prisma.Result<typeof prisma.post, {
+        include: {
+            tags: true,
+            uploader: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            }
+        },
+    }, 'findFirst'>>>[];
 };
 
 const fetcher = async (url: string) => {
     const response = await fetch(url);
-    
+
     if (!response.ok) {
         return undefined;
     }
-    
+
     return response.json();
 }
 
@@ -95,7 +127,8 @@ export const SearchResultFetcher = async ({ filter, order, page }: SearchQuery) 
 
     const data = JSON.stringify({
         filter,
-        order: order ? [order] : undefined
+        order: order ? [order] : undefined,
+        deleted: false
     });
     const response = await fetch('/api/post/search?limit=24&offset=' + ((page ?? 1) - 1) * 24, {
         method: 'POST',

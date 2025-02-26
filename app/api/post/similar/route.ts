@@ -24,6 +24,9 @@ export async function POST(req: NextRequest) {
     const hash = await phash(buf);
 
     const posts = await prisma.post.findMany({
+        where: {
+            deletedAt: null
+        },
         select: {
             id: true,
             image: true,
@@ -34,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     let result = [];
 
-    for (var post of posts) {
+    for (const post of posts) {
         const dist = phashDistance(hash, post.imageHash);
         if (dist <= SIMILAR_THRESHOLD) {
             result.push({

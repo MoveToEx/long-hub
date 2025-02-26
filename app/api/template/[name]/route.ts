@@ -47,7 +47,7 @@ export async function POST(req: NextRequest, {
         });
     }
 
-    const user = await auth(req);
+    const user = await auth();
 
     if (user == null) {
         return NextResponse.json('unauthorized', {
@@ -148,7 +148,7 @@ export async function PUT(req: NextRequest, {
         });
     }
 
-    const user = await auth(req);
+    const user = await auth();
 
     if (user == null) {
         return NextResponse.json('unauthorized', {

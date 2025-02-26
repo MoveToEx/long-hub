@@ -6,13 +6,7 @@ import * as C from '@/lib/constants';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
-import Skeleton from '@mui/material/Skeleton';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid2';
 import { useState, useEffect, useDeferredValue } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useRouter } from 'next/navigation';
-import { createQueryString } from '@/lib/util';
 import { PostsFetcher, usePosts } from '@/app/context';
 import { useSnackbar } from 'notistack';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -21,19 +15,14 @@ import WindowIcon from '@mui/icons-material/Window';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import { preload } from 'swr';
 import Posts from '@/components/Posts';
+import { useSearchParam } from '@/lib/hooks';
 
 export default function Page() {
-	const searchParams = useSearchParams();
-	const router = useRouter();
 	const [layout, setLayout] = useState<'grid' | 'list'>('grid');
-	const [page, setPage] = useState(Number(searchParams.get('page') ?? '1'));
+	const [page, setPage] = useSearchParam('page', 1, value => Number(value));
 	const { data, error, isLoading } = usePosts(24, (page - 1) * 24);
 	const { enqueueSnackbar } = useSnackbar();
 	const totalPages = useDeferredValue(C.pages(data?.count ?? 0));
-
-	useEffect(() => {
-		setPage(Number(searchParams.get('page') ?? '1'));
-	}, [searchParams]);
 
 	useEffect(() => {
 		if (page > 1) {
@@ -79,14 +68,6 @@ export default function Page() {
 					page={page}
 					onChange={(_, val) => {
 						setPage(val);
-						window.scrollTo({
-							top: 0
-						});
-						router.push(createQueryString('/post/list', {
-							page: val
-						}), {
-							scroll: false
-						});
 					}}
 				/>
 			</Stack>

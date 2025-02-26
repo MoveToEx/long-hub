@@ -1,28 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
+export async function GET(req: NextRequest) {
+    const params = req.nextUrl.searchParams;
+    const prefix = params.get('prefix');
+    const limit = Number(params.get('limit') ?? 24);
+    const offset = Number(params.get('offset') ?? 0);
 
-export async function GET() {
     const tags = await prisma.tag.findMany({
         include: {
             _count: {
                 select: {
-                    posts: true
+                    posts: {
+                        where: {
+                            deletedAt: null
+                        }
+                    }
                 }
             }
-        }
+        },
+        where: {
+            name: prefix ? {
+                startsWith: prefix
+            } : {}
+        },
+        take: limit,
+        skip: offset
     });
-    let result = [];
 
-    for (var tag of tags) {
-        
-        result.push({
-            id: tag.id,
-            name: tag.name,
-            count: tag._count.posts
-        });
-    }
-
-    return NextResponse.json(result);
+    return NextResponse.json(tags.map(tag => ({
+        name: tag.name,
+        id: tag.id,
+        count: tag._count.posts,
+    })));
 }

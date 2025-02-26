@@ -35,6 +35,9 @@ export async function GET(req: NextRequest) {
 
     const [posts, count] = await prisma.$transaction([
         prisma.post.findMany({
+            where: {
+                deletedAt: null
+            },
             orderBy: [
                 {
                     createdAt: 'desc',
@@ -55,7 +58,11 @@ export async function GET(req: NextRequest) {
             skip: offset,
             take: limit
         }),
-        prisma.post.count()
+        prisma.post.count({
+            where: {
+                deletedAt: null
+            }
+        })
     ])
 
     return NextResponse.json({
@@ -65,7 +72,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-    const user = await auth(req);
+    const user = await auth();
 
     if (user === null) {
         return responses.unauthorized();

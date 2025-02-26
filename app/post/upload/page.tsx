@@ -19,21 +19,20 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Button from '@mui/material/Button';
 
-import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import _ from 'lodash';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import RequiresLogin from '@/components/RequiresLogin';
 
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { useUser, useTags, useSearchResult, SearchQuery } from '@/app/context';
-import { Rating } from '@prisma/client';
+import { useTags, useSearchResult, SearchQuery } from '@/app/context';
+import { useMetadata, Metadata } from './hooks';
 
 import RatingComponent from '@/components/Rating';
-import Container from '@mui/material/Container';
 import RatingIcon from '@/components/RatingIcon';
 import DragDrop from '@/components/DragDrop';
 
@@ -119,46 +118,30 @@ function SearchButton({
 export default function UploadPage() {
     const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState<Preview[]>([]);
-    const [meta, setMeta] = useState({
-        text: '',
-        rating: Rating.none as Rating,
-        tags: [] as string[]
-    });
+    const [metadata, setMetadata, reset] = useMetadata();
     const [dialog, setDialog] = useState<DialogInfo>({
         open: false
     });
     const tags = useTags();
     const [ignoreSimilar, setIgnoreSimilar] = useState(false);
 
-    const { data: user } = useUser();
-    const router = useRouter();
-
     const { enqueueSnackbar } = useSnackbar();
-
-    useEffect(() => {
-        if (user === null) {
-            router.push('/account/login');
-        }
-    }, [user, router]);
 
     const next = useCallback(() => {
         if (files.length == 0) return;
 
-        setMeta({
-            text: '',
-            rating: Rating.none,
-            tags: []
-        });
+        reset();
+
         setIgnoreSimilar(false);
         URL.revokeObjectURL(files[0].url);
         setFiles(files => _.slice(files, 1));
-    }, [files]);
+    }, [files, reset]);
 
-    const submit = useCallback(async (text: string, tags: string[], rating: Rating, force: boolean, blob: Blob) => {
+    const submit = useCallback(async (metadata: Metadata, force: boolean, blob: Blob) => {
         const fd = new FormData();
         fd.append('force', force ? '1' : '0');
         fd.append('image', blob);
-        fd.append('metadata', JSON.stringify({ text, tags, rating }));
+        fd.append('metadata', JSON.stringify(metadata));
 
         setLoading(true);
 
@@ -204,10 +187,11 @@ export default function UploadPage() {
 
     return (
         <Grid container spacing={2} sx={{ pt: 2 }}>
+            <RequiresLogin />
             <Grid size={{ xs: 12, md: 6 }}>
                 {files.length == 0 &&
                     <DragDrop
-                        accept={"image/*"}
+                        accept="image/*"
                         multiple
                         onChange={files => {
                             setFiles(files.map(blob => ({
@@ -233,29 +217,23 @@ export default function UploadPage() {
                     <TextField
                         label="Text"
                         fullWidth
-                        value={meta.text}
+                        value={metadata.text}
                         type="text"
                         autoComplete="off"
                         name="text"
                         onChange={(e) => {
-                            setMeta({
-                                ...meta,
-                                text: e.target.value
-                            });
+                            setMetadata('text', e.target.value);
                         }}
                     />
                     <Autocomplete
                         multiple
                         freeSolo
-                        value={meta.tags}
+                        value={metadata.tags}
                         fullWidth
                         options={tags.data?.map(val => val.name) || []}
                         onChange={(__, newValue) => {
                             if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
-                                setMeta({
-                                    ...meta,
-                                    tags: newValue
-                                });
+                                setMetadata('tags', newValue);
                             }
                         }}
                         renderOption={(props, option) => {
@@ -288,15 +266,12 @@ export default function UploadPage() {
                             <RatingIcon />
                         </Tooltip>
                         <RatingComponent
-                            value={meta.rating}
+                            value={metadata.rating}
                             onChange={(_, newValue) => {
-                                setMeta({
-                                    ...meta,
-                                    rating: newValue
-                                });
+                                setMetadata('rating', newValue);
                             }} />
                         <Box sx={{ ml: 1 }}>
-                            {_.upperFirst(meta.rating)}
+                            {_.upperFirst(metadata.rating)}
                         </Box>
                     </Box>
 
@@ -318,7 +293,7 @@ export default function UploadPage() {
 
                             <Tooltip title="Submit">
                                 <span>
-                                    <Fab onClick={() => submit(meta.text, meta.tags, meta.rating, ignoreSimilar, files[0].blob)} color="primary" disabled={loading || files.length == 0}>
+                                    <Fab onClick={() => submit(metadata, ignoreSimilar, files[0].blob)} color="primary" disabled={loading || files.length == 0}>
                                         <SendIcon />
                                     </Fab>
                                 </span>
@@ -335,7 +310,7 @@ export default function UploadPage() {
                                 </span>
                             </Tooltip>
 
-                            <SearchButton text={meta.text} tags={meta.tags} />
+                            <SearchButton text={metadata.text} tags={metadata.tags} />
                         </Stack>
                     </Box>
                 </Stack>

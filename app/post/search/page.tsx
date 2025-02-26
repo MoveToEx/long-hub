@@ -19,12 +19,11 @@ import Skeleton from '@mui/material/Skeleton';
 import { SearchInput, QueryReference } from './components';
 import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
-import { useEffect, useState, useDeferredValue } from 'react';
+import { useState, useDeferredValue } from 'react';
 import { useSnackbar } from 'notistack';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { createQueryString } from '@/lib/util';
 
 import { useSearchResult, SearchQuery } from '@/app/context';
+import { useSearchParam } from '@/lib/hooks';
 
 function parseRating(s: string) {
     if (s == 'n') return 'none';
@@ -103,30 +102,9 @@ function parseQuery(keyword: string[], order: string, page: number) {
 }
 
 export default function SearchPage() {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-
-    const [order, setOrder] = useState(() => {
-        const order = searchParams.get('o');
-        if (order === null) {
-            return '+id';
-        }
-        return order;
-    });
-    const [keyword, setKeyword] = useState(() => {
-        const s = searchParams.get('s');
-        if (s === null) {
-            return [];
-        }
-        return s.split(' ');
-    });
-    const [page, setPage] = useState(() => {
-        const p = searchParams.get('p');
-        if (p === null) {
-            return 1;
-        }
-        return Number(p);
-    });
+    const [order, setOrder] = useSearchParam('o', '+id');
+    const [keyword, setKeyword] = useSearchParam('s', [], val => val.split(' '));
+    const [page, setPage] = useSearchParam('p', 1, val => Number(val));
 
     const [layout, setLayout] = useState<'grid' | 'list'>('grid');
 
@@ -134,35 +112,6 @@ export default function SearchPage() {
     const totalPages = useDeferredValue(C.pages(result.data?.count ?? 0));
 
     const { enqueueSnackbar } = useSnackbar();
-
-    useEffect(() => {
-        const order = searchParams.get('o');
-        const keyword = searchParams.get('s');
-        const page = searchParams.get('p');
-
-        if (order !== null) setOrder(order);
-        if (keyword !== null) setKeyword(keyword.split(' '));
-        if (page !== null) setPage(Number(page));
-    }, [searchParams]);
-
-    useEffect(() => {
-        const params = new URLSearchParams(searchParams);
-        
-        if (page !== 1) params.set('p', page.toString());
-        else params.delete('p');
-
-        if (order != '+id') params.set('o', order);
-        else params.delete('o');
-
-        if (keyword.length > 0) params.set('s', keyword.join(' '));
-        else params.delete('s');
-
-        const qs = params.toString();
-
-        if (qs !== searchParams.toString()) {
-            window.history.pushState(null, '', '?' + qs);
-        }
-    }, [page, order, keyword, searchParams, router]);
 
     if (result.error) {
         enqueueSnackbar('Failed', { variant: 'error' });
@@ -172,6 +121,7 @@ export default function SearchPage() {
         <Box sx={{ mt: 2, mb: 2 }}>
             <SearchInput value={keyword} onChange={(_, val) => {
                 setKeyword(val);
+                setPage(1);
             }} />
 
             <Grid container spacing={1} sx={{ mb: 2 }}>
@@ -185,8 +135,7 @@ export default function SearchPage() {
                             value={order}
                             label="Sort by"
                             onChange={(event) => {
-                                setOrder(event.target.value as string);
-                                setPage(1);
+                                setOrder(event.target.value);
                             }}>
                             <MenuItem value="+id">ID ascending</MenuItem>
                             <MenuItem value="-id">ID descending</MenuItem>
@@ -250,13 +199,6 @@ export default function SearchPage() {
                             page={page}
                             onChange={(_, val) => {
                                 setPage(val);
-                                router.push(createQueryString('/post/search', {
-                                    s: keyword.join(' '),
-                                    page: val,
-                                    order
-                                }), {
-                                    scroll: false
-                                });
                                 window.scrollTo({
                                     top: 0
                                 });
