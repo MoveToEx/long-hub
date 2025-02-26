@@ -78,11 +78,9 @@ export default function SigninPage() {
                 }}>
                     <Typography variant="body2">
                         Don&apos;t have an account?
-                        <Link href="/account/signup">
-                            <MUILink>
-                                Sign Up
-                            </MUILink>
-                        </Link>
+                        <MUILink component={Link} href="/account/signup">
+                            Sign Up
+                        </MUILink>
                     </Typography>
                 </Box>
             </Box>

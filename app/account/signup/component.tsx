@@ -60,11 +60,9 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
                 <Box className="flex justify-end">
                     <Typography variant="body2">
                         Already have an account?
-                        <Link href="/account/login">
-                            <MUILink>
-                                Log in
-                            </MUILink>
-                        </Link>
+                        <MUILink component={Link} href="/account/login">
+                            Log in
+                        </MUILink>
                     </Typography>
                 </Box>
             </Box>
