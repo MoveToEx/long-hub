@@ -6,7 +6,7 @@ import { auth } from '@/lib/dal';
 
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
-import { Rating } from "@prisma/client";
+import { Rating, RequestStatus } from "@prisma/client";
 
 export async function EditPost(updatedRow: any, originalRow: any) {
     const user = await auth();
@@ -133,14 +133,26 @@ export async function RecoverPost(id: string) {
         };
     }
 
-    await prisma.post.update({
-        where: { id },
-        data: {
-            deletedAt: null,
-            updatedAt: new Date(),
-            deletionReason: null
-        }
-    })
+    await prisma.$transaction([
+        prisma.post.update({
+            where: { id },
+            data: {
+                deletedAt: null,
+                updatedAt: new Date(),
+                deletionReason: null
+            }
+        }),
+        prisma.deletion_request.updateMany({
+            where: {
+                postId: id,
+                status: RequestStatus.approved
+            },
+            data: {
+                status: RequestStatus.revoked,
+                processedAt: new Date()
+            }
+        })
+    ]);
 
     revalidatePath('/admin/posts');
 
