@@ -59,3 +59,49 @@ export async function SubmitRequest(state: string, fd: FormData) {
 
     return redirect(`/post/${postId}`);
 }
+
+export async function HasPendingRequest(postId: string) {
+    if (!postId) return false;
+    
+    const user = await auth();
+
+    if (user === null) return false;
+
+    const count = await prisma.deletion_request.count({
+        where: {
+            postId,
+            userId: user.id,
+            status: RequestStatus.pending
+        }
+    });
+
+    return count !== 0;
+}
+
+export async function CancelRequest(postId: string) {
+    const user = await auth();
+
+    if (user === null) return 'User not logged in';
+
+    const request = await prisma.deletion_request.findFirst({
+        where: {
+            postId,
+            userId: user.id
+        }
+    });
+
+    if (request === null) {
+        return Promise.reject(new Error('Request does not exist'));
+    }
+
+    await prisma.deletion_request.update({
+        where: {
+            id: request.id
+        },
+        data: {
+            status: RequestStatus.cancelled
+        }
+    });
+
+    return redirect('/post/' + postId);
+}

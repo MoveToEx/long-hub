@@ -4,10 +4,11 @@ import Grid from '@mui/material/Grid2';
 import Image from 'next/image';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import Fab from '@mui/material/Fab';
+import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import SendIcon from '@mui/icons-material/Send';
+import CancelIcon from '@mui/icons-material/Cancel';
 import Typography from '@mui/material/Typography';
 import { use, useActionState, useEffect } from 'react';
 import _ from 'lodash';
@@ -17,8 +18,10 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import RequiresLogin from '@/components/RequiresLogin';
-import { SubmitRequest } from './actions';
+import { CancelRequest, HasPendingRequest, SubmitRequest } from './actions';
 import { useRouter } from 'next/navigation';
+import useSWR from 'swr';
+import { CircularProgress } from '@mui/material';
 
 export default function Post({
     params
@@ -26,6 +29,7 @@ export default function Post({
     params: Promise<{ id: string }>
 }) {
     const { id } = use(params);
+    const hasPendingRequest = useSWR(['__action_HasPendingRequest', id], ([_, id]) => HasPendingRequest(id));
     const [state, action, pending] = useActionState(SubmitRequest, '');
     const router = useRouter();
     const { data, isLoading } = usePost(id);
@@ -85,13 +89,37 @@ export default function Post({
                             rows={3}
                             name="request-details"
                             label="Additional details" />
-                        
-                        <Typography variant="subtitle1"> Existing pending requests for this post by you will be replaced. </Typography>
 
-                        <Fab color="primary" disabled={isLoading || pending} type="submit">
-                            <SendIcon />
-                        </Fab>
+                        <Box className="w-full flex justify-evenly">
+                            <Button
+                                color="primary"
+                                disabled={isLoading || pending}
+                                startIcon={<SendIcon />}
+                                type="submit">
+                                SUBMIT
+                            </Button>
 
+                            <Box className="relative">
+                                <Button
+                                    color="error"
+                                    disabled={hasPendingRequest.isLoading || hasPendingRequest.data === false}
+                                    startIcon={<CancelIcon />}
+                                    onClick={e => CancelRequest(id)}
+                                    type="button">
+                                    CANCEL MY REQUEST
+                                </Button>
+
+                                {hasPendingRequest.isLoading && (
+                                    <CircularProgress
+                                        size={24}
+                                        className="absolute top-1/2 left-1/2 -mt-3 -ml-3"
+                                    />
+                                )}
+                            </Box>
+                        </Box>
+
+                        <Typography variant="subtitle2"> Your existing requests for this post will be replaced. </Typography>
+                        <Typography variant="subtitle2"> All requests are publicly visible. Do not include personal information. </Typography>
                     </Box>
 
                 </Stack>

@@ -29,7 +29,7 @@ import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Link from 'next/link';
-import { usePost } from '@/app/context';
+import { usePost, useUser } from '@/app/context';
 import RatingIcon from '@/components/RatingIcon';
 import ImageIcon from '@mui/icons-material/Image';
 import RatingComponent from '@/components/Rating';
@@ -169,6 +169,7 @@ function Panel({
 }: {
     post: NonNullable<ReturnType<typeof usePost>['data']>
 }) {
+    const user = useUser();
     return (
         <Stack
             spacing={1}
@@ -229,6 +230,7 @@ function Panel({
                 <Button
                     size="large"
                     color="primary"
+                    disabled={post.deletedAt !== null || user.data === undefined}
                     LinkComponent={Link}
                     startIcon={<EditIcon />}
                     href={`/post/${post.id}/edit`}>
@@ -246,7 +248,7 @@ function Panel({
                     size="large"
                     color="error"
                     LinkComponent={Link}
-                    disabled={post.deletedAt !== null}
+                    disabled={post.deletedAt !== null || user.data === undefined}
                     startIcon={<DeleteIcon />}
                     href={`/post/${post.id}/deletion`}>
                     Request deletion
