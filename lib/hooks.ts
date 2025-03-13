@@ -58,3 +58,29 @@ export function useSearchParam<T>(
 
     return [state, setter];
 }
+
+export type SetCompositeStateAction<T> = (value: Partial<T>) => void;
+
+export function useCompositeState<T>(initial: T) {
+    const [state, setState] = useState(initial);
+    
+    const setMany = (value: Partial<T>) => {
+        setState(original => ({
+            ...original,
+            ...value
+        }));
+    }
+
+    const setSingle = <K extends keyof T>(key: K, value: T[K]) => {
+        setState(original => ({
+            ...original,
+            [key]: value
+        }));
+    }
+
+    const reset = () => {
+        setState(initial);
+    }
+
+    return { state, setSingle, setMany, reset };
+}

@@ -30,11 +30,18 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 
 import { useTags, useSearchResult, SearchQuery } from '@/app/context';
-import { useMetadata, Metadata } from './hooks';
+import { useCompositeState } from '@/lib/hooks';
 
 import RatingComponent from '@/components/Rating';
 import RatingIcon from '@/components/RatingIcon';
 import DragDrop from '@/components/DragDrop';
+import { Rating } from '@prisma/client';
+
+type Metadata = {
+    text: string,
+    rating: Rating,
+    tags: string[]
+}
 
 type Preview = {
     blob: Blob,
@@ -118,7 +125,11 @@ function SearchButton({
 export default function UploadPage() {
     const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState<Preview[]>([]);
-    const [metadata, setMetadata, reset] = useMetadata();
+    const { state: metadata, setSingle, reset } = useCompositeState<Metadata>({
+        text: '',
+        rating: Rating.none,
+        tags: []
+    });
     const [dialog, setDialog] = useState<DialogInfo>({
         open: false
     });
@@ -222,7 +233,7 @@ export default function UploadPage() {
                         autoComplete="off"
                         name="text"
                         onChange={(e) => {
-                            setMetadata('text', e.target.value);
+                            setSingle('text', e.target.value);
                         }}
                     />
                     <Autocomplete
@@ -233,7 +244,7 @@ export default function UploadPage() {
                         options={tags.data?.map(val => val.name) || []}
                         onChange={(__, newValue) => {
                             if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
-                                setMetadata('tags', newValue);
+                                setSingle('tags', newValue);
                             }
                         }}
                         renderOption={(props, option) => {
@@ -268,7 +279,7 @@ export default function UploadPage() {
                         <RatingComponent
                             value={metadata.rating}
                             onChange={(_, newValue) => {
-                                setMetadata('rating', newValue);
+                                setSingle('rating', newValue);
                             }} />
                         <Box sx={{ ml: 1 }}>
                             {_.upperFirst(metadata.rating)}

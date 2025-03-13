@@ -6,6 +6,12 @@ import { auth } from "@/lib/dal";
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
 
+function revalidate() {
+    revalidatePath('/admin/deletion_requests');
+    revalidatePath('/admin/post');
+    revalidatePath('/admin/');
+}
+
 export async function ApproveRequest(id: number) {
     const user = await auth();
 
@@ -50,8 +56,7 @@ export async function ApproveRequest(id: number) {
             }
         })
     ]);
-
-    revalidatePath('/admin/deletion_requests');
+    revalidate();
 }
 
 export async function DismissRequest(id: number) {
@@ -77,7 +82,7 @@ export async function DismissRequest(id: number) {
         }
     });
 
-    revalidatePath('/admin/deletion_requests');
+    revalidate();
 }
 
 export async function RevokeRequest(id: number) {
@@ -115,7 +120,7 @@ export async function RevokeRequest(id: number) {
         })
     ]);
 
-    revalidatePath('/admin/deletion_requests');
+    revalidate();
 }
 
 export async function SetRequestStatus(id: number, status: RequestStatus) {
@@ -134,4 +139,6 @@ export async function SetRequestStatus(id: number, status: RequestStatus) {
             processedAt: new Date()
         }
     });
+
+    revalidate();
 }
