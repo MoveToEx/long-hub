@@ -11,7 +11,7 @@ import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid2';
 import { useDeferredValue, use } from 'react';
 import { useTaggedPost } from '@/app/context';
-import { useSearchParam } from '@/lib/hooks';
+import { useSyncedSearchParams } from '@/lib/hooks';
 
 export default function TagPage({
     params
@@ -19,8 +19,14 @@ export default function TagPage({
     params: Promise<{ tag: string }>
 }) {
     const { tag } = use(params);
-    const [page, setPage] = useSearchParam('page', 1, val => Number(val));
-    const { data, isLoading } = useTaggedPost(tag, page);
+    const [searchParams, setParams] = useSyncedSearchParams({
+        page: {
+            defaultValue: 1,
+            parser: val => Number(val),
+            serializer: val => val.toString()
+        }
+    });
+    const { data, isLoading } = useTaggedPost(tag, searchParams.page);
     const deferredPage = useDeferredValue(C.pages(data?.count ?? 0));
 
     return (
@@ -55,9 +61,11 @@ export default function TagPage({
                 <Pagination
                     disabled={isLoading}
                     count={deferredPage}
-                    page={page}
+                    page={searchParams.page}
                     onChange={(_, val) => {
-                        setPage(val);
+                        setParams({
+                            page: val
+                        });
                     }}
                 />
             </Stack>

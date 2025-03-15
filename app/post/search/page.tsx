@@ -19,11 +19,11 @@ import Skeleton from '@mui/material/Skeleton';
 import { SearchInput, QueryReference } from './components';
 import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
-import { useState, useDeferredValue } from 'react';
+import { useState, useDeferredValue, Profiler } from 'react';
 import { useSnackbar } from 'notistack';
 
 import { useSearchResult, SearchQuery } from '@/app/context';
-import { useSearchParam } from '@/lib/hooks';
+import { useSyncedSearchParams } from '@/lib/hooks';
 
 function parseRating(s: string) {
     if (s == 'n') return 'none';
@@ -102,13 +102,27 @@ function parseQuery(keyword: string[], order: string, page: number) {
 }
 
 export default function SearchPage() {
-    const [order, setOrder] = useSearchParam('o', '+id');
-    const [keyword, setKeyword] = useSearchParam('s', [], val => val.split(' '));
-    const [page, setPage] = useSearchParam('p', 1, val => Number(val));
+    const [params, setParams] = useSyncedSearchParams({
+        order: {
+            defaultValue: '+id',
+            parser: value => value,
+            serializer: value => value
+        },
+        keyword: {
+            defaultValue: [] as string[],
+            parser: value => value === '' ? [] : value.split(' '),
+            serializer: value => value.join(' ')
+        },
+        page: {
+            defaultValue: 1,
+            parser: value => Number(value),
+            serializer: value => value.toString()
+        }
+    });
 
     const [layout, setLayout] = useState<'grid' | 'list'>('grid');
 
-    const result = useSearchResult(parseQuery(keyword, order, page));
+    const result = useSearchResult(parseQuery(params.keyword, params.order, params.page));
     const totalPages = useDeferredValue(C.pages(result.data?.count ?? 0));
 
     const { enqueueSnackbar } = useSnackbar();
@@ -119,9 +133,11 @@ export default function SearchPage() {
 
     return (
         <Box sx={{ mt: 2, mb: 2 }}>
-            <SearchInput value={keyword} onChange={(_, val) => {
-                setKeyword(val);
-                setPage(1);
+            <SearchInput value={params.keyword} onChange={(_, val) => {
+                setParams({
+                    keyword: val,
+                    page: 1
+                })
             }} />
 
             <Grid container spacing={1} sx={{ mb: 2 }}>
@@ -132,10 +148,12 @@ export default function SearchPage() {
                             MenuProps={{
                                 disableScrollLock: true
                             }}
-                            value={order}
+                            value={params.order}
                             label="Sort by"
                             onChange={(event) => {
-                                setOrder(event.target.value);
+                                setParams({
+                                    order: event.target.value
+                                });
                             }}>
                             <MenuItem value="+id">ID ascending</MenuItem>
                             <MenuItem value="-id">ID descending</MenuItem>
@@ -170,7 +188,7 @@ export default function SearchPage() {
             </Grid>
 
             {
-                !_.isEmpty(keyword) &&
+                !_.isEmpty(params.keyword) &&
                 <>
                     <div className="flex justify-center items-center">
                         {
@@ -196,9 +214,11 @@ export default function SearchPage() {
                         <Pagination
                             disabled={result.isLoading}
                             count={totalPages}
-                            page={page}
+                            page={params.page}
                             onChange={(_, val) => {
-                                setPage(val);
+                                setParams({
+                                    page: val
+                                });
                                 window.scrollTo({
                                     top: 0
                                 });
@@ -210,7 +230,7 @@ export default function SearchPage() {
             }
 
             {
-                _.isEmpty(keyword) && <QueryReference />
+                _.isEmpty(params.keyword) && <QueryReference />
             }
         </Box>
     );

@@ -1,69 +1,89 @@
-import { useCallback, useEffect, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import _ from 'lodash';
 
-export type SetSearchParamAction<T> = (value: T) => void;
-export type SearchParamParser<T> = T extends string ? undefined : (value: string) => T;
+export type SyncedSearchParamItem<V> = {
+    defaultValue: V,
+    parser: (value: string) => V,
+    serializer: (value: V) => string,
+}
 
-export function useSearchParam<T>(
-    key: string,
-    defaultValue: T,
-    parser?: SearchParamParser<T>
-): [T, SetSearchParamAction<T>] {
+export type SyncedSearchParamItems<T> = {
+    [K in keyof T]: SyncedSearchParamItem<T[K]>;
+}
+
+export type SyncedSearchParamSetter<T> = (values: Partial<T>) => void;
+
+export function useSyncedSearchParams<T>(items: SyncedSearchParamItems<T>): [T, SyncedSearchParamSetter<T>] {
     const params = useSearchParams();
-    const pathname = usePathname();
+    const ignore = useRef(false);  // whether current change is caused by setter and thus should be ignored
 
-    const _parser = useCallback((value: string) => {
-        if (!parser) {  // parser === undefined => T = string
-            return value as T;
-        } else {
-            return parser(value);
+    const [state, setState] = useState<T>(() => {
+        let result = {} as T;
+        for (const key in items) {
+            if (params.has(key)) {
+                result[key] = items[key].parser(params.get(key)!);
+            }
+            else {
+                result[key] = items[key].defaultValue;
+            }
         }
-    }, [parser]);
-
-    const [state, setState] = useState(() => {
-        const value = params.get(key);
-        if (value === null) {
-            return defaultValue;
-        }
-        return _parser(value);
+        return result;
     });
 
     useEffect(() => {
-        let value;
-        const raw = params.get(key);
-        
-        if (raw !== null) {
-            value = _parser(raw);
-        } else {
-            value = defaultValue;
+        if (ignore.current) return;
+
+        const newState = _.cloneDeep(state);
+
+        for (const key in items) {
+            const paramValue = params.has(key) ? items[key].parser(params.get(key)!) : items[key].defaultValue;
+            if (!_.isEqual(paramValue, newState[key])) {
+                newState[key] = paramValue;
+            }
         }
 
-        if (!_.isEqual(state, value)) {
-            setState(value);
+        if (!_.isEqual(newState, state)) {
+            setState(newState);
         }
-    }, [params, key, defaultValue, state, _parser]);
+    }, [state, params, items]);
 
-    const setter = (value: T) => {
+    const setter = (values: Partial<T>) => {
+        const newState = _.cloneDeep(state);
         const searchParams = new URLSearchParams(params);
-        if (!_.isEqual(value, defaultValue)) {
-            searchParams.set(key, String(value));
-        } else {
-            searchParams.delete(key);
-        }
-        window.history.pushState(null, '', pathname + '?' + searchParams.toString());
 
-        setState(value);
+        for (const key in values) {
+            if (values[key] === undefined) continue;
+            
+            newState[key] = values[key];
+            
+            if (!_.isEqual(values[key], items[key].defaultValue)) {
+                searchParams.set(key, items[key].serializer(values[key]));
+            }
+            else {
+                searchParams.delete(key);
+            }
+        }
+        
+        ignore.current = true;
+        setState(newState);
+
+        window.history.pushState(null, '', '?' + searchParams.toString());
+
+        Promise.resolve().then(() => {
+            ignore.current = false;
+        });
     }
 
     return [state, setter];
 }
 
+
 export type SetCompositeStateAction<T> = (value: Partial<T>) => void;
 
 export function useCompositeState<T>(initial: T) {
     const [state, setState] = useState(initial);
-    
+
     const setMany = (value: Partial<T>) => {
         setState(original => ({
             ...original,

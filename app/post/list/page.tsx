@@ -15,21 +15,27 @@ import WindowIcon from '@mui/icons-material/Window';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import { preload } from 'swr';
 import Posts from '@/components/Posts';
-import { useSearchParam } from '@/lib/hooks';
+import { useSyncedSearchParams } from '@/lib/hooks';
 
 export default function Page() {
 	const [layout, setLayout] = useState<'grid' | 'list'>('grid');
-	const [page, setPage] = useSearchParam('page', 1, value => Number(value));
-	const { data, error, isLoading } = usePosts(24, (page - 1) * 24);
+	const [params, setParams] = useSyncedSearchParams({
+		page: {
+			defaultValue: 1,
+			parser: val => Number(val),
+			serializer: val => val.toString()
+		}
+	});
+	const { data, error, isLoading } = usePosts(24, (params.page - 1) * 24);
 	const { enqueueSnackbar } = useSnackbar();
 	const totalPages = useDeferredValue(C.pages(data?.count ?? 0));
 
 	useEffect(() => {
-		if (page > 1) {
-			preload('/api/post?limit=24&offset=' + 24 * (page - 2), PostsFetcher);
+		if (params.page > 1) {
+			preload('/api/post?limit=24&offset=' + 24 * (params.page - 2), PostsFetcher);
 		}
-		preload('/api/post?limit=24&offset=' + 24 * page, PostsFetcher);
-	}, [page])
+		preload('/api/post?limit=24&offset=' + 24 * params.page, PostsFetcher);
+	}, [params.page])
 
 	if (error) {
 		enqueueSnackbar(error, { variant: 'error' });
@@ -65,9 +71,11 @@ export default function Page() {
 				<Pagination
 					disabled={isLoading}
 					count={totalPages}
-					page={page}
+					page={params.page}
 					onChange={(_, val) => {
-						setPage(val);
+						setParams({
+							page: val
+						});
 					}}
 				/>
 			</Stack>
