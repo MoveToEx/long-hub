@@ -1,7 +1,7 @@
 'use client';
 
 import './globals.css'
-import { styled, alpha } from '@mui/material/styles';
+import { styled, alpha, useTheme } from '@mui/material/styles';
 import { useState, useMemo, Suspense, ReactNode, ElementType, ComponentProps, FunctionComponent } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -50,7 +50,7 @@ import logout from './account/logout/action';
 
 const drawerWidth = 256;
 
-const Drawer = styled(MuiDrawer, {
+const StyledDrawer = styled(MuiDrawer, {
     shouldForwardProp: (prop) => prop !== 'open'
 })(({ theme, open }) => ({
     whiteSpace: 'nowrap',
@@ -144,172 +144,199 @@ function SearchBox() {
     )
 }
 
-function RootTemplate({
-    children,
-}: {
-    children: ReactNode
-}) {
-    const [open, setOpen] = useState(false);
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const { data: user, isLoading, mutate } = useUser();
-    const pathname = usePathname();
+type DrawerItemParam = {
+    type: 'item',
+    icon: FunctionComponent,
+    title: string,
+    href: string
+}
 
-    function DrawerItem<T extends ElementType>({
-        title, href, IconComponent, LinkComponent, LinkProps
-    }: {
-        title: ReactNode,
-        href: string,
-        IconComponent: FunctionComponent<SvgIconProps>,
-        LinkComponent?: T,
-        LinkProps?: ComponentProps<T>
-    }) {
+type DrawerDividerParam = {
+    type: 'divider',
+    title: string
+}
+
+const drawerItems: (DrawerItemParam | DrawerDividerParam)[] = [
+    {
+        type: 'item',
+        title: 'Home',
+        href: '/',
+        icon: Home
+    },
+    {
+        type: 'item',
+        title: 'Tag',
+        href: '/tag',
+        icon: TagIcon
+    },
+    {
+        type: 'item',
+        title: 'Docs',
+        href: 'https://doc.longhub.top',
+        icon: TextSnippetIcon
+    },
+    {
+        type: 'divider',
+        title: 'Post'
+    },
+    {
+        type: 'item',
+        title: 'List',
+        href: '/post/list',
+        icon: FormatListBulletedIcon
+    },
+    {
+        type: 'item',
+        title: 'Upload',
+        href: '/post/upload',
+        icon: FileUploadIcon
+    },
+    {
+        type: 'item',
+        title: 'Search',
+        href: '/post/search',
+        icon: Search
+    },
+    {
+        type: 'item',
+        title: 'Find similar',
+        href: '/post/similar',
+        icon: ImageIcon
+    },
+    {
+        type: 'divider',
+        title: 'Template'
+    },
+    {
+        type: 'item',
+        title: 'List',
+        href: '/template',
+        icon: FormatListBulletedIcon
+    },
+    {
+        type: 'item',
+        title: 'Upload',
+        href: '/template/upload',
+        icon: FileUploadIcon
+    }
+]
+
+const adminDrawerItems: (DrawerItemParam | DrawerDividerParam)[] = [
+    {
+        type: 'divider',
+        title: 'Admin'
+    },
+    {
+        type: 'item',
+        title: 'Admin',
+        href: '/admin',
+        icon: SecurityIcon
+    },
+]
+
+function DrawerItem<T extends ElementType>({
+    title, href, IconComponent, LinkComponent, LinkProps
+}: {
+    title: ReactNode,
+    href: string,
+    IconComponent: FunctionComponent<SvgIconProps>,
+    LinkComponent?: T,
+    LinkProps?: ComponentProps<T>
+}) {
+    const pathname = usePathname();
+    return (
+        <ListItemButton
+            {...LinkProps}
+            href={href}
+            LinkComponent={LinkComponent ?? Link}
+            selected={pathname == href}
+        >
+            <ListItemIcon><IconComponent color={pathname == href ? 'primary' : undefined} /></ListItemIcon>
+            <ListItemText primary={title} />
+        </ListItemButton>
+    )
+}
+
+function Drawer({
+    open,
+    onClose,
+}: {
+    open: boolean,
+    onClose: () => void,
+}) {
+    const user = useUser();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+    const content = useMemo(() => {
+        let items = [
+            ...drawerItems
+        ];
+
+        if (((user.data?.permission ?? 0) & C.Permission.Admin.base) != 0) {
+            items = items.concat(adminDrawerItems);
+        }
         return (
-            <ListItemButton
-                {...LinkProps}
-                href={href}
-                LinkComponent={LinkComponent ?? Link}
-                selected={pathname == href}
-            // onClick={() => setMobileOpen(false)}
-            >
-                <ListItemIcon><IconComponent color={pathname == href ? 'primary' : undefined} /></ListItemIcon>
-                <ListItemText primary={title} />
-            </ListItemButton>
+            <List>
+                {items.map((e, i) => {
+                    if (e.type == 'divider') {
+                        return (
+                            <div key={i}>
+                                <Divider component="li" />
+                                <AlterableTypography
+                                    visible={open}
+                                    component="li"
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ ml: 2 }}>
+                                    {e.title}
+                                </AlterableTypography>
+                            </div>
+                        )
+                    }
+                    if (URL.canParse(e.href)) {
+                        return (
+                            <DrawerItem
+                                key={i}
+                                LinkComponent="a"
+                                LinkProps={{
+                                    target: '_blank'
+                                }}
+                                title={<>{e.title} <OpenInNewIcon sx={{ fontSize: '14px' }} /></>}
+                                href={e.href}
+                                IconComponent={e.icon} />
+                        )
+                    }
+                    return (
+                        <DrawerItem key={i} title={e.title} href={e.href} IconComponent={e.icon} />
+                    )
+                })}
+            </List>
+        )
+    }, [user, open]);
+
+    if (isMobile) {
+        return (
+            <MuiDrawer
+                variant="temporary"
+                disableScrollLock
+                open={open}
+                onClose={onClose}
+                sx={theme => ({
+                    [theme.breakpoints.up('md')]: {
+                        display: 'none'
+                    }
+                })}>
+                <Toolbar />
+                <Box sx={{ width: drawerWidth }}>
+                    {content}
+                </Box>
+            </MuiDrawer>
         )
     }
-
-    const drawerContent = (
-        <List>
-            <DrawerItem title="Home" href="/" IconComponent={Home} />
-            <DrawerItem title="Tag" href="/tag" IconComponent={TagIcon} />
-            <DrawerItem
-                LinkComponent="a"
-                LinkProps={{
-                    target: '_blank'
-                }}
-                title={<>Docs <OpenInNewIcon sx={{ fontSize: '14px' }} /></>}
-                href="https://doc.longhub.top"
-                IconComponent={TextSnippetIcon} />
-            <Divider component="li" />
-            <AlterableTypography visible={open} component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                Post
-            </AlterableTypography>
-            <DrawerItem title="List" href="/post/list" IconComponent={FormatListBulletedIcon} />
-            <DrawerItem title="Upload" href="/post/upload" IconComponent={FileUploadIcon} />
-            <DrawerItem title="Search" href="/post/search" IconComponent={Search} />
-            <DrawerItem title="Find similar" href="/post/similar" IconComponent={ImageIcon} />
-            <Divider component="li" />
-            <AlterableTypography visible={open} component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                Template
-            </AlterableTypography>
-            <DrawerItem title="List" href="/template" IconComponent={FormatListBulletedIcon} />
-            <DrawerItem title="Upload" href="/template/upload" IconComponent={FileUploadIcon} />
-            {(!isLoading && ((user?.permission ?? 0) & C.Permission.Admin.base) != 0) &&
-                <>
-                    <Divider component="li" />
-                    <AlterableTypography visible={open} component="li" variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                        Admin
-                    </AlterableTypography>
-                    <DrawerItem title="Admin" href="/admin" IconComponent={SecurityIcon} />
-                </>
-            }
-        </List>
-    )
-
-    return (
-        <>
-            <CssBaseline />
-            <Box sx={{ display: 'flex' }}>
-                <AppBar sx={theme => ({ zIndex: theme.zIndex.drawer + 1 })}>
-                    <Toolbar>
-                        <IconButton
-                            size="large"
-                            edge="start"
-                            color="inherit"
-                            onClick={() => {
-                                setOpen(!open);
-                            }}
-                            sx={{ mr: 2 }}>
-                            {open ? <MenuOpenIcon /> : <MenuIcon />}
-                        </IconButton>
-                        <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
-                            <Link href="/">
-                                L
-                                <Image height={18} width={18} className="inline align-baseline h-[18px]" src="/o.png" alt="o" />
-                                NG Hub
-                            </Link>
-                        </Typography>
-
-                        <SearchBox />
-
-                        <IconButton color="inherit" edge="end" onClick={e => {
-                            setAnchorEl(e.currentTarget);
-                        }}>
-                            <AccountCircle />
-                        </IconButton>
-
-                        <Menu
-                            disableScrollLock
-                            anchorEl={anchorEl}
-                            keepMounted
-                            open={!!anchorEl}
-                            anchorOrigin={{
-                                horizontal: 'right',
-                                vertical: 'bottom'
-                            }}
-                            transformOrigin={{
-                                horizontal: 'right',
-                                vertical: 'top'
-                            }}
-                            onClose={() => setAnchorEl(null)}
-                        >
-                            {isLoading &&
-                                <MenuItem>
-                                    <CircularProgress />
-                                </MenuItem>
-                            }
-                            {user &&
-                                <div>
-                                    <MenuItem component={Link} href="/account" onClick={() => setAnchorEl(null)}>
-                                        <ListItemIcon>
-                                            <AccountCircle fontSize="small" />
-                                        </ListItemIcon>
-                                        <b>{user.name}</b>
-                                    </MenuItem>
-                                    <MenuItem onClick={async () => {
-                                        await logout();
-                                        await mutate();
-                                        setAnchorEl(null);
-                                    }}>
-                                        <ListItemIcon>
-                                            <Logout fontSize="small" />
-                                        </ListItemIcon>
-                                        Logout
-                                    </MenuItem>
-                                </div>
-                            }
-                            {user === undefined &&
-                                <div>
-                                    <MenuItem component={Link} href="/account/login" onClick={() => setAnchorEl(null)}>
-                                        <ListItemIcon>
-                                            <LoginIcon fontSize="small" />
-                                        </ListItemIcon>
-                                        Log in
-                                    </MenuItem>
-                                    <MenuItem component={Link} href="/account/signup" onClick={() => setAnchorEl(null)}>
-                                        <ListItemIcon>
-                                            <Logout fontSize="small" />
-                                        </ListItemIcon>
-                                        Sign up
-                                    </MenuItem>
-                                </div>
-                            }
-                        </Menu>
-                    </Toolbar>
-                </AppBar>
-            </Box>
-
-
-            <Drawer
+    else {
+        return (
+            <StyledDrawer
                 variant="permanent"
                 open={open}
                 sx={theme => ({
@@ -318,32 +345,131 @@ function RootTemplate({
                     }
                 })}>
                 <Toolbar />
-                {drawerContent}
-            </Drawer>
+                {content}
+            </StyledDrawer>
+        )
+    }
+}
 
-            <MuiDrawer
-                variant="temporary"
+function UserMenu() {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const { data, isLoading, mutate } = useUser();
+
+    return (
+        <>
+            <IconButton color="inherit" edge="end" onClick={e => {
+                setAnchorEl(e.currentTarget);
+            }}>
+                <AccountCircle />
+            </IconButton>
+
+            <Menu
                 disableScrollLock
-                open={open}
-                onClose={() => {
-                    setOpen(false);
+                anchorEl={anchorEl}
+                keepMounted
+                open={!!anchorEl}
+                anchorOrigin={{
+                    horizontal: 'right',
+                    vertical: 'bottom'
                 }}
-                sx={theme => ({
-                    [theme.breakpoints.up('md')]: {
-                        display: 'none'
-                    }
-                })}>
-                <Toolbar />
-                <Box sx={{ width: drawerWidth }}>
-                    {drawerContent}
-                </Box>
-            </MuiDrawer>
+                transformOrigin={{
+                    horizontal: 'right',
+                    vertical: 'top'
+                }}
+                onClose={() => setAnchorEl(null)}
+            >
+                {isLoading &&
+                    <MenuItem>
+                        <CircularProgress />
+                    </MenuItem>
+                }
+                {data &&
+                    <div>
+                        <MenuItem component={Link} href="/account" onClick={() => setAnchorEl(null)}>
+                            <ListItemIcon>
+                                <AccountCircle fontSize="small" />
+                            </ListItemIcon>
+                            <b>{data.name}</b>
+                        </MenuItem>
+                        <MenuItem onClick={async () => {
+                            await logout();
+                            await mutate();
+                            setAnchorEl(null);
+                        }}>
+                            <ListItemIcon>
+                                <Logout fontSize="small" />
+                            </ListItemIcon>
+                            Logout
+                        </MenuItem>
+                    </div>
+                }
+                {data === undefined &&
+                    <div>
+                        <MenuItem component={Link} href="/account/login" onClick={() => setAnchorEl(null)}>
+                            <ListItemIcon>
+                                <LoginIcon fontSize="small" />
+                            </ListItemIcon>
+                            Log in
+                        </MenuItem>
+                        <MenuItem component={Link} href="/account/signup" onClick={() => setAnchorEl(null)}>
+                            <ListItemIcon>
+                                <Logout fontSize="small" />
+                            </ListItemIcon>
+                            Sign up
+                        </MenuItem>
+                    </div>
+                }
+            </Menu>
+        </>
+    )
+}
+
+function RootTemplate({
+    children,
+}: {
+    children: ReactNode
+}) {
+    const [drawerOpen, setDrawerOpen] = useState(false);
+
+    return (
+        <>
+            <CssBaseline />
+            <Box className="flex">
+                <AppBar sx={theme => ({ zIndex: theme.zIndex.drawer + 1 })}>
+                    <Toolbar>
+                        <IconButton
+                            size="large"
+                            edge="start"
+                            color="inherit"
+                            onClick={() => {
+                                setDrawerOpen(!drawerOpen);
+                            }}
+                            sx={{ mr: 2 }}>
+                            {drawerOpen ? <MenuOpenIcon /> : <MenuIcon />}
+                        </IconButton>
+                        <Typography variant="h5" component="div" className="grow">
+                            <Link href="/">
+                                L
+                                <Image height={18} width={18} className="inline align-baseline h-[18px]" src="/o.png" alt="o" />
+                                NG Hub
+                            </Link>
+                        </Typography>
+                        <SearchBox />
+                        <UserMenu />
+                    </Toolbar>
+                </AppBar>
+            </Box>
+
+
+            <Drawer
+                open={drawerOpen}
+                onClose={() => setDrawerOpen(false)} />
 
             <Box
                 component="main"
                 sx={theme => ({
                     [theme.breakpoints.up('md')]: {
-                        ml: open ? `${drawerWidth}px` : theme.spacing(7),
+                        ml: drawerOpen ? `${drawerWidth}px` : theme.spacing(7),
                     },
                     transition: theme.transitions.create(['margin'])
                 })}>
