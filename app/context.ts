@@ -23,9 +23,12 @@ type User = NonNullable<Serialized<Prisma.Result<typeof prisma.user, {}, 'findFi
 
 type Tag = NonNullable<Prisma.Result<typeof prisma.tag, {}, 'findFirst'>>;
 
-type Tags = (Tag & {
-    count: number
-})[];
+type Tags = {
+    count: number,
+    data: (Tag & {
+        count: number
+    })[]
+};
 
 type Post = NonNullable<Serialized<Prisma.Result<typeof prisma.post, {
     include: {
@@ -88,7 +91,11 @@ export const UserFetcher = fetcher;
 export const useUser = () => useSWR<User | undefined>('/api/account', UserFetcher);
 
 export const TagsFetcher = fetcher;
-export const useTags = () => useSWR<Tags>('/api/post/tag', TagsFetcher);
+export const useTags = (prefix?: string | null) => {
+    return useSWR<Tags>(prefix !== null ? '/api/post/tag?prefix=' + prefix : null, TagsFetcher, {
+        keepPreviousData: true
+    });
+}
 
 export const PostsFetcher = throwableFetcher;
 export function usePosts(limit: number = 24, offset: number = 0) {

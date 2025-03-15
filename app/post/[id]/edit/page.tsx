@@ -2,25 +2,23 @@
 
 import Grid from '@mui/material/Grid2';
 import Image from 'next/image';
-import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
 import Fab from '@mui/material/Fab';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import SendIcon from '@mui/icons-material/Send';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { use, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
 import { useUser } from '@/app/context';
-import { usePost, useTags } from '@/app/context';
+import { usePost } from '@/app/context';
 import { Rating } from '@prisma/client';
 import RatingComponent from '@/components/Rating';
 import RatingIcon from '@/components/RatingIcon';
+import { TagsInput } from '@/components/TagsInput';
 
 export default function Post({
     params
@@ -35,7 +33,6 @@ export default function Post({
         rating: Rating.none as Rating,
         tags: [] as string[],
     });
-    const tags = useTags();
     const post = usePost(id);
 
     const { enqueueSnackbar } = useSnackbar();
@@ -109,51 +106,12 @@ export default function Post({
                             });
                         }}
                     />
-                    <Autocomplete
-                        multiple
-                        freeSolo
+                    <TagsInput
                         value={meta.tags}
-                        fullWidth
-                        options={tags.data?.map(val => val.name) ?? []}
-                        onChange={(__, newValue) => {
-                            if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
-                                setMeta({
-                                    ...meta,
-                                    tags: newValue
-                                });
-                            }
-                            else {
-                                enqueueSnackbar('Illegal tag name', { variant: 'error' });
-                            }
-                        }}
-                        renderOption={(props, option) => {
-                            return (
-                                <li {...props} key={option}>
-                                    {option}
-                                </li>
-                            );
-                        }}
-                        renderTags={(value: readonly string[], getTagProps) =>
-                            value.map((option: string, index: number) => (
-                                <Chip {...getTagProps({ index })} variant="outlined" label={option} key={index} />
-                            ))
-                        }
-                        renderInput={
-                            (params) => (
-                                <TextField
-                                    {...params}
-                                    label="Tags"
-                                    type="text"
-                                    error={!/^[a-z0-9_]*$/.test(params.inputProps.value as string ?? '')}
-                                    helperText={"Only lower case, digits and underline are allowed in tags"}
-                                    InputProps={{
-                                        ...params.InputProps,
-                                        endAdornment: tags.isLoading ? <CircularProgress size={20} /> : <></>
-                                    }}
-                                    variant="outlined" />
-                            )
-                        }
-                    />
+                        onChange={v => setMeta({
+                            ...meta,
+                            tags: v
+                        })} />
                     <Box alignItems="center" sx={{ width: '100%', display: 'flex' }}>
                         <Tooltip title="Rating">
                             <RatingIcon />

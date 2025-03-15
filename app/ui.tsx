@@ -165,12 +165,6 @@ const drawerItems: (DrawerItemParam | DrawerDividerParam)[] = [
     },
     {
         type: 'item',
-        title: 'Tag',
-        href: '/tag',
-        icon: TagIcon
-    },
-    {
-        type: 'item',
         title: 'Docs',
         href: 'https://doc.longhub.top',
         icon: TextSnippetIcon

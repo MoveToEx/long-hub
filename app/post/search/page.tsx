@@ -24,16 +24,13 @@ import { useSnackbar } from 'notistack';
 
 import { useSearchResult, SearchQuery } from '@/app/context';
 import { useSyncedSearchParams } from '@/lib/hooks';
+import { startsWith } from '@/lib/util';
 
 function parseRating(s: string) {
     if (s == 'n') return 'none';
     else if (s == 'm') return 'moderate';
     else if (s == 'v') return 'violent';
     return s;
-}
-
-function startsWith(s: string, ch: string[]) {
-    return ch.map(val => s.startsWith(val)).reduce((x, y) => x || y);
 }
 
 function parseFilter(params: string[]) {

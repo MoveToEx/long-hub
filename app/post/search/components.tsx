@@ -18,6 +18,8 @@ import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import { useTags } from '@/app/context';
 import { Rating } from '@prisma/client';
+import { useDeferredValue, useState } from 'react';
+import { startsWith } from '@/lib/util';
 
 const ratingValues = [
     ...Object.values(Rating).map(val => val[0]),
@@ -34,7 +36,8 @@ export function SearchInput({
     value: string[],
     onChange: (_: any, val: string[]) => void
 }) {
-    const { data, isLoading } = useTags();
+    const [prefix, setPrefix] = useState('');
+    const { data, isLoading } = useTags(startsWith(prefix, ['+', '-']) ? _.trimStart(prefix, '+-') : null);
 
     return (
         <Autocomplete
@@ -43,7 +46,8 @@ export function SearchInput({
             value={value}
             fullWidth
             sx={{ mt: 2 }}
-            options={data?.map(val => val.name) ?? []}
+            options={data?.data.map(val => val.name) ?? []}
+            getOptionDisabled={() => isLoading}
             renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                     <Chip
@@ -103,6 +107,10 @@ export function SearchInput({
                         sx={{ m: '16px 0 16px 0' }}
                         label="Search"
                         variant="outlined"
+                        value={prefix}
+                        onChange={(e) => {
+                            setPrefix(e.target.value);
+                        }}
                         slotProps={{
                             input: {
                                 ...params.InputProps,
@@ -111,6 +119,7 @@ export function SearchInput({
                         }} />
                 )
             }
+            
         />
     )
 }

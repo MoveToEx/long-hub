@@ -5,19 +5,15 @@ import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
 import Fab from '@mui/material/Fab';
-import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Tooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
 import PostGrid from '@/components/PostGridItem';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Button from '@mui/material/Button';
 
 import { ReactNode, useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
@@ -29,13 +25,14 @@ import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 
-import { useTags, useSearchResult, SearchQuery } from '@/app/context';
+import { useSearchResult, SearchQuery } from '@/app/context';
 import { useCompositeState } from '@/lib/hooks';
 
 import RatingComponent from '@/components/Rating';
 import RatingIcon from '@/components/RatingIcon';
 import DragDrop from '@/components/DragDrop';
 import { Rating } from '@prisma/client';
+import { TagsInput } from '@/components/TagsInput';
 
 type Metadata = {
     text: string,
@@ -133,7 +130,6 @@ export default function UploadPage() {
     const [dialog, setDialog] = useState<DialogInfo>({
         open: false
     });
-    const tags = useTags();
     const [ignoreSimilar, setIgnoreSimilar] = useState(false);
 
     const { enqueueSnackbar } = useSnackbar();
@@ -236,42 +232,9 @@ export default function UploadPage() {
                             setSingle('text', e.target.value);
                         }}
                     />
-                    <Autocomplete
-                        multiple
-                        freeSolo
+                    <TagsInput
                         value={metadata.tags}
-                        fullWidth
-                        options={tags.data?.map(val => val.name) || []}
-                        onChange={(__, newValue) => {
-                            if (newValue.length == 0 || /^[a-z0-9_]+$/.test(_.last(newValue) ?? '')) {
-                                setSingle('tags', newValue);
-                            }
-                        }}
-                        renderOption={(props, option) => {
-                            return <li {...props} key={option}>{option}</li>;
-                        }}
-                        renderTags={(value, getTagProps) =>
-                            value.map((option: string, index: number) => (
-                                <Chip {...getTagProps({ index })} variant="outlined" label={option} key={index} />
-                            ))
-                        }
-                        renderInput={
-                            (params) => (
-                                <TextField
-                                    {...params}
-                                    label="Tags"
-                                    error={!/^[a-z0-9_]*$/.test(params.inputProps.value as string ?? '')}
-                                    helperText={"Only lower case, digits and underline are allowed in tags"}
-                                    variant="outlined"
-                                    slotProps={{
-                                        input: {
-                                            ...params.InputProps,
-                                            endAdornment: tags.isLoading ? <CircularProgress size={20} /> : <></>
-                                        }
-                                    }} />
-                            )
-                        }
-                    />
+                        onChange={v => setSingle('tags', v)} />
                     <Box className="flex w-full items-center">
                         <Tooltip title="Rating">
                             <RatingIcon />

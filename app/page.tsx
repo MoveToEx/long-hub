@@ -61,7 +61,7 @@ export default function Home() {
 								}
 								{tag.data &&
 									<Typography variant="h4" component="span">
-										{tag.data.length}
+										{tag.data.count}
 									</Typography>
 								}
 								<Typography variant="button">

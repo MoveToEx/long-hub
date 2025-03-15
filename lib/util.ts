@@ -1,3 +1,7 @@
+export function startsWith(s: string, ch: string[]) {
+    return ch.map(val => s.startsWith(val)).reduce((x, y) => x || y);
+}
+
 export function createQueryString(url: string, params: Record<string, any>) {
     const qs = new URLSearchParams();
     for (const key in params) {
