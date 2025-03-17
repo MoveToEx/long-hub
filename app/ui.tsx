@@ -9,7 +9,6 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography, { TypographyProps } from '@mui/material/Typography';
 import MuiDrawer from '@mui/material/Drawer';
-import InputBase from '@mui/material/InputBase';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -42,7 +41,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import { SnackbarProvider } from 'notistack';
 
 import * as C from '@/lib/constants';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useUser } from './context';
@@ -73,76 +72,6 @@ const AlterableTypography = styled(Typography, {
     marginTop: visible ? theme.spacing(0.5) : 0,
     transition: theme.transitions.create(['height', 'margin-top']),
 }));
-
-const SearchContainer = styled('div')(({ theme }) => ({
-    position: 'relative',
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    '&:hover': {
-        backgroundColor: alpha(theme.palette.common.white, 0.25)
-    },
-    marginRight: theme.spacing(2),
-    [theme.breakpoints.down('sm')]: {
-        display: 'none'
-    },
-    transition: theme.transitions.create('background-color', {
-        duration: theme.transitions.duration.shortest
-    })
-}));
-
-const SearchIconContainer = styled('div')(({ theme }) => ({
-    padding: theme.spacing(0, 2),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-}));
-
-const SearchInput = styled(InputBase)(({ theme }) => ({
-    color: 'inherit',
-    width: '100%',
-    '& .MuiInputBase-input': {
-        transition: theme.transitions.create('width'),
-        padding: theme.spacing(1, 1, 1, 0),
-        paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-        [theme.breakpoints.up('sm')]: {
-            width: '16ch',
-            '&:focus': {
-                width: '24ch'
-            }
-        }
-    }
-}));
-
-function SearchBox() {
-    const router = useRouter();
-    const [value, setValue] = useState('');
-
-    return (
-        <SearchContainer>
-            <SearchIconContainer>
-                <Search />
-            </SearchIconContainer>
-            <SearchInput
-                placeholder="Quick search"
-                value={value}
-                onChange={(e) => {
-                    setValue(e.target.value);
-                }}
-                onKeyDown={(e) => {
-                    if (e.key == 'Enter') {
-                        const url = new URL('/post/search', window.location.href);
-                        url.searchParams.set('s', value);
-                        setValue('');
-                        router.push(url.toString());
-                    }
-                }}
-            />
-        </SearchContainer>
-    )
-}
 
 type DrawerItemParam = {
     type: 'item',
@@ -448,7 +377,6 @@ function RootTemplate({
                                 NG Hub
                             </Link>
                         </Typography>
-                        <SearchBox />
                         <UserMenu />
                     </Toolbar>
                 </AppBar>
