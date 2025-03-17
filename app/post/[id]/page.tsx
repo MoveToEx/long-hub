@@ -4,7 +4,6 @@ import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import Fab from '@mui/material/Fab';
 import EditIcon from '@mui/icons-material/Edit';
 import Paper from '@mui/material/Paper';
 import Divider from '@mui/material/Divider';
@@ -210,7 +209,7 @@ function Panel({
                     {post.uploader?.name ?? <i>(Disowned)</i>}
                 </Typography>
             </div>
-            <div className="flex items-center" style={{ height: '32px' }}>
+            <div className="flex items-center" style={{ minHeight: '32px' }}>
                 <Tooltip title="Tags">
                     <TagIcon sx={{ ml: 1, mr: 1 }} />
                 </Tooltip>
@@ -226,7 +225,7 @@ function Panel({
                 </Box>
             </div>
             <Divider />
-            <div className='flex items-center justify-evenly'>
+            <div className='flex flex-wrap items-center justify-evenly'>
                 <Button
                     size="large"
                     color="primary"

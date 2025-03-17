@@ -90,7 +90,7 @@ export default function Post({
                             name="request-details"
                             label="Additional details" />
 
-                        <Box className="w-full flex justify-evenly">
+                        <Box className="w-full flex flex-wrap justify-evenly">
                             <Button
                                 color="primary"
                                 disabled={isLoading || pending}
