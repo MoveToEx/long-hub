@@ -179,7 +179,11 @@ export function ContributionChart() {
         return <span>Failed to fetch</span>
     }
 
-    if (data.data === null) {
+    if (user.isLoading || activities === null) {
+        return <Skeleton sx={{ width: '100%', height: '100%' }} />
+    }
+
+    if (user.data === null) {
         return (
             <Box className="w-full flex flex-row justify-center items-baseline">
                 <Button component={Link} href="/account/login" variant="outlined" sx={{ m: 2 }}>
@@ -190,10 +194,6 @@ export function ContributionChart() {
                 </span>
             </Box>
         )
-    }
-
-    if (activities === null) {
-        return <Skeleton sx={{ width: '100%', height: '100%' }} />
     }
 
     const from = new Date();
