@@ -4,6 +4,7 @@ import { auth } from '@/lib/dal';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
 import { RequestStatus } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
 
 export async function SubmitRequest(state: string, fd: FormData) {
     const postId = fd.get('request-post-id')?.toString();
@@ -57,6 +58,10 @@ export async function SubmitRequest(state: string, fd: FormData) {
         }
     });
 
+    revalidatePath('/admin');
+    revalidatePath('/admin/posts');
+    revalidatePath('/admin/deletion_requests');
+
     return redirect(`/post/${postId}`);
 }
 
@@ -102,6 +107,10 @@ export async function CancelRequest(postId: string) {
             status: RequestStatus.cancelled
         }
     });
+    
+    revalidatePath('/admin');
+    revalidatePath('/admin/posts');
+    revalidatePath('/admin/deletion_requests');
 
     return redirect('/post/' + postId);
 }
