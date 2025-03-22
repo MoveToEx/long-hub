@@ -125,6 +125,7 @@ export function RandomPostGrid() {
                     <Grid size={6} key={post.id}>
                         <Link
                             href={`/post/${post.id}`}
+                            prefetch={true}
                             className="block relative">
                             <Image
                                 src={post.imageURL}
@@ -179,11 +180,11 @@ export function ContributionChart() {
         return <span>Failed to fetch</span>
     }
 
-    if (user.isLoading || activities === null) {
+    if (user.isLoading) {
         return <Skeleton sx={{ width: '100%', height: '100%' }} />
     }
 
-    if (user.data === null) {
+    if (user.data === undefined) {
         return (
             <Box className="w-full flex flex-row justify-center items-baseline">
                 <Button component={Link} href="/account/login" variant="outlined" sx={{ m: 2 }}>
@@ -194,6 +195,10 @@ export function ContributionChart() {
                 </span>
             </Box>
         )
+    }
+
+    if (activities === null) {
+        return <span>Unknown error occurred</span>;
     }
 
     const from = new Date();
