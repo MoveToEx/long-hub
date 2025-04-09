@@ -31,18 +31,18 @@ async function PostTab() {
         name: string,
         count: bigint
     }[] = await prisma.$queryRaw(Prisma.sql`
-        SELECT user.name AS 'name', COUNT(*) AS 'count' FROM post
-        INNER JOIN user ON post.uploaderId = user.id AND post.deletedAt IS NULL
-        WHERE post.createdAt >= DATE_SUB(NOW(), INTERVAL 28 DAY)
-        GROUP BY uploaderId`);
+        SELECT "user"."name" AS "name", COUNT(*) AS "count" FROM "post"
+        INNER JOIN "user" ON "post"."uploaderId" = "user"."id"
+        WHERE "post"."createdAt" >= NOW() - INTERVAL '28 days' AND "deletedAt" is NULL
+        GROUP BY "user"."id"`);
 
     const series: {
         date: Date,
         count: bigint
     }[] = await prisma.$queryRaw(Prisma.sql`
-        SELECT DATE(createdAt) AS 'date', COUNT(*) AS 'count'
+        SELECT "createdAt"::DATE AS "date", COUNT(*) AS "count"
         FROM post
-        WHERE createdAt > DATE_SUB(NOW(), INTERVAL 28 DAY) AND post.deletedAt IS NULL
+        WHERE "createdAt" > NOW() - INTERVAL '28 days' AND "deletedAt" IS NULL
         GROUP BY date
         ORDER BY date ASC`);
 
@@ -243,9 +243,9 @@ async function DelTab() {
 
     return (
         <Box>
-            <Box className="flex justify-between">
+            <Box className="flex flex-wrap justify-between">
                 <Typography variant='h5'>
-                    Deletion requests
+                    Deletion
                 </Typography>
                 <Button
                     variant='contained'
@@ -255,17 +255,14 @@ async function DelTab() {
                     MANAGE
                 </Button>
             </Box>
-            <Typography>
-                {count} pending requests
-            </Typography>
 
-            <Box className="flex flex-row items-center content-center h-32">
+            <Box className="flex flex-wrap flex-row items-center content-center h-32">
                 <Box className="flex flex-1 text-center flex-col items-center">
                     <Typography variant="h4" component="span">
-                        {processedRequestCount}
+                        {count}
                     </Typography>
                     <Typography variant="button">
-                        processed requests
+                        pending
                     </Typography>
                 </Box>
                 <Divider orientation="vertical" flexItem />
@@ -274,7 +271,16 @@ async function DelTab() {
                         {deletedPostCount}
                     </Typography>
                     <Typography variant="button">
-                        deleted posts
+                        deleted
+                    </Typography>
+                </Box>
+                <Divider orientation="vertical" flexItem />
+                <Box className="flex flex-1 text-center flex-col items-center">
+                    <Typography variant="h4" component="span">
+                        {processedRequestCount}
+                    </Typography>
+                    <Typography variant="button">
+                        processed
                     </Typography>
                 </Box>
             </Box>
@@ -291,14 +297,12 @@ export default async function AdminPage() {
     }
 
     return (
-        <Box sx={{ m: 2 }}>
-            <Paper sx={{
-                m: {
-                    md: 2,
-                    xs: 0,
-                },
-                overflowX: 'auto'
-            }}>
+        <Box>
+            <Paper
+                sx={{
+                    my: 2,
+                    overflowX: 'auto',
+                }}>
                 <PanelTabs
                     titles={['post', 'user', 'tag', 'deletion']}
                     slots={[

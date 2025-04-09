@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -14,14 +14,14 @@ enum Rating {
 }
 
 model post {
-  id        String   @id @db.Char(36)
+  id        String   @id @db.Uuid
   text      String   @db.Text
   image     String   @db.VarChar(255)
   imageHash String   @db.VarChar(255)
   imageURL  String   @db.VarChar(128)
   rating    Rating   @default(none)
-  createdAt DateTime @db.DateTime(0)
-  updatedAt DateTime @db.DateTime(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
   deletedAt      DateTime?
   deletionReason String?   @db.Text
@@ -29,11 +29,9 @@ model post {
   uploaderId Int?
 
   aliases           alias[]
-  uploader          user?              @relation(fields: [uploaderId], references: [id], map: "post_ibfk_1")
+  uploader          user?              @relation(fields: [uploaderId], references: [id])
   tags              tag[]
   deletion_requests deletion_request[]
-
-  @@index([uploaderId], map: "uploaderId")
 }
 
 enum RequestStatus {
@@ -51,7 +49,7 @@ model deletion_request {
   createdAt   DateTime      @default(now())
   processedAt DateTime?
 
-  postId String @db.Char(36)
+  postId String @db.Uuid
   userId Int
 
   post post @relation(fields: [postId], references: [id])
@@ -61,7 +59,7 @@ model deletion_request {
 model alias {
   id     Int    @id
   text   String
-  postId String
+  postId String @db.Uuid
   post   post   @relation(fields: [postId], references: [id])
 }
 
@@ -80,7 +78,7 @@ model template {
   rectWidth  Int?
   style      String?  @db.VarChar(255)
   image      String?  @db.VarChar(255)
-  createdAt  DateTime @db.DateTime(0)
+  createdAt  DateTime @default(now())
   uploaderId Int?
   uploader   user?    @relation(fields: [uploaderId], references: [id])
 }
@@ -92,7 +90,7 @@ model user {
   permission   Int      @default(0)
   accessKey    String   @unique @db.VarChar(255)
   passwordHash String   @db.VarChar(255)
-  createdAt    DateTime @db.DateTime(0)
+  createdAt    DateTime @default(now())
 
   post              post[]
   template          template[]

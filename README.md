@@ -5,9 +5,8 @@
 
 ### Prerequisites
 
-- MySQL 8+
+- PostgreSQL
 - Node.js
-- [Yarn berry](https://yarnpkg.com/migration/overview) enabled
 
 Clone the repo:
 
@@ -61,6 +60,7 @@ $ yarn
 Initialize database:
 
 ```sh
+$ createdb longhub  # create pgsql table
 $ yarn dotenv -c -- prisma migrate deploy
 ```
 
