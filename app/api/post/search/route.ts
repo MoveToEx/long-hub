@@ -47,7 +47,7 @@ const schema = z.object({
         }),
         z.object({
             type: z.literal('id'),
-            op: z.literal('contains'),
+            op: z.literal('is'),
             value: z.string()
         }),
         z.object({
@@ -154,11 +154,9 @@ const rules: Transformers = {
         return _;
     },
     id: ({ op, value }) => {
-        if (op == 'contains') {
+        if (op == 'is') {
             return {
-                id: {
-                    contains: value
-                }
+                id: value
             };
         }
         const _: never = op;
