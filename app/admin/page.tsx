@@ -46,6 +46,12 @@ async function PostTab() {
         GROUP BY date
         ORDER BY date ASC`);
 
+    const vec: { indexed: BigInt, total: BigInt }[] = await prisma.$queryRaw`
+        SELECT COUNT(*) as total,
+        COUNT(*) FILTER (WHERE "text_embedding" IS NOT NULL) AS indexed
+        FROM post
+        WHERE "text" <> ''`;
+
     const count = await prisma.post.count({
         where: {
             deletedAt: null
@@ -67,7 +73,7 @@ async function PostTab() {
                 </Button>
             </Box>
             <Typography>
-                {count} posts in total
+                {count} posts in total, {vec[0].indexed.toString()} / {vec[0].total.toString()} indexed by vector db
             </Typography>
 
             <Grid container>
