@@ -13,7 +13,9 @@ import { responses, zjson } from '@/lib/server-util';
 import { auth } from '@/lib/dal';
 import { Permission } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
-import { Rating } from '@prisma/client';
+import { Prisma, Rating } from '@prisma/client';
+import { CronJob } from 'cron';
+import { embeddingProvider } from '@/lib/embedding';
 
 const schema = z.object({
     text: z.string().default(''),
@@ -180,3 +182,33 @@ export async function POST(req: NextRequest) {
         status: 201
     });
 }
+
+const embeddingJob = new CronJob(
+    '0 */5 * * * *',
+    async () => {
+        const untagged: {
+            id: string,
+            text: string
+        }[] = await prisma.$queryRaw(Prisma.sql`
+            SELECT "id", "text"
+            FROM post
+            WHERE "text_embedding" IS NULL AND "text" <> '' AND "deletedAt" IS NULL
+            LIMIT 100`);
+        
+        if (untagged.length == 0) return;
+        
+        const v = await embeddingProvider.get_text_embedding(untagged.map(post => post.text));
+
+        const transactions = [];
+
+        for (let i = 0; i < v.length; ++i) {
+            const s = `[${v[i].join(',')}]`;
+            transactions.push(prisma.$queryRaw`
+                UPDATE post SET "text_embedding" = ${s}::vector WHERE "id" = uuid(${untagged[i].id})`);
+        }
+
+        await prisma.$transaction(transactions);
+    },
+    null,
+    true
+);

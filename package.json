@@ -29,6 +29,7 @@
     "@types/lodash": "^4.14.201",
     "autosuggest-highlight": "^3.3.4",
     "bcryptjs": "^2.4.3",
+    "cron": "^4.1.4",
     "csstype": "^3.1.2",
     "date-fns": "^4.1.0",
     "dotenv-cli": "^7.4.2",

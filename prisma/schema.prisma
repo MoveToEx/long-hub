@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
 }
 
 enum Rating {
@@ -21,12 +23,14 @@ model post {
   imageURL  String   @db.VarChar(128)
   rating    Rating   @default(none)
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   deletedAt      DateTime?
   deletionReason String?   @db.Text
 
   uploaderId Int?
+
+  text_embedding Unsupported("vector(1024)")?
 
   aliases           alias[]
   uploader          user?              @relation(fields: [uploaderId], references: [id])

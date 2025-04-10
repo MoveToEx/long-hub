@@ -3533,6 +3533,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/luxon@npm:~3.6.0":
+  version: 3.6.2
+  resolution: "@types/luxon@npm:3.6.2"
+  checksum: 10c0/7572ee52b3d3e9dd10464b90561a728b90f34b9a257751cc3ce23762693dd1d14fa98b7f103e2efe2c6f49033331f91de5681ffd65cca88618cefe555be326db
+  languageName: node
+  linkType: hard
+
 "@types/mime-types@npm:^2":
   version: 2.1.4
   resolution: "@types/mime-types@npm:2.1.4"
@@ -4817,6 +4824,16 @@ __metadata:
     path-type: "npm:^4.0.0"
     yaml: "npm:^1.10.0"
   checksum: 10c0/b923ff6af581638128e5f074a5450ba12c0300b71302398ea38dbeabd33bbcaa0245ca9adbedfcf284a07da50f99ede5658c80bb3e39e2ce770a99d28a21ef03
+  languageName: node
+  linkType: hard
+
+"cron@npm:^4.1.4":
+  version: 4.1.4
+  resolution: "cron@npm:4.1.4"
+  dependencies:
+    "@types/luxon": "npm:~3.6.0"
+    luxon: "npm:~3.6.0"
+  checksum: 10c0/c0a8f11ac09529cde67caca515f2dc7ab455f74b7800683f77772cf666a5b2670fab8510cf03b31d706a22c6dcdfcbfe61c433a4d02148eff31b768a87a44619
   languageName: node
   linkType: hard
 
@@ -7413,6 +7430,7 @@ __metadata:
     autosuggest-highlight: "npm:^3.3.4"
     bcryptjs: "npm:^2.4.3"
     cors: "npm:^2.8.5"
+    cron: "npm:^4.1.4"
     cross-env: "npm:^7.0.3"
     csstype: "npm:^3.1.2"
     date-fns: "npm:^4.1.0"
@@ -7496,6 +7514,13 @@ __metadata:
   dependencies:
     yallist: "npm:^4.0.0"
   checksum: 10c0/cb53e582785c48187d7a188d3379c181b5ca2a9c78d2bce3e7dee36f32761d1c42983da3fe12b55cb74e1779fa94cdc2e5367c028a9b35317184ede0c07a30a9
+  languageName: node
+  linkType: hard
+
+"luxon@npm:~3.6.0":
+  version: 3.6.1
+  resolution: "luxon@npm:3.6.1"
+  checksum: 10c0/906d57a9dc4d1de9383f2e9223e378c298607c1b4d17b6657b836a3cd120feb1c1de3b5d06d846a3417e1ca764de8476e8c23b3cd4083b5cdb870adcb06a99d5
   languageName: node
   linkType: hard
 

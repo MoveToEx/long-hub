@@ -102,6 +102,13 @@ export async function PUT(req: NextRequest, {
     }
     if (meta.text !== undefined) {
         data.text = meta.text;
+
+        if (data.text !== meta.text) {
+            transactions.push(
+                prisma.$queryRaw(Prisma.sql`
+                    UPDATE post SET "embedding" = NULL WHERE "id" = ${id}`)
+            );
+        }
     }
     if (meta.tags !== undefined) {
         transactions.push(prisma.post.update({

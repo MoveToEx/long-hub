@@ -29,7 +29,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import Home from '@mui/icons-material/Home';
-import TagIcon from '@mui/icons-material/Tag';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import Search from '@mui/icons-material/Search';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ImageIcon from '@mui/icons-material/Image';
@@ -119,6 +119,12 @@ const drawerItems: (DrawerItemParam | DrawerDividerParam)[] = [
         title: 'Search',
         href: '/post/search',
         icon: Search
+    },
+    {
+        type: 'item',
+        title: 'Embedding query',
+        href: '/post/embedding',
+        icon: AutoAwesomeIcon
     },
     {
         type: 'item',

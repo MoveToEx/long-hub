@@ -8,6 +8,7 @@ const s = z.object({
     CF_TURNSTILE_KEY: z.string(),
     CF_TURNSTILE_SECRET: z.string(),
     DATABASE_URL: z.string(),
+    SILICONFLOW_API_KEY: z.string(),
 });
 
 const schema = z.union([
