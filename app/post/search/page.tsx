@@ -19,7 +19,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { SearchInput, QueryReference } from './components';
 import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
-import { useState, useDeferredValue, Profiler } from 'react';
+import { useState, useDeferredValue } from 'react';
 import { useSnackbar } from 'notistack';
 
 import { useSearchResult, SearchQuery } from '@/app/context';
@@ -129,7 +129,7 @@ export default function SearchPage() {
     }
 
     return (
-        <Box sx={{ mt: 2, mb: 2 }}>
+        <Box>
             <SearchInput value={params.keyword} onChange={(_, val) => {
                 setParams({
                     keyword: val,

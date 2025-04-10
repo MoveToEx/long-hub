@@ -13,12 +13,11 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import { useTags } from '@/app/context';
 import { Rating } from '@prisma/client';
-import { useDeferredValue, useState } from 'react';
+import { useState } from 'react';
 import { startsWith } from '@/lib/util';
 
 const ratingValues = [
@@ -45,7 +44,6 @@ export function SearchInput({
             freeSolo
             value={value}
             fullWidth
-            sx={{ mt: 2 }}
             options={data?.data.map(val => val.name) ?? []}
             getOptionDisabled={() => isLoading}
             renderTags={(value, getTagProps) =>

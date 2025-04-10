@@ -22,7 +22,7 @@ function TagRow({
                     key={i}
                     label={e}
                     sx={{ fontSize: '16px', m: .5 }}
-                    icon={noicon ? <></> : <TagIcon />}
+                    icon={noicon ? undefined : <TagIcon />}
                     onClick={() => { }}
                 />
             ))}

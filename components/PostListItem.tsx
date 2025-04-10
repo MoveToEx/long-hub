@@ -14,7 +14,7 @@ type PostGridProps = {
         id: string;
         imageURL: string;
         text?: string;
-        tags: { name: string }[];
+        tags?: { name: string }[];
     },
     ImageProps?: Omit<ImageProps, 'src' | 'alt'>,
     prefetch?: boolean
@@ -52,7 +52,7 @@ export default function PostGrid({
                 <Stack spacing={1} justifyItems="center">
                     <CopiableText text={value.id} />
                     <Typography>{value.text ?? <i>No text</i>}</Typography>
-                    <TagRow tags={value.tags.map(e => e.name)} />
+                    {value.tags && <TagRow tags={value.tags.map(e => e.name)} />}
                 </Stack>
             </Grid>
         </Grid>

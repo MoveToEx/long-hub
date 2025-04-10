@@ -72,11 +72,9 @@ export function NewPostChart({ data }: {
                 data: series,
             }]}
             xAxis={[{
-
                 scaleType: 'time',
                 data: dateRange,
                 valueFormatter: value => (value as Date).toLocaleDateString()
-
             }]}>
             <LinePlot />
             <ChartsXAxis />
@@ -113,6 +111,8 @@ export function PanelTabs({
             <Box>
                 <Tabs
                     value={value}
+                    variant='scrollable'
+                    scrollButtons='auto'
                     onChange={(_, newValue) => setValue(newValue)}
                     sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     {

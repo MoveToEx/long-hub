@@ -20,7 +20,13 @@ export default async function Page() {
     });
 
     return (
-        <Box sx={{ m: 2 }}>
+        <Box sx={{
+            my: 1,
+            mx: {
+                xs: 0,
+                md: 2
+            }
+        }}>
             <RequestDashboard requests={requests} />
         </Box>
     )
