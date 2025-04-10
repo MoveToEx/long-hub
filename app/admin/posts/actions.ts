@@ -40,8 +40,7 @@ export async function EditPost(updatedRow: any, originalRow: any) {
             deletionReason: updatedRow.deletionReason,
             text: updatedRow.text,
             rating: updatedRow.rating,
-            uploaderId: updatedRow.uploaderId,
-            updatedAt: new Date()
+            uploaderId: updatedRow.uploaderId
         },
         include: {
             uploader: {
@@ -91,7 +90,6 @@ export async function DeletePost(id: string, reason: string) {
         where: { id },
         data: {
             deletedAt: new Date(),
-            updatedAt: new Date(),
             deletionReason: reason
         }
     })
@@ -138,7 +136,6 @@ export async function RecoverPost(id: string) {
             where: { id },
             data: {
                 deletedAt: null,
-                updatedAt: new Date(),
                 deletionReason: null
             }
         }),

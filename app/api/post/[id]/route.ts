@@ -133,8 +133,7 @@ export async function PUT(req: NextRequest, {
         prisma.post.update({
             where: { id },
             data: {
-                ...data,
-                updatedAt: new Date()
+                ...data
             }
         }),
         prisma.post.findFirst({
@@ -194,8 +193,7 @@ export async function DELETE(req: NextRequest, {
         where: { id },
         data: {
             deletedAt: new Date(),
-            deletionReason: data.reason,
-            updatedAt: new Date()
+            deletionReason: data.reason
         }
     });
 

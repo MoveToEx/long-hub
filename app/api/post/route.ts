@@ -150,8 +150,6 @@ export async function POST(req: NextRequest) {
     const post = await prisma.post.create({
         data: {
             id: id,
-            createdAt: new Date(),
-            updatedAt: new Date(),
             text: metadata.text,
             rating: metadata.rating,
             image: filename,

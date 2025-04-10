@@ -34,8 +34,7 @@ export async function ApproveRequest(id: number) {
             },
             data: {
                 deletedAt: new Date(),
-                deletionReason: req.reason,
-                updatedAt: new Date()
+                deletionReason: req.reason
             }
         }),
         prisma.deletion_request.updateMany({
@@ -107,8 +106,7 @@ export async function RevokeRequest(id: number) {
             },
             data: {
                 deletedAt: null,
-                deletionReason: null,
-                updatedAt: new Date()
+                deletionReason: null
             }
         }),
         prisma.deletion_request.update({
