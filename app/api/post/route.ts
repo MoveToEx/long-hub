@@ -191,7 +191,7 @@ const embeddingJob = new CronJob(
             SELECT "id", "text"
             FROM post
             WHERE "text_embedding" IS NULL AND "text" <> '' AND "deletedAt" IS NULL
-            LIMIT 100`);
+            LIMIT 64`);
         
         if (untagged.length == 0) return;
         
