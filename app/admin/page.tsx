@@ -50,7 +50,7 @@ async function PostTab() {
         SELECT COUNT(*) as total,
         COUNT(*) FILTER (WHERE "text_embedding" IS NOT NULL) AS indexed
         FROM post
-        WHERE "text" <> ''`;
+        WHERE "text" <> '' AND "deletedAt" IS NULL`;
 
     const count = await prisma.post.count({
         where: {
