@@ -15,7 +15,7 @@ export async function vSearch(text: string) {
     })[] = await prisma.$queryRaw`
         SELECT "id", "text", "imageURL", ("text_embedding" <=> ${q}::vector) AS "difference"
         FROM post
-        WHERE "text_embedding" IS NOT NULL
+        WHERE "text_embedding" IS NOT NULL AND "deletedAt" IS NULL
         ORDER BY "difference"
         LIMIT 8`;
     
