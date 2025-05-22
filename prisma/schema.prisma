@@ -73,20 +73,6 @@ model tag {
   posts post[]
 }
 
-model template {
-  name       String   @id @db.VarChar(255)
-  imageURL   String   @db.VarChar(128)
-  offsetX    Int?
-  offsetY    Int?
-  rectHeight Int?
-  rectWidth  Int?
-  style      String?  @db.VarChar(255)
-  image      String?  @db.VarChar(255)
-  createdAt  DateTime @default(now())
-  uploaderId Int?
-  uploader   user?    @relation(fields: [uploaderId], references: [id])
-}
-
 model user {
   id           Int      @id @default(autoincrement())
   email        String?  @db.VarChar(255)
@@ -97,6 +83,5 @@ model user {
   createdAt    DateTime @default(now())
 
   post              post[]
-  template          template[]
   deletion_requests deletion_request[]
 }
