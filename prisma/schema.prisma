@@ -6,7 +6,7 @@ generator client {
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [vector]
+  extensions = [vector, fuzzystrmatch]
 }
 
 enum Rating {
@@ -15,15 +15,21 @@ enum Rating {
   violent
 }
 
+enum Status {
+  active
+  deleted
+}
+
 model post {
   id        String   @id @db.Uuid
   text      String   @db.Text
-  image     String   @db.VarChar(255)
-  imageHash String   @db.VarChar(255)
+  imageHash String?  @db.VarChar(255)
   imageURL  String   @db.VarChar(128)
   rating    Rating   @default(none)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  status Status // TODO rely on status instead of deletedAt
 
   deletedAt      DateTime?
   deletionReason String?   @db.Text
@@ -36,6 +42,21 @@ model post {
   uploader          user?              @relation(fields: [uploaderId], references: [id])
   tags              tag[]
   deletion_requests deletion_request[]
+}
+
+enum UploadSessionStatus {
+  active
+  claimed
+  expired
+}
+
+model upload_session {
+  id        String              @id @db.Uuid
+  key       String              @unique
+  createdAt DateTime            @default(now())
+  status    UploadSessionStatus @default(active)
+  userId    Int
+  user      user                @relation(fields: [userId], references: [id])
 }
 
 enum RequestStatus {
@@ -84,4 +105,5 @@ model user {
 
   post              post[]
   deletion_requests deletion_request[]
+  upload_session    upload_session[]
 }

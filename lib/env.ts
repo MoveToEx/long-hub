@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import 'server-only';
 
-const s = z.object({
+const schema = z.object({
     COOKIE_NAME: z.string(),
     COOKIE_SECRET: z.string(),
 
@@ -9,24 +9,14 @@ const s = z.object({
     CF_TURNSTILE_SECRET: z.string(),
     DATABASE_URL: z.string(),
     SILICONFLOW_API_KEY: z.string(),
+
+    S3_ENDPOINT: z.string(),
+    S3_ACCESS_KEY_ID: z.string(),
+    S3_SECRET_ACCESS_KEY: z.string(),
+    S3_BUCKET_NAME: z.string(),
+    S3_PREFIX: z.string()
 });
 
-const schema = z.union([
-    s.merge(z.object({
-        STORAGE_PROVIDER: z.literal('local'),
-        MEDIA_ROOT: z.string(),
-        MEDIA_URL_PREFIX: z.string(),
-    })),
-    s.merge(z.object({
-        STORAGE_PROVIDER: z.literal('r2'),
-        R2_ACCOUNT_ID: z.string(),
-        R2_ACCESS_KEY_ID: z.string(),
-        R2_SECRET_ACCESS_KEY: z.string(),
-        R2_BUCKET_NAME: z.string(),
-        R2_PREFIX: z.string()
-    }))
-]);
+const env = schema.parse(process.env);
 
-const data = schema.parse(process.env);
-
-export default data;
+export default env;

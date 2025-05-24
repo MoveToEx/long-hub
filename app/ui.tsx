@@ -126,6 +126,12 @@ const drawerItems: (DrawerItemParam | DrawerDividerParam)[] = [
         href: '/post/embedding',
         icon: AutoAwesomeIcon
     },
+    {
+        type: 'item',
+        title: 'Find similar',
+        href: '/post/similar',
+        icon: ImageIcon
+    },
 ]
 
 const adminDrawerItems: (DrawerItemParam | DrawerDividerParam)[] = [

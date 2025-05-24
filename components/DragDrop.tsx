@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import wcmatch from 'wildcard-match';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
@@ -7,18 +7,19 @@ import Link from '@mui/material/Link';
 import Container from '@mui/material/Container';
 import _ from 'lodash';
 
-export default function DragDrop({
+const DragDrop = React.forwardRef(function _DragDrop({
     multiple = false,
     accept = '*/*',
-    onChange
+    onChange,
+    ...rest
 }: {
     multiple?: boolean,
     accept?: string | string[],
     onChange: (files: Blob[]) => void
-}) {
+}, ref: React.ForwardedRef<HTMLDivElement>) {
     const [files, setFiles] = useState<Blob[]>([]);
     const [dragging, setDragging] = useState(false);
-    const ref = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const match = wcmatch(accept);
 
     useEffect(() => {
@@ -31,6 +32,8 @@ export default function DragDrop({
 
     return (
         <Container
+            ref={ref}
+            {...rest}
             className={
                 'flex flex-col items-center justify-center rounded border-2 border-dashed border-gray-400 dark:border-gray-700 w-full h-64 ' +
                 (dragging ? 'bg-gray-200 dark:bg-gray-800 border-blue-400 dark:border-blue-900' : '')
@@ -70,7 +73,7 @@ export default function DragDrop({
                 }
             }}>
             <input
-                ref={ref}
+                ref={inputRef}
                 className='hidden'
                 type='file'
                 accept={typeof accept === 'string' ? accept : accept.join(',')}
@@ -82,8 +85,8 @@ export default function DragDrop({
             <Typography variant="h6">
                 Drop files here,&nbsp;
                 <Link onClick={() => {
-                    if (ref.current) {
-                        ref.current.click();
+                    if (inputRef.current) {
+                        inputRef.current.click();
                     }
                 }}>browse</Link>, or&nbsp;
                 <Link onClick={async () => {
@@ -102,4 +105,6 @@ export default function DragDrop({
             </Typography>
         </Container>
     );
-}
+});
+
+export default DragDrop;
