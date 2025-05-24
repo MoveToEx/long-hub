@@ -1,20 +1,19 @@
 'use client';
 
-import styles from './page.module.css';
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
-import DropArea from '@/components/DropArea';
+import DragDrop from '@/components/DragDrop';
 import Skeleton from '@mui/material/Skeleton';
 import Button from '@mui/material/Button';
 import Image from 'next/image';
 import _ from 'lodash';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import Box from '@mui/material/Box';
 import PostGrid from '@/components/PostGridItem';
 
 interface Preview {
-    file: File;
+    file: Blob;
     url: string;
 }
 
@@ -29,144 +28,139 @@ interface SimilarResponse {
     similar: SimilarPost[];
 }
 
-
 export default function UploadPage() {
     const [file, setFile] = useState<Preview | null>(null);
     const [result, setResult] = useState<SimilarResponse | null>(null);
 
     const { enqueueSnackbar } = useSnackbar();
 
-    let elem;
+    const search = useCallback(async (file: Blob) => {
+        const response = await fetch('/api/post/similar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': file.type
+            },
+            body: file,
+        });
+
+        if (!response.ok) {
+            enqueueSnackbar(response.status + ' ' + response.statusText);
+            return;
+        }
+        setResult(await response.json())
+
+    }, [enqueueSnackbar]);
 
     useEffect(() => {
         if (file === null) return;
 
-        var fd = new FormData();
-        fd.append('image', file.file);
+        search(file.file);
+    }, [file, search]);
 
-        fetch('/api/post/similar', {
-            method: 'POST',
-            body: fd
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error(response.status + ' ' + response.statusText);
-            }
-            return response.json();
-        })
-            .then(res => setResult(res))
-            .catch(e => enqueueSnackbar('Failed when uploading: ' + e, { variant: 'error' }));
-    }, [file, enqueueSnackbar]);
+    return (
+        <Grid container spacing={2} sx={{ m: 2 }}>
+            <Grid size={{ md: 6, xs: 12 }}>
+                <Box>
+                    <Typography variant='h4'>Search by image</Typography>
+                    {file === null && (
+                        <DragDrop
+                            accept="image/*"
+                            multiple={false}
+                            onChange={file => {
+                                if (!file) return;
 
-    if (file === null) {
-        elem = (
-            <Box sx={{ m: 2 }}>
-                <Typography variant='h4'>Search by image</Typography>
-                <DropArea
-                    accept="image/*"
-                    multiple={false}
-                    label={
-                        <Typography variant="button" fontSize="24px" display="block" gutterBottom>
-                            SELECT FILE
+                                setFile({
+                                    file: file[0],
+                                    url: URL.createObjectURL(file[0])
+                                });
+                            }}
+                        />
+                    )}
+                    {file !== null && (
+                        <div>
+                            <Button
+                                variant="text"
+                                disabled={result === null}
+                                onClick={() => {
+                                    setFile(null);
+                                    setResult(null);
+                                }}>
+                                ≪ BACK
+                            </Button>
+                            <Image
+                                src={file.url}
+                                alt='preview'
+                                unoptimized
+                                crossOrigin='anonymous'
+                                height={300}
+                                width={300}
+                                style={{
+                                    width: '100%',
+                                    height: 'auto',
+                                    objectFit: 'contain'
+                                }}
+                            />
+                        </div>
+                    )}
+                </Box>
+            </Grid>
+
+            <Grid size={{ md: 6, xs: 12 }}>
+                {file === null && (
+                    <Grid container spacing={2}>
+                        <Grid size={12}>
+                            <Typography variant="h5">---</Typography>
+                            <Typography variant="subtitle2">---</Typography>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <div className="w-full h-[300px] border border-dashed border-gray-400" />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <div className="w-full h-[300px] border border-dashed border-gray-400" />
+                        </Grid>
+                    </Grid>
+                )}
+                {result === null && file !== null && (
+                    <Grid container spacing={2}>
+                        <Grid size={12}>
+                            <Typography variant="h5"><Skeleton width="50%" /></Typography>
+                            <Typography variant="subtitle2"><Skeleton /></Typography>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Skeleton height={300} variant='rounded' />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Skeleton height={300} variant='rounded' />
+                        </Grid>
+                    </Grid>
+                )}
+                {result !== null && result.similar.length === 0 && (
+                    <>
+                        <Typography variant="h5">No similar images found</Typography>
+                        <Typography variant="subtitle2">
+                            Image hash: {result.hash}
                         </Typography>
-                    }
-                    className={styles.droparea}
-                    dragClassName={styles.droparea_hover}
-                    onChange={file => {
-                        if (!file) return;
-
-                        setFile({
-                            file: file,
-                            url: URL.createObjectURL(file)
-                        });
-                    }}
-                />
-            </Box>
-        )
-    }
-    else {
-        if (result === null) {
-            elem = (
-                <Grid container spacing={2}>
-                    <Grid size={12}>
-                        <Typography variant="h5"><Skeleton width="50%" /></Typography>
-                        <Typography variant="subtitle2"><Skeleton /></Typography>
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <Skeleton height={300} variant='rounded' />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <Skeleton height={300} variant='rounded' />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 4 }}>
-                        <Skeleton height={300} variant='rounded' />
-                    </Grid>
-                </Grid>
-            )
-        }
-        else if (result.similar.length === 0) {
-            elem = (
-                <>
-                    <Typography variant="h5">No similar images found</Typography>
-                    <Typography variant="subtitle2">
-                        Image hash: {result.hash}
-                    </Typography>
-                </>
-            )
-        }
-        else {
-            elem = (
-                <>
-                    <Typography variant="h5">
-                        {result.similar.length} similar images found
-                    </Typography>
-                    <Typography variant="subtitle2">
-                        Image hash: {result.hash}
-                    </Typography>
-                    <Grid container spacing={1}>
-                        {
-                            result && result.similar.map(val => (
-                                <Grid size={{ xs: 12, md: 4 }} key={val.id}>
+                    </>
+                )}
+                {result !== null && result.similar.length > 0 && (
+                    <>
+                        <Typography variant="h5">
+                            {result.similar.length} similar images found
+                        </Typography>
+                        <Typography variant="subtitle2">
+                            Image hash: {result.hash}
+                        </Typography>
+                        <Grid container spacing={1}>
+                            {result.similar.map(val => (
+                                <Grid size={{ xs: 12, md: 6 }} key={val.id}>
                                     <PostGrid value={val} newTab />
                                 </Grid>
-                            ))
-                        }
-                    </Grid>
-                </>
-            );
-        }
+                            ))}
+                        </Grid>
+                    </>
+                )}
 
-        elem = (
-            <Grid container spacing={2} sx={{ m: 2 }}>
-                <Grid size={12}>
-                    <Button variant="text" onClick={() => {
-                        setFile(null);
-                        setResult(null);
-                    }}>
-                        ≪ BACK
-                    </Button>
-                </Grid>
-                <Grid size={{ md: 4, xs: 12 }}>
-                    <Image
-                        src={file.url}
-                        alt='preview'
-                        unoptimized
-                        crossOrigin='anonymous'
-                        height={300}
-                        width={300}
-                        style={{
-                            width: '100%',
-                            height: 'auto',
-                            objectFit: 'contain'
-                        }}
-                    />
-                </Grid>
-
-                <Grid size={{ md: 8, xs: 12 }}>
-                    {elem}
-                </Grid>
             </Grid>
-        );
-    }
-
-    return elem;
+        </Grid >
+    );
 }

@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/db';
 import { DataGrid, GridColDef, GridToolbar, GridActionsCellItem, useGridApiContext, getGridDateOperators } from '@mui/x-data-grid';
-import { Prisma, Rating } from '@prisma/client';
+import { Prisma, Rating, Status } from '@prisma/client';
 import { EditPost, DeletePost, RecoverPost } from './actions';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Image from 'next/image';
@@ -86,6 +86,16 @@ const columns: GridColDef[] = [
         headerAlign: 'center',
         type: 'singleSelect',
         valueOptions: Object.values(Rating),
+        editable: true
+    },
+    {
+        field: 'status',
+        headerName: 'Status',
+        width: 100,
+        align: 'center',
+        headerAlign: 'center',
+        type: 'singleSelect',
+        valueOptions: Object.values(Status),
         editable: true
     },
     {

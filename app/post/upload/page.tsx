@@ -6,16 +6,10 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Fab from '@mui/material/Fab';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import Tooltip from '@mui/material/Tooltip';
-import PostGrid from '@/components/PostGridItem';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import Fade from '@mui/material/Fade';
 
-import { ReactNode, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import _ from 'lodash';
 import Image from 'next/image';
@@ -23,9 +17,8 @@ import RequiresLogin from '@/components/RequiresLogin';
 
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-
-import { useSearchResult, SearchQuery } from '@/app/context';
+import LinearProgress from '@mui/material/LinearProgress';
+import { SearchButton } from './components';
 import { useCompositeState } from '@/lib/hooks';
 
 import RatingComponent from '@/components/Rating';
@@ -45,81 +38,11 @@ type Preview = {
     url: string
 };
 
-type DialogInfo = {
-    open: boolean;
-    title?: string;
-    subtitle?: string;
-    content?: ReactNode;
-};
-
-function SearchButton({
-    text,
-    tags
-}: {
-    text: string,
-    tags: string[]
-}) {
-    const transform = useCallback((text: string, tags: string[]) => {
-        const filter = [];
-        if (text) {
-            filter.push({
-                type: 'text',
-                op: 'contains',
-                value: text
-            });
-        }
-        tags.forEach(tag => {
-            filter.push({
-                type: 'tag',
-                op: 'include',
-                value: tag
-            });
-        });
-        return { filter }
-    }, []);
-    const { enqueueSnackbar } = useSnackbar();
-    const [query, setQuery] = useState<SearchQuery | null>(null);
-    const [open, setOpen] = useState(false);
-    const { data, error, isLoading } = useSearchResult(query);
-
-    if (error) {
-        enqueueSnackbar('Failed: ' + error, { variant: 'error' });
-    }
-
-    return (
-        <>
-            <Tooltip title="Search with current conditions">
-                <Fab onClick={() => {
-                    setQuery(transform(text, tags));
-                    setOpen(true);
-                }} color="secondary" disabled={isLoading}>
-                    <SearchIcon />
-                </Fab>
-            </Tooltip>
-            <Dialog onClose={() => setOpen(false)} open={open && !isLoading && data !== undefined} maxWidth="md" fullWidth>
-                <DialogTitle>Search Result</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        {`${data?.count} result(s) in total`}
-                    </DialogContentText>
-                    <Box sx={{ m: 2 }}>
-                        <Grid container>
-                            {
-                                data?.data.map(post => (
-                                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
-                                        <PostGrid value={post} newTab />
-                                    </Grid>
-                                ))
-                            }
-                        </Grid>
-                    </Box>
-                </DialogContent>
-            </Dialog>
-        </>
-    )
-}
+type State = 'idle' | 'wait-sign' | 'uploading' | 'wait-ack';
 
 export default function UploadPage() {
+    const [state, setState] = useState<State>('idle');
+    const [id, setId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState<Preview[]>([]);
     const { state: metadata, setSingle, reset } = useCompositeState<Metadata>({
@@ -127,10 +50,7 @@ export default function UploadPage() {
         rating: Rating.none,
         tags: []
     });
-    const [dialog, setDialog] = useState<DialogInfo>({
-        open: false
-    });
-    const [ignoreSimilar, setIgnoreSimilar] = useState(false);
+    const [progress, setProgress] = useState<number | null>(null);
 
     const { enqueueSnackbar } = useSnackbar();
 
@@ -139,63 +59,119 @@ export default function UploadPage() {
 
         reset();
 
-        setIgnoreSimilar(false);
         URL.revokeObjectURL(files[0].url);
         setFiles(files => _.slice(files, 1));
     }, [files, reset]);
 
-    const submit = useCallback(async (metadata: Metadata, force: boolean, blob: Blob) => {
-        const fd = new FormData();
-        fd.append('force', force ? '1' : '0');
-        fd.append('image', blob);
-        fd.append('metadata', JSON.stringify(metadata));
+    const submit = useCallback(async (metadata: Metadata, blob: Blob) => {
+        setState('wait-sign');
 
-        setLoading(true);
-
-        const response = await fetch('/api/post', {
+        let response = await fetch('/api/post/upload/sign', {
             method: 'POST',
-            body: fd,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mime: blob.type
+            }),
         });
 
-        setLoading(false);
-
-        if (response.ok) {
-            next();
-            enqueueSnackbar('Uploaded successfully', {
-                variant: 'success'
+        if (!response.ok) {
+            setState('idle');
+            enqueueSnackbar('Failed when acquiring presigned url', {
+                variant: 'error'
             });
             return;
         }
 
-        if (response.status == 409) {
-            const data = await response.json();
-            setDialog({
-                open: true,
-                title: 'Similar images',
-                subtitle: 'These images are similar to yours. Make sure not to upload duplicates',
-                content: (
-                    <Grid container>
-                        {
-                            data.map((post: any) => (
-                                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
-                                    <PostGrid value={post} newTab />
-                                </Grid>
-                            ))
-                        }
-                    </Grid>
-                )
+        const { url, id } = await response.json();
+
+        setId(id);
+        setState('uploading');
+
+        let status: number = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    setProgress((100 * event.loaded) / event.total);
+                }
+            };
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    resolve(xhr.status);
+                }
+            };
+
+            xhr.onerror = () => {
+                reject(xhr.status);
+            };
+            xhr.open('PUT', url, true);
+            xhr.setRequestHeader('Content-Type', blob.type);
+            xhr.send(blob);
+        });
+
+        if (!(status >= 200 && status < 300)) {
+            setState('idle');
+            enqueueSnackbar('Failed when uploading', {
+                variant: 'error'
             });
             return;
         }
-        enqueueSnackbar('Failed: ' + response.statusText, {
-            variant: 'error'
+
+        setState('wait-ack');
+
+        response = await fetch('/api/post/upload/ack', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id,
+                metadata
+            }),
+        });
+
+        if (!response.ok) {
+            setState('idle');
+            enqueueSnackbar('Failed: ' + response.statusText, {
+                variant: 'error'
+            });
+            return;
+        }
+
+        setState('idle');
+        setId(null);
+        setProgress(null);
+        next();
+        enqueueSnackbar('Uploaded successfully', {
+            variant: 'success'
         });
     }, [enqueueSnackbar, next]);
 
     return (
         <Grid container spacing={2} sx={{ pt: 2 }}>
             <RequiresLogin />
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid sx={{ overflow: 'hidden' }} size={{ xs: 12, md: 6 }}>
+                <div className="h-12 w-full flex flex-col gap-1 justify-center items-center text-center">
+                    {state !== 'idle' && (
+                        <>
+                            <div className="h-6 w-full">
+                                {id !== null && (
+                                    <Fade in>
+                                        <Typography>{id}</Typography>
+                                    </Fade>
+                                )}
+                            </div>
+                            {progress !== null && state === 'uploading' &&
+                                <LinearProgress className="w-full" value={progress} variant='determinate' />
+                            }
+                            {(progress === null || state !== 'uploading') &&
+                                <LinearProgress className="w-full" variant="indeterminate" />
+                            }
+                        </>
+                    )}
+
+                </div>
                 {files.length == 0 &&
                     <DragDrop
                         accept="image/*"
@@ -207,17 +183,18 @@ export default function UploadPage() {
                             })));
                         }} />
                 }
-                {!_.isEmpty(files) &&
+                {!_.isEmpty(files) && (
                     <Image
                         alt="Preview"
                         className="w-full h-auto max-h-96 object-contain"
                         src={files[0].url}
                         height={300}
                         width={300} />
-                }
+                )}
+
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-                <Stack spacing={2} alignItems="center" sx={{ m: 2 }}>
+                <Stack spacing={2} alignItems="center">
                     <Typography variant="h6">
                         {files.length.toString() + ' image' + (files.length > 1 ? 's' : '') + ' left'}
                     </Typography>
@@ -255,19 +232,17 @@ export default function UploadPage() {
                         </Typography>
                     </Box>
 
-                    <FormControlLabel
-                        control={
-                            <Checkbox checked={ignoreSimilar} onChange={(e, c) => setIgnoreSimilar(c)} />
-                        }
-                        label="Ignore similar" />
-
                     <Box sx={{ p: 1, position: 'relative' }} >
 
                         <Stack direction="row" spacing={2}>
 
                             <Tooltip title="Submit">
                                 <span>
-                                    <Fab onClick={() => submit(metadata, ignoreSimilar, files[0].blob)} color="primary" disabled={loading || files.length == 0}>
+                                    <Fab onClick={async () => {
+                                        setLoading(true);
+                                        await submit(metadata, files[0].blob);
+                                        setLoading(false);
+                                    }} color="primary" disabled={loading || files.length == 0}>
                                         <SendIcon />
                                     </Fab>
                                 </span>
@@ -289,20 +264,6 @@ export default function UploadPage() {
                     </Box>
                 </Stack>
             </Grid>
-            <Dialog onClose={() => setDialog({
-                ...dialog,
-                open: false
-            })} open={dialog.open} maxWidth="md" fullWidth>
-                <DialogTitle>{dialog.title}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText>
-                        {dialog.subtitle}
-                    </DialogContentText>
-                    <Box sx={{ m: 2 }}>
-                        {dialog.content}
-                    </Box>
-                </DialogContent>
-            </Dialog>
         </Grid>
     );
 }

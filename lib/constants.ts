@@ -9,16 +9,12 @@ export const pages = (total: number) => Math.ceil(total / pageLimit);
 export const PermissionDescription = {
     1: 'Create new post',
     2: 'Edit post',
-    3: 'Create new template',
-    4: 'Edit template',
     8: 'Enter admin panel',
     9: 'Edit user',
     10: 'Delete user',
     11: 'Assign new permission to a user',
     12: 'Edit post',
     13: 'Delete post',
-    14: 'Edit template',
-    15: 'Delete template'
 };
 
 const ratings = Object.values(Rating);
