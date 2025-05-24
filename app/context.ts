@@ -92,7 +92,7 @@ export const useUser = () => useSWR<User | undefined>('/api/account', UserFetche
 
 export const TagsFetcher = fetcher;
 export const useTags = (prefix?: string | null) => {
-    return useSWR<Tags>(prefix !== null ? '/api/post/tag?prefix=' + prefix : null, TagsFetcher, {
+    return useSWR<Tags>(prefix ? '/api/post/tag?prefix=' + prefix : null, TagsFetcher, {
         keepPreviousData: true
     });
 }
