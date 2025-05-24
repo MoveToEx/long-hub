@@ -96,5 +96,8 @@ export default async function signUp(_state: unknown, fd: FormData) {
         }
     });
 
-    redirect('/account/login');
+    return {
+        error: false,
+        timestamp: Number(new Date()),
+    }
 }
