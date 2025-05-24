@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import _ from 'lodash';
 
@@ -84,23 +84,23 @@ export type SetCompositeStateAction<T> = (value: Partial<T>) => void;
 export function useCompositeState<T>(initial: T) {
     const [state, setState] = useState(initial);
 
-    const setMany = (value: Partial<T>) => {
+    const setMany = useCallback((value: Partial<T>) => {
         setState(original => ({
             ...original,
             ...value
         }));
-    }
+    }, []);
 
-    const setSingle = <K extends keyof T>(key: K, value: T[K]) => {
+    const setSingle = useCallback(<K extends keyof T>(key: K, value: T[K]) => {
         setState(original => ({
             ...original,
             [key]: value
         }));
-    }
+    }, []);
 
-    const reset = () => {
+    const reset = useCallback(() => {
         setState(initial);
-    }
+    }, [initial]);
 
     return { state, setSingle, setMany, reset };
 }
