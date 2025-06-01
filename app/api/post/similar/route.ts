@@ -27,7 +27,9 @@ export async function POST(req: NextRequest) {
         WHERE
             "imageHash" IS NOT NULL AND 
             "deletedAt" IS NULL AND
-            levenshtein_less_equal(${hash}, "imageHash", ${SIMILAR_THRESHOLD}) <= ${SIMILAR_THRESHOLD}`;
+            levenshtein_less_equal(${hash}, "imageHash", ${SIMILAR_THRESHOLD}) <= ${SIMILAR_THRESHOLD}
+        ORDER BY diff ASC
+        LIMIT 4`;
 
     return NextResponse.json({
         hash: hash,
