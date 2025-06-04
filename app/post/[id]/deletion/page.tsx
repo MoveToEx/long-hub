@@ -43,7 +43,7 @@ export default function Post({
     }, [data, isLoading, id, router]);
 
     return (
-        <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
+        <Grid container spacing={2} sx={{ m: 2 }}>
             <RequiresLogin />
             <Grid size={{ xs: 12, md: 4 }}>
                 {data &&

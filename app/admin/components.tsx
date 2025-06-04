@@ -1,137 +1,21 @@
 'use client';
 
 import MUIPagination from '@mui/material/Pagination';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Box from '@mui/material/Box';
-
+import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useSelectedLayoutSegment } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
-import { LinePlot } from '@mui/x-charts/LineChart';
-import { ChartsLegend, ChartsTooltip, ChartsXAxis, ChartsYAxis, ResponsiveChartContainer } from '@mui/x-charts';
-import { PiePlot } from '@mui/x-charts';
 import _ from 'lodash';
-import { ReactNode, useState } from 'react';
-import { eachDayOfInterval, isSameDay, subDays } from 'date-fns';
+import { ComponentType, ReactNode, useState, Suspense } from 'react';
+import Grid from '@mui/material/Grid2';
+import Skeleton from '@mui/material/Skeleton';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 
-export function ContributionChart({ data }: {
-    data: {
-        value: number,
-        label: string
-    }[]
-}) {
-    return (
-        <ResponsiveChartContainer
-            height={300}
-            series={[
-                {
-                    type: 'pie',
-                    data,
-                    innerRadius: 75,
-                    outerRadius: 100
-                }
-            ]}>
-            <PiePlot />
-            <ChartsTooltip trigger='item' />
-            <ChartsLegend
-                direction='column'
-                position={{
-                    vertical: 'middle',
-                    horizontal: 'left'
-                }}
-                padding={2} />
-        </ResponsiveChartContainer>
-    )
-}
-
-export function NewPostChart({ data }: {
-    data: {
-        date: Date,
-        count: number
-    }[]
-}) {
-    const dateRange = eachDayOfInterval({
-        start: subDays(new Date(), 28),
-        end: new Date()
-    });
-
-    const series = dateRange.map((value) => {
-        return data
-            .filter(item => isSameDay(item.date, value))
-            .map(item => Number(item.count))
-            .reduce((a, b) => a + b, 0);
-    });
-
-    return (
-        <ResponsiveChartContainer
-            height={300}
-            series={[{
-                type: 'line',
-                data: series,
-            }]}
-            xAxis={[{
-                scaleType: 'time',
-                data: dateRange,
-                valueFormatter: value => (value as Date).toLocaleDateString()
-            }]}>
-            <LinePlot />
-            <ChartsXAxis />
-            <ChartsYAxis />
-            <ChartsTooltip />
-        </ResponsiveChartContainer>
-    )
-}
-
-function TabPanel(props: {
-    children?: ReactNode,
-    value: number,
-    index: number
-}) {
-    const { children, value, index, ...other } = props;
-
-    return (
-        <div role="tabpanel" hidden={index !== value} {...other}>
-            {index === value && <Box sx={{ p: 2 }}>{children}</Box>}
-        </div>
-    )
-}
-
-export function PanelTabs({
-    slots,
-    titles
-}: {
-    slots: ReactNode[],
-    titles: string[]
-}) {
-    const [value, setValue] = useState(0);
-    return (
-        <Box>
-            <Box>
-                <Tabs
-                    value={value}
-                    variant='scrollable'
-                    scrollButtons='auto'
-                    onChange={(_, newValue) => setValue(newValue)}
-                    sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    {
-                        titles.map(value => (
-                            <Tab label={value} key={value} />
-                        ))
-                    }
-                </Tabs>
-            </Box>
-            {
-                slots.map((children, index) => (
-                    <TabPanel value={value} index={index} key={index}>
-                        {children}
-                    </TabPanel>
-                ))
-            }
-        </Box>
-    );
-}
+import Typography from '@mui/material/Typography';
+import { Configuration } from '@/lib/config';
 
 export function Pagination({
     page,
@@ -161,5 +45,88 @@ export function Pagination({
                 }} />
         </Stack>
     )
+}
 
+export function ResponsivePaper({
+    children
+}: {
+    children: ReactNode
+}) {
+    return (
+        <Paper
+            sx={theme => ({
+                overflowX: 'auto',
+                my: 2,
+                [theme.breakpoints.down('md')]: {
+                    my: 0,
+                    '&.MuiPaper-elevation1': {
+                        boxShadow: 'none'
+                    }
+                }
+            })}>
+            {children}
+        </Paper>
+    )
+}
+
+export function TabSkeleton() {
+    return (
+        <div>
+            <Box sx={{ my: 2 }}>
+                <Typography variant='h5'>
+                    <Skeleton width='75%' />
+                    <Skeleton width='35%' />
+                </Typography>
+            </Box>
+            <Grid container gap={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                    <Skeleton variant='rectangular' height={300} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }} className='flex flex-col'>
+                    <Skeleton className='flex-0' variant='text' width={350} />
+                    <Skeleton className='flex-0' variant='text' width={200} />
+                    <Skeleton className='flex-0' variant='text' width={350} />
+                    <Skeleton className='flex-0' variant='text' width={200} />
+                    <Skeleton className='flex-0' variant='text' width={350} />
+                </Grid>
+            </Grid>
+        </div>
+    )
+}
+
+
+
+export function PanelTabs({
+    slot,
+    titles
+}: {
+    slot: ReactNode,
+    titles: string[]
+}) {
+    const router = useRouter();
+    const selected = useSelectedLayoutSegment('tabs');
+
+    return (
+        <Box>
+            <Box>
+                <Tabs
+                    value={titles.indexOf(selected ?? '')}
+                    variant='scrollable'
+                    scrollButtons='auto'
+                    onChange={(_, newValue) => {
+                        router.push(titles[newValue]);
+                    }}
+                    sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                    {
+                        titles.map(value => (
+                            <Tab label={value} key={value} />
+                        ))
+                    }
+                </Tabs>
+            </Box>
+            <Box sx={{ p: 2 }}>
+                {slot}
+            </Box>
+        </Box>
+    );
 }

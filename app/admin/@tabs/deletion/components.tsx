@@ -3,7 +3,7 @@
 import { Prisma, RequestStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import Grid from '@mui/material/Grid2';
-import { ReactElement, ReactNode, useMemo, useState } from "react";
+import { ReactElement, useMemo, useState } from "react";
 import Image from "next/image";
 import { DataGrid, GridActionsCellItem, GridColDef, GridToolbar, useGridApiContext } from "@mui/x-data-grid";
 import Link from "next/link";
@@ -246,6 +246,42 @@ export function RequestDashboard({
 }: {
     requests: DeletionRequest[]
 }) {
+    const initialState = useMemo(() => ({
+        pagination: {
+            paginationModel: {
+                page: 0,
+                pageSize: 20
+            }
+        },
+        columns: {
+            columnVisibilityModel: {
+                createdAt: false
+            }
+        },
+        filter: {
+            filterModel: {
+                items: [
+                    {
+                        field: 'status',
+                        operator: 'is',
+                        value: RequestStatus.pending
+                    }
+                ]
+            }
+        }
+    }), []);
+
+    const slots = useMemo(() => ({
+        toolbar: GridToolbar
+    }), []);
+
+    const slotProps = useMemo(() => ({
+        toolbar: {
+            showQuickFilter: true,
+        },
+    }), []);
+
+    const pageSizeOptions = useMemo(() => [10, 20, 50, 100], []);
 
     return (
         <Grid container>
@@ -253,38 +289,10 @@ export function RequestDashboard({
                 <DataGrid
                     rows={requests}
                     columns={columns}
-                    pageSizeOptions={[10, 20, 50, 100]}
-                    initialState={{
-                        pagination: {
-                            paginationModel: {
-                                page: 0,
-                                pageSize: 20
-                            }
-                        },
-                        density: 'comfortable',
-                        columns: {
-                            columnVisibilityModel: {
-                                createdAt: false
-                            }
-                        },
-                        filter: {
-                            filterModel: {
-                                items: [
-                                    {
-                                        field: 'status',
-                                        operator: 'is',
-                                        value: RequestStatus.pending
-                                    }
-                                ]
-                            }
-                        }
-                    }}
-                    slots={{ toolbar: GridToolbar }}
-                    slotProps={{
-                        toolbar: {
-                            showQuickFilter: true,
-                        },
-                    }}
+                    pageSizeOptions={pageSizeOptions}
+                    initialState={initialState}
+                    slots={slots}
+                    slotProps={slotProps}
                 />
             </Grid>
         </Grid>

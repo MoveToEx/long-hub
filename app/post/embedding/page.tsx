@@ -36,7 +36,7 @@ export default function SearchPage() {
     }
 
     return (
-        <Box sx={{ mt: 2, mb: 2 }}>
+        <Box sx={{ m: 2 }}>
             <TextField
                 sx={{ mb: 2 }}
                 disabled={result.isLoading}

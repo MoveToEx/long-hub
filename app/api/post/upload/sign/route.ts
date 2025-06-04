@@ -9,6 +9,8 @@ import { responses, zjson } from '@/lib/server-util';
 import { auth } from '@/lib/dal';
 import { Permission } from '@/lib/constants';
 import worker from '@/lib/worker';
+import { get } from '@/lib/config';
+import { subMinutes } from 'date-fns';
 
 const schema = z.object({
     mime: z.enum(['image/png', 'image/webp', 'image/jpeg', 'image/gif'])
@@ -23,6 +25,24 @@ export async function POST(req: NextRequest) {
 
     if ((user.permission & Permission.Post.new) == 0) {
         return responses.forbidden();
+    }
+
+    const limit = await get('maxUploadRate');
+    const count = await prisma.upload_session.count({
+        where: {
+            userId: user.id,
+            createdAt: {
+                gt: subMinutes(new Date(), 1)
+            }
+        }
+    });
+
+    if (count >= limit) {
+        return NextResponse.json({
+            message: 'Rate limit excceeded'
+        }, {
+            status: 429
+        });
     }
 
     const { data, error } = zjson.pipe(schema).safeParse(await req.text());
@@ -63,7 +83,7 @@ export async function POST(req: NextRequest) {
         }
     });
 
-    await worker.recycle(id, 300);
+    await worker.recycle(id, await get('uploadSessionExpiration'));
 
     return NextResponse.json({
         id,

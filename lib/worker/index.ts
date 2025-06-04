@@ -29,10 +29,9 @@ const singleton = async () => {
     return boss;
 };
 
-declare global {
-    // eslint-disable-next-line no-var
-    var boss: undefined | Awaited<ReturnType<typeof singleton>>;
-}
+declare const globalThis: {
+    boss: Awaited<ReturnType<typeof singleton>>;
+} & typeof global;
 
 const boss = globalThis.boss ?? (await singleton());
 

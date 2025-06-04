@@ -17,7 +17,7 @@ import UndoIcon from '@mui/icons-material/Undo';
 
 
 import { useSnackbar } from 'notistack';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 type Post = NonNullable<Prisma.Result<typeof prisma.post, {
@@ -263,6 +263,41 @@ export function PostGrid({ posts }: {
         enqueueSnackbar('Failed: ' + err.message, { variant: 'error' });
     }, [enqueueSnackbar]);
 
+    const initialState = useMemo(() => ({
+        pagination: {
+            paginationModel: {
+                page: 0,
+                pageSize: 20
+            }
+        },
+        columns: {
+            columnVisibilityModel: {
+                imageHash: false,
+                uploaderId: false,
+                deletedAt: false,
+                deletionReason: false
+            }
+        },
+        filter: {
+            filterModel: {
+                items: [
+                    {
+                        field: 'deletedAt',
+                        operator: 'isEmpty'
+                    }
+                ]
+            }
+        }
+    }), []);
+
+    const slots = useMemo(() => ({ toolbar: GridToolbar }), []);
+    const slotProps = useMemo(() => ({
+        toolbar: {
+            showQuickFilter: true,
+        },
+    }), []);
+
+
     return (
         <>
             <DataGrid
@@ -274,39 +309,9 @@ export function PostGrid({ posts }: {
                 rows={posts}
                 processRowUpdate={EditPost}
                 onProcessRowUpdateError={onError}
-                initialState={{
-                    pagination: {
-                        paginationModel: {
-                            page: 0,
-                            pageSize: 20
-                        }
-                    },
-                    columns: {
-                        columnVisibilityModel: {
-                            imageHash: false,
-                            uploaderId: false,
-                            deletedAt: false,
-                            deletionReason: false
-                        }
-                    },
-                    filter: {
-                        filterModel: {
-                            items: [
-                                {
-                                    field: 'deletedAt',
-                                    operator: 'isEmpty'
-                                }
-                            ]
-                        }
-                    },
-                    density: 'comfortable'
-                }}
-                slots={{ toolbar: GridToolbar }}
-                slotProps={{
-                    toolbar: {
-                        showQuickFilter: true,
-                    },
-                }}
+                initialState={initialState}
+                slots={slots}
+                slotProps={slotProps}
             />
         </>
     )

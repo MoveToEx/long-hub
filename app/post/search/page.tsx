@@ -129,7 +129,7 @@ export default function SearchPage() {
     }
 
     return (
-        <Box>
+        <Box sx={{ m: 2 }}>
             <SearchInput value={params.keyword} onChange={(_, val) => {
                 setParams({
                     keyword: val,

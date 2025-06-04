@@ -107,3 +107,11 @@ model user {
   deletion_requests deletion_request[]
   upload_session    upload_session[]
 }
+
+model configuration {
+  id          Int      @id @default(autoincrement())
+  key         String   @db.VarChar(32) @unique
+  value       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -54,7 +54,7 @@ export async function EditPost(updatedRow: any, originalRow: any) {
     revalidatePath('/admin');
     revalidatePath('/admin/posts');
 
-    return Object.fromEntries(Object.entries(row));
+    return row;
 }
 
 

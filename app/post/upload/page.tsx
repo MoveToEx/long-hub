@@ -149,7 +149,7 @@ export default function UploadPage() {
     }, [enqueueSnackbar, next]);
 
     return (
-        <Grid container spacing={2} sx={{ pt: 2 }}>
+        <Grid container spacing={2} sx={{ m: 2 }}>
             <RequiresLogin />
             <Grid sx={{ overflow: 'hidden' }} size={{ xs: 12, md: 6 }}>
                 <div className="h-12 w-full flex flex-col gap-1 justify-center items-center text-center">

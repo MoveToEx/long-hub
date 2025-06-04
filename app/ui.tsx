@@ -142,7 +142,7 @@ const adminDrawerItems: (DrawerItemParam | DrawerDividerParam)[] = [
     {
         type: 'item',
         title: 'Admin',
-        href: '/admin',
+        href: '/admin/dashboard',
         icon: SecurityIcon
     },
 ]
@@ -385,7 +385,11 @@ function RootTemplate({
                     },
                     transition: theme.transitions.create(['margin'])
                 })}>
-                <Container>
+                <Container sx={theme => ({
+                    [theme.breakpoints.down('md')]: {
+                        px: 0
+                    }
+                })}>
                     <Toolbar sx={{ zIndex: -1 }} />
                     {children}
                 </Container>

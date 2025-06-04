@@ -274,7 +274,7 @@ export default function PostPage({
     }
 
     return (
-        <Grid container spacing={2} sx={{ pt: 2, pb: 2 }}>
+        <Grid container spacing={2} sx={{ m: 2 }}>
             <Grid size={{ xs: 12, md: 4 }}>
                 <CopiableImage
                     src={data.imageURL}

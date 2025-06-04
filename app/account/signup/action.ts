@@ -1,17 +1,24 @@
 'use server';
 
 import { prisma } from '@/lib/db';
-import { redirect } from 'next/navigation';
 import _ from 'lodash';
 import bcrypt from 'bcryptjs';
 import * as C from '@/lib/constants';
 import crypto from 'crypto';
 import { headers } from 'next/headers';
 import env from '@/lib/env';
+import { get } from '@/lib/config';
 
 const turnstileSecret = env.CF_TURNSTILE_SECRET;
 
 export default async function signUp(_state: unknown, fd: FormData) {
+    if (await get('allowRegistration') === false) {
+        return {
+            error: true,
+            message: 'Registration disabled for this site',
+            timestamp: Number(new Date())
+        }
+    }
     const username = fd.get('username') as string;
     const password = fd.get('password') as string;
     const confirmPassword = fd.get('password-confirm') as string;
@@ -91,7 +98,7 @@ export default async function signUp(_state: unknown, fd: FormData) {
             name: username,
             passwordHash: hash,
             accessKey: crypto.randomBytes(32).toString('base64url'),
-            permission: C.Permission.Post.edit | C.Permission.Post.new,
+            permission: await get('defaultPermission'),
             createdAt: new Date()
         }
     });
