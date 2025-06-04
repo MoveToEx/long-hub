@@ -8,9 +8,12 @@ import { headers } from 'next/headers';
 export async function authByKey() {
     const hdr = await headers();
 
-    const key = hdr.get('X-Access-Key');
+    const authorization = hdr.get('Authorization');
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+        return null;
+    }
 
-    if (!key) return null;
+    const key = authorization.slice('Bearer '.length);
 
     const user = await prisma.user.findFirst({
         where: {
