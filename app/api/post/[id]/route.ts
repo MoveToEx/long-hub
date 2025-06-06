@@ -24,6 +24,15 @@ export async function GET(req: NextRequest, {
     params: Promise<{ id: string }>
 }) {
     const { id } = await params;
+
+    if (!z.string().uuid().safeParse(id).success) {
+        return NextResponse.json({
+            error: 'Unknown ID format'
+        }, {
+            status: 400
+        });
+    }
+
     const post = await prisma.post.findFirst({
         where: {
             id
@@ -72,6 +81,14 @@ export async function PUT(req: NextRequest, {
     }
 
     const { id } = await params;
+
+    if (!z.string().uuid().safeParse(id).success) {
+        return NextResponse.json({
+            error: 'Unknown ID format'
+        }, {
+            status: 400
+        });
+    }
 
     const post = await prisma.post.findFirst({
         where: { id }
@@ -161,6 +178,16 @@ export async function DELETE(req: NextRequest, {
 }: {
     params: Promise<{ id: string }>
 }) {
+    const { id } = await params;
+
+    if (!z.string().uuid().safeParse(id).success) {
+        return NextResponse.json({
+            error: 'Unknown ID format'
+        }, {
+            status: 400
+        });
+    }
+
     const user = await auth();
 
     if (!user) {
@@ -170,8 +197,6 @@ export async function DELETE(req: NextRequest, {
     if ((user.permission & C.Permission.Admin.Post.delete) == 0) {
         return responses.forbidden();
     }
-
-    const { id } = await params;
 
     const { data, error } = deleteSchema.safeParse(await req.json());
 
