@@ -1,5 +1,4 @@
 
-import { prisma } from "@/lib/db";
 
 import Box from '@mui/material/Box';
 import _ from "lodash";
@@ -7,18 +6,7 @@ import { PostGrid } from "./components";
 import Typography from '@mui/material/Typography';
 
 
-export default async function PostTab() {
-    const posts = await prisma.post.findMany({
-        orderBy: [
-            {
-                createdAt: 'desc'
-            }
-        ],
-        include: {
-            uploader: true
-        },
-    });
-
+export default function PostTab() {
     return (
         <Box>
             <Box className="flex justify-between">
@@ -34,7 +22,7 @@ export default async function PostTab() {
                     m: 2
                 }
             }}>
-                <PostGrid posts={posts} />
+                <PostGrid />
             </Box>
         </Box>
     )

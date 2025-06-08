@@ -8,7 +8,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { copyImage } from '@/lib/util';
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { ReactElement } from 'react';
 import Image, { ImageProps } from 'next/image';
 

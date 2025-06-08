@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';

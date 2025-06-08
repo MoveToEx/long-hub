@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ConfigItems } from "../components";
+import { ConfigItems } from "./components";
 
 import SettingsIcon from '@mui/icons-material/Settings';
 

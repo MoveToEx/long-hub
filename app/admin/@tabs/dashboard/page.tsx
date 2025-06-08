@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import icon from '@/public/o.png';
 import Image from "next/image";
 import { NewPostChart, ContributionChart } from "../components";

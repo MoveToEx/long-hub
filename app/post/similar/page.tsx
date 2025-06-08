@@ -1,6 +1,6 @@
 'use client';
 
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import DragDrop from '@/components/DragDrop';
 import Skeleton from '@mui/material/Skeleton';

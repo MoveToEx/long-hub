@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
     });
 
     revalidatePath('/admin');
-    revalidatePath('/admin/posts');
+    revalidatePath('/admin/post');
 
     await worker.embedding(data.id);
     await worker.hash(data.id);

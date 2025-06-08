@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { createQueryString } from '@/lib/util';
 import _ from 'lodash';
 import { ComponentType, ReactNode, useState, Suspense } from 'react';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';

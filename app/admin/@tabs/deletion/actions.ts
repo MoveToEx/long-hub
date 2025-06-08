@@ -7,7 +7,7 @@ import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
 
 function revalidate() {
-    revalidatePath('/admin/deletion_requests');
+    revalidatePath('/admin/deletion');
     revalidatePath('/admin/post');
     revalidatePath('/admin/');
 }

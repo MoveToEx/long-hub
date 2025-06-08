@@ -1,16 +1,15 @@
 'use client';
 
 import { prisma } from '@/lib/db';
-import { DataGrid, GridColDef, GridToolbar, GridActionsCellItem, useGridApiContext, getGridDateOperators } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridActionsCellItem, useGridApiContext, getGridDateOperators, getGridStringOperators } from '@mui/x-data-grid';
 import { Prisma, Rating, Status } from '@prisma/client';
-import { EditPost, DeletePost, RecoverPost } from './actions';
+import { EditPost, DeletePost, RecoverPost, getRows } from './actions';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Image from 'next/image';
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import UndoIcon from '@mui/icons-material/Undo';
@@ -18,7 +17,7 @@ import UndoIcon from '@mui/icons-material/Undo';
 
 import { useSnackbar } from 'notistack';
 import { useCallback, useMemo, useState } from 'react';
-import Link from 'next/link';
+import { getDateFilterOperator, getNumberFilterOperator, getSelectFilterOperator, getStringFilterOperator } from '@/lib/grid';
 
 type Post = NonNullable<Prisma.Result<typeof prisma.post, {
     include: {
@@ -38,10 +37,8 @@ const columns: GridColDef[] = [
         align: 'center',
         headerAlign: 'left',
         width: 300,
-        renderCell: (params) => {
-            if (params.value == null) return <></>;
-            return <Link href={"/post/" + params.value}>{params.value}</Link>
-        }
+        type: 'string',
+        filterOperators: getStringFilterOperator(false)
     },
     {
         field: 'imageURL',
@@ -76,6 +73,7 @@ const columns: GridColDef[] = [
         align: 'center',
         headerAlign: 'center',
         type: 'string',
+        filterOperators: getStringFilterOperator(false),
         editable: true,
     },
     {
@@ -85,6 +83,7 @@ const columns: GridColDef[] = [
         align: 'center',
         headerAlign: 'center',
         type: 'singleSelect',
+        filterOperators: getSelectFilterOperator(false, Object.values(Rating)),
         valueOptions: Object.values(Rating),
         editable: true
     },
@@ -95,15 +94,26 @@ const columns: GridColDef[] = [
         align: 'center',
         headerAlign: 'center',
         type: 'singleSelect',
+        filterOperators: getSelectFilterOperator(false, Object.values(Status)),
         valueOptions: Object.values(Status),
         editable: true
     },
     {
         field: 'createdAt',
-        headerName: 'Created',
+        headerName: 'Created At',
         width: 150,
         align: 'center',
         headerAlign: 'center',
+        filterOperators: getDateFilterOperator(false),
+        type: 'dateTime',
+    },
+    {
+        field: 'updatedAt',
+        headerName: 'Updated At',
+        width: 150,
+        align: 'center',
+        headerAlign: 'center',
+        filterOperators: getDateFilterOperator(false),
         type: 'dateTime',
     },
     {
@@ -113,6 +123,7 @@ const columns: GridColDef[] = [
         align: 'center',
         headerAlign: 'center',
         type: 'string',
+        filterOperators: getStringFilterOperator(true),
         valueFormatter: (val) => parseInt(val, 2).toString(16).toUpperCase()
     },
     {
@@ -122,6 +133,7 @@ const columns: GridColDef[] = [
         align: 'center',
         headerAlign: 'center',
         type: 'dateTime',
+        filterOperators: getDateFilterOperator(true),
         editable: true,
     },
     {
@@ -131,6 +143,7 @@ const columns: GridColDef[] = [
         align: 'center',
         headerAlign: 'center',
         type: 'string',
+        filterOperators: getStringFilterOperator(true),
         editable: true,
     },
     {
@@ -140,6 +153,7 @@ const columns: GridColDef[] = [
         align: 'center',
         headerAlign: 'center',
         type: 'number',
+        filterOperators: getNumberFilterOperator(true),
         editable: true,
         renderCell: (params) => {
             if (params.row.uploader !== null) {
@@ -254,9 +268,7 @@ function RowAction(post: Post) {
     return result;
 }
 
-export function PostGrid({ posts }: {
-    posts: Post[]
-}) {
+export function PostGrid() {
     const { enqueueSnackbar } = useSnackbar();
 
     const onError = useCallback((err: Error) => {
@@ -275,7 +287,8 @@ export function PostGrid({ posts }: {
                 imageHash: false,
                 uploaderId: false,
                 deletedAt: false,
-                deletionReason: false
+                deletionReason: false,
+                updatedAt: false,
             }
         },
         filter: {
@@ -283,36 +296,31 @@ export function PostGrid({ posts }: {
                 items: [
                     {
                         field: 'deletedAt',
-                        operator: 'isEmpty'
+                        operator: '$null'
                     }
                 ]
             }
         }
     }), []);
 
-    const slots = useMemo(() => ({ toolbar: GridToolbar }), []);
-    const slotProps = useMemo(() => ({
-        toolbar: {
-            showQuickFilter: true,
-        },
+    const dataSource = useMemo(() => ({
+        getRows
     }), []);
 
 
     return (
-        <>
-            <DataGrid
-                sx={{
-                    height: '700px'
-                }}
-                pageSizeOptions={[10, 20, 50, 100]}
-                columns={columns}
-                rows={posts}
-                processRowUpdate={EditPost}
-                onProcessRowUpdateError={onError}
-                initialState={initialState}
-                slots={slots}
-                slotProps={slotProps}
-            />
-        </>
+        <DataGrid
+            sx={{
+                height: '700px'
+            }}
+            pageSizeOptions={[10, 20, 50, 100]}
+            columns={columns}
+            dataSource={dataSource}
+            processRowUpdate={EditPost}
+            onProcessRowUpdateError={onError}
+            onDataSourceError={onError}
+            initialState={initialState}
+            showToolbar
+        />
     )
 }

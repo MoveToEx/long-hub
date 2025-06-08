@@ -1,6 +1,6 @@
 'use client';
 
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Image from 'next/image';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';

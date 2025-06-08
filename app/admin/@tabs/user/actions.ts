@@ -34,7 +34,7 @@ export async function DeleteUser(id: number) {
         }
     });
 
-    revalidatePath('/admin/users');
+    revalidatePath('/admin/user');
 }
 
 export async function ResetAccessKey(id: number) {

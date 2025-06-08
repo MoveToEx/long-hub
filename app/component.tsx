@@ -4,7 +4,7 @@ import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import { getContribution, getPostsCount, getRandomPost } from "./actions";
 import useSWR from "swr";
 import Skeleton from "@mui/material/Skeleton";
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import _ from 'lodash';
 import { useEffect, useMemo, useState } from "react";
 import CalendarHeatmap from "react-calendar-heatmap";

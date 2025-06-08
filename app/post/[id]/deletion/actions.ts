@@ -59,8 +59,8 @@ export async function SubmitRequest(state: string, fd: FormData) {
     });
 
     revalidatePath('/admin');
-    revalidatePath('/admin/posts');
-    revalidatePath('/admin/deletion_requests');
+    revalidatePath('/admin/post');
+    revalidatePath('/admin/deletion');
 
     return redirect(`/post/${postId}`);
 }
@@ -109,8 +109,8 @@ export async function CancelRequest(postId: string) {
     });
     
     revalidatePath('/admin');
-    revalidatePath('/admin/posts');
-    revalidatePath('/admin/deletion_requests');
+    revalidatePath('/admin/post');
+    revalidatePath('/admin/deletion');
 
     return redirect('/post/' + postId);
 }

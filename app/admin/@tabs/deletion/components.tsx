@@ -2,7 +2,7 @@
 
 import { Prisma, RequestStatus } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { ReactElement, useMemo, useState } from "react";
 import Image from "next/image";
 import { DataGrid, GridActionsCellItem, GridColDef, GridToolbar, useGridApiContext } from "@mui/x-data-grid";
@@ -271,16 +271,6 @@ export function RequestDashboard({
         }
     }), []);
 
-    const slots = useMemo(() => ({
-        toolbar: GridToolbar
-    }), []);
-
-    const slotProps = useMemo(() => ({
-        toolbar: {
-            showQuickFilter: true,
-        },
-    }), []);
-
     const pageSizeOptions = useMemo(() => [10, 20, 50, 100], []);
 
     return (
@@ -291,8 +281,7 @@ export function RequestDashboard({
                     columns={columns}
                     pageSizeOptions={pageSizeOptions}
                     initialState={initialState}
-                    slots={slots}
-                    slotProps={slotProps}
+                    showToolbar
                 />
             </Grid>
         </Grid>

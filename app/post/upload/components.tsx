@@ -1,6 +1,6 @@
 'use client';
 
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import Dialog from '@mui/material/Dialog';

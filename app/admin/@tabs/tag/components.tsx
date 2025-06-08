@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 
 import SendIcon from '@mui/icons-material/Send';
@@ -114,12 +114,7 @@ export function TagsGrid({ tags }: {
             }))}
             processRowUpdate={EditTag}
             pageSizeOptions={[30, 50, 100]}
-            slots={{ toolbar: GridToolbar }}
-            slotProps={{
-                toolbar: {
-                    showQuickFilter: true,
-                },
-            }}
+            showToolbar
         />
     )
 }

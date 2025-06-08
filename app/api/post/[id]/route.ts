@@ -168,7 +168,7 @@ export async function PUT(req: NextRequest, {
     ]));
 
     revalidatePath('/admin');
-    revalidatePath('/admin/posts');
+    revalidatePath('/admin/post');
 
     return NextResponse.json(result);
 }

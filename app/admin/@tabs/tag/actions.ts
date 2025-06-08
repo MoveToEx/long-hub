@@ -96,7 +96,7 @@ export async function MigratePosts(_state: any, fd: FormData) {
     }
 
     revalidatePath('/admin');
-    revalidatePath('/admin/tags');
+    revalidatePath('/admin/tag');
 }
 
 export async function EditTag(updatedRow: any, originalRow: any) {
@@ -124,7 +124,7 @@ export async function EditTag(updatedRow: any, originalRow: any) {
     });
 
     revalidatePath('/admin');
-    revalidatePath('/admin/tags');
+    revalidatePath('/admin/tag');
 
-    return Promise.resolve(updatedRow);
+    return updatedRow;
 }
