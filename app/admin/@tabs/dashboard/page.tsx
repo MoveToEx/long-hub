@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import icon from '@/public/o.png';
 import Image from "next/image";
-import { NewPostChart, ContributionChart } from "../components";
+import { NewPostChart, ContributionChart } from "./components";
 import _ from "lodash";
 import { Prisma } from "@prisma/client";
 
