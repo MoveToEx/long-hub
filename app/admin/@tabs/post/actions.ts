@@ -240,7 +240,10 @@ export async function getRows(params: GridGetRowsParams): Promise<GridGetRowsRes
             skip: params.start,
             take: params.end - params.start + 1,
             orderBy,
-            where
+            where,
+            include: {
+                uploader: true
+            }
         })
     ]);
 
