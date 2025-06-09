@@ -1,7 +1,7 @@
 'use client';
 
 import { prisma } from '@/lib/db';
-import { DataGrid, GridColDef, GridActionsCellItem, useGridApiContext, getGridDateOperators, getGridStringOperators } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridActionsCellItem, useGridApiContext, getGridDateOperators, getGridStringOperators, GridInitialState } from '@mui/x-data-grid';
 import { Prisma, Rating, Status } from '@prisma/client';
 import { EditPost, DeletePost, RecoverPost, getRows } from './actions';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -275,7 +275,7 @@ export function PostGrid() {
         enqueueSnackbar('Failed: ' + err.message, { variant: 'error' });
     }, [enqueueSnackbar]);
 
-    const initialState = useMemo(() => ({
+    const initialState: GridInitialState = useMemo(() => ({
         pagination: {
             paginationModel: {
                 page: 0,
@@ -300,6 +300,14 @@ export function PostGrid() {
                     }
                 ]
             }
+        },
+        sorting: {
+            sortModel: [
+                {
+                    field: 'createdAt',
+                    sort: 'desc'
+                }
+            ]
         }
     }), []);
 
