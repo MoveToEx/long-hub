@@ -180,7 +180,7 @@ export function ContributionChart() {
         return <span>Failed to fetch</span>
     }
 
-    if (user.isLoading) {
+    if (user.isLoading || data.isLoading) {
         return <Skeleton sx={{ width: '100%', height: '100%' }} />
     }
 
