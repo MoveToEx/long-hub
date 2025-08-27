@@ -59,7 +59,7 @@ export default function Post({
     function submit() {
         setSubmitting(true);
         fetch('/api/post/' + id, {
-            method: 'PUT',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },

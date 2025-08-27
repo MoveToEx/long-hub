@@ -65,7 +65,7 @@ export async function GET(req: NextRequest, {
     return NextResponse.json(post);
 }
 
-export async function PUT(req: NextRequest, {
+export async function PATCH(req: NextRequest, {
     params
 }: {
     params: Promise<{ id: string }>
