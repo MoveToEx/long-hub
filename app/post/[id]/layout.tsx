@@ -11,8 +11,30 @@ export async function generateMetadata(
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const { id } = await params;
+
+    const post = await prisma.post.findFirst({
+        where: {
+            id
+        },
+        select: {
+            imageURL: true
+        }
+    });
+
+    if (post === null) {
+        return {
+            title: 'Post ???'
+        }
+    }
     return {
-        title: 'Post ' + _.first(id.split('-'))
+        title: 'Post ' + _.first(id.split('-')),
+        openGraph: {
+            images: [
+                {
+                    url: post.imageURL
+                }
+            ]
+        }
     };
 }
 
