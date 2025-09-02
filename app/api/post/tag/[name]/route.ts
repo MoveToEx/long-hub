@@ -6,9 +6,8 @@ export async function GET(req: NextRequest, {
 }: {
     params: Promise<{ name: string }>
 }) {
-    const { searchParams } = new URL(req.url);
-    const offset = Number(searchParams.get('offset') ?? 0);
-    const limit = Number(searchParams.get('limit') ?? 24);
+    const offset = Number(req.nextUrl.searchParams.get('offset') ?? 0);
+    const limit = Number(req.nextUrl.searchParams.get('limit') ?? 24);
     const { name } = await params;
 
     if (await prisma.tag.count({ where: { name } }) == 0) {

@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
-
+import { useEffect, useState, useRef, forwardRef, type ForwardedRef } from 'react';
 import wcmatch from 'wildcard-match';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import Typography from '@mui/material/Typography';
@@ -7,7 +6,7 @@ import Link from '@mui/material/Link';
 import Container from '@mui/material/Container';
 import _ from 'lodash';
 
-const DragDrop = React.forwardRef(function _DragDrop({
+const DragDrop = forwardRef(function _DragDrop({
     multiple = false,
     accept = '*/*',
     onChange,
@@ -16,7 +15,7 @@ const DragDrop = React.forwardRef(function _DragDrop({
     multiple?: boolean,
     accept?: string | string[],
     onChange: (files: Blob[]) => void
-}, ref: React.ForwardedRef<HTMLDivElement>) {
+}, ref: ForwardedRef<HTMLDivElement>) {
     const [files, setFiles] = useState<Blob[]>([]);
     const [dragging, setDragging] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);

@@ -12,11 +12,11 @@ import s3 from '@/lib/s3';
 import worker from '@/lib/worker';
 
 const schema = z.object({
-    id: z.string().uuid(),
+    id: z.guid(),
     metadata: z.object({
         text: z.string().default(''),
         tags: z.string().array().default([]),
-        rating: z.nativeEnum(Rating).default(Rating.none),
+        rating: z.enum(Rating).default(Rating.none),
     })
 });
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     if (error) {
         return NextResponse.json({
             message: 'Invalid request',
-            error: error.flatten()
+            error: z.treeifyError(error)
         }, {
             status: 400
         });

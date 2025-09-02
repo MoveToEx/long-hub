@@ -14,12 +14,12 @@ import Link from 'next/link';
 import login from './action';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/app/context';
+import { useSession } from '@/app/context';
 import SubmitButton from '@/components/SubmitButton';
 import { ModalContext } from '@/components/Modal';
 
 export default function SigninPage() {
-    const { data: user, mutate } = useUser();
+    const { data: user, mutate } = useSession();
     const router = useRouter();
     const [state, action] = useActionState(login, null);
     const modalContext = useContext(ModalContext);
@@ -42,7 +42,14 @@ export default function SigninPage() {
     }, [user, router, modalContext]);
 
     return (
-        <Box className="flex flex-col items-center justify-center">
+        <Box
+            sx={{
+                width: {
+                    sm: '500px'
+                },
+                m: 2
+            }}
+            className="flex flex-col items-center justify-center">
             <Typography variant="h4">
                 Log in to LONG Hub
             </Typography>
@@ -78,7 +85,7 @@ export default function SigninPage() {
                 }}>
                     <Typography variant="body2">
                         Don&apos;t have an account?
-                        <MUILink component={Link} href="/account/signup">
+                        <MUILink component={Link} href="/auth/signup">
                             Sign Up
                         </MUILink>
                     </Typography>

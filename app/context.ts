@@ -2,6 +2,7 @@ import useSWR from 'swr';
 import _ from 'lodash';
 import { Prisma } from '@prisma/client';
 import { prisma } from "@/lib/db";
+import type * as U from '@/lib/types';
 
 type NonSerializable = Date;
 
@@ -19,9 +20,9 @@ type SerializedObject<T> = {
     [K in keyof T]: Serialized<T[K]>
 };
 
-type User = NonNullable<Serialized<Prisma.Result<typeof prisma.user, {}, 'findFirst'>>>;
-
-type Tag = NonNullable<Prisma.Result<typeof prisma.tag, {}, 'findFirst'>>;
+type Self = Serialized<U.Self>;
+type User = Serialized<U.User>;
+type Tag = U.Tag;
 
 type Tags = {
     count: number,
@@ -87,8 +88,11 @@ const throwableFetcher = async (url: string) => {
     return response.json();
 }
 
+export const SessionFetcher = fetcher;
+export const useSession = () => useSWR<Self | undefined>('/api/auth', SessionFetcher);
+
 export const UserFetcher = fetcher;
-export const useUser = () => useSWR<User | undefined>('/api/account', UserFetcher);
+export const useUser = (id: number) => useSWR<User>(`/api/user/${id}`, UserFetcher);
 
 export const TagsFetcher = fetcher;
 export const useTags = (prefix?: string | null) => {
@@ -123,7 +127,6 @@ export type SearchQuery = {
     page?: number | undefined
 }
 
-// export const SearchResultFetcher = throwableFetcher;
 export const SearchResultFetcher = async ({ filter, order, page }: SearchQuery) => {
     if (filter.length == 0) {
         return {

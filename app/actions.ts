@@ -3,6 +3,13 @@
 import { auth } from "@/lib/dal";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@prisma/client";
+import { getSession } from "@/lib/session";
+import { Post } from "@/lib/types";
+
+export default async function logout() {
+    const session = await getSession();
+    session.destroy();
+}
 
 export async function getPostsCount() {
     const result: {
@@ -19,11 +26,7 @@ export async function getPostsCount() {
 }
 
 export async function getRandomPost() {
-    const data: {
-        id: string,
-        text: string,
-        imageURL: string
-    }[] = await prisma.$queryRaw(Prisma.sql`
+    const data: Post[] = await prisma.$queryRaw(Prisma.sql`
         SELECT "id", "text", "imageURL" FROM post
         WHERE "deletedAt" IS NULL
         ORDER BY RANDOM()

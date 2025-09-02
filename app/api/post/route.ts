@@ -1,18 +1,34 @@
 import { prisma } from '@/lib/db';
 import { NextRequest, NextResponse } from "next/server";
 import _ from 'lodash';
+import { auth } from '@/lib/dal';
+import { Preference } from '@/lib/preference';
+import { Prisma } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
+    const offset = Number(req.nextUrl.searchParams.get('offset') ?? 0);
+    const limit = Number(req.nextUrl.searchParams.get('limit') ?? 24);
 
-    const offset = Number(searchParams.get('offset') ?? 0);
-    const limit = Number(searchParams.get('limit') ?? 24);
+    let where: Prisma.Args<typeof prisma.post, 'findFirst'>['where'] = {
+        deletedAt: null
+    };
+
+    const user = await auth();
+
+    if (user?.preference?.allowNSFW !== true) {
+        where = {
+            ...where,
+            tags: {
+                none: {
+                    name: 'nsfw'
+                }
+            }
+        }
+    }
 
     const [posts, count] = await prisma.$transaction([
         prisma.post.findMany({
-            where: {
-                deletedAt: null
-            },
+            where,
             orderBy: [
                 {
                     createdAt: 'desc',
@@ -33,11 +49,7 @@ export async function GET(req: NextRequest) {
             skip: offset,
             take: limit
         }),
-        prisma.post.count({
-            where: {
-                deletedAt: null
-            }
-        })
+        prisma.post.count({ where })
     ])
 
     return NextResponse.json({

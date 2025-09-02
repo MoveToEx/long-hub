@@ -1,13 +1,10 @@
 'use client';
 
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Fab from '@mui/material/Fab';
-import Tooltip from '@mui/material/Tooltip';
+import Button from '@mui/material/Button';
 import Fade from '@mui/material/Fade';
+import Alert from '@mui/material/Alert';
 
 import { useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
@@ -19,13 +16,11 @@ import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LinearProgress from '@mui/material/LinearProgress';
 import { SearchButton } from './components';
-import { useCompositeState } from '@/lib/hooks';
+import { useCompositeState, useUploadState } from '@/lib/hooks';
 
-import RatingComponent from '@/components/Rating';
-import RatingIcon from '@/components/RatingIcon';
 import DragDrop from '@/components/DragDrop';
 import { Rating } from '@prisma/client';
-import { TagsInput } from '@/components/TagsInput';
+import MetadataForm from '@/components/edit/MetadataForm';
 
 type Metadata = {
     text: string,
@@ -38,19 +33,15 @@ type Preview = {
     url: string
 };
 
-type State = 'idle' | 'wait-sign' | 'uploading' | 'wait-ack';
-
 export default function UploadPage() {
-    const [state, setState] = useState<State>('idle');
-    const [id, setId] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+    const { state, id, progress, error, submit } = useUploadState();
+
     const [files, setFiles] = useState<Preview[]>([]);
-    const { state: metadata, setSingle, reset } = useCompositeState<Metadata>({
+    const { state: metadata, setSingle: set, reset } = useCompositeState<Metadata>({
         text: '',
         rating: Rating.none,
         tags: []
     });
-    const [progress, setProgress] = useState<number | null>(null);
 
     const { enqueueSnackbar } = useSnackbar();
 
@@ -62,91 +53,6 @@ export default function UploadPage() {
         URL.revokeObjectURL(files[0].url);
         setFiles(files => _.slice(files, 1));
     }, [files, reset]);
-
-    const submit = useCallback(async (metadata: Metadata, blob: Blob) => {
-        setState('wait-sign');
-
-        let response = await fetch('/api/post/upload/sign', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                mime: blob.type
-            }),
-        });
-
-        if (!response.ok) {
-            setState('idle');
-            enqueueSnackbar('Failed when acquiring presigned url', {
-                variant: 'error'
-            });
-            return;
-        }
-
-        const { url, id } = await response.json();
-
-        setId(id);
-        setState('uploading');
-
-        let status: number = await new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.upload.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    setProgress((100 * event.loaded) / event.total);
-                }
-            };
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    resolve(xhr.status);
-                }
-            };
-
-            xhr.onerror = () => {
-                reject(xhr.status);
-            };
-            xhr.open('PUT', url, true);
-            xhr.setRequestHeader('Content-Type', blob.type);
-            xhr.send(blob);
-        });
-
-        if (!(status >= 200 && status < 300)) {
-            setState('idle');
-            enqueueSnackbar('Failed when uploading', {
-                variant: 'error'
-            });
-            return;
-        }
-
-        setState('wait-ack');
-
-        response = await fetch('/api/post/upload/ack', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id,
-                metadata
-            }),
-        });
-
-        if (!response.ok) {
-            setState('idle');
-            enqueueSnackbar('Failed: ' + response.statusText, {
-                variant: 'error'
-            });
-            return;
-        }
-
-        setState('idle');
-        setId(null);
-        setProgress(null);
-        next();
-        enqueueSnackbar('Uploaded successfully', {
-            variant: 'success'
-        });
-    }, [enqueueSnackbar, next]);
 
     return (
         <Grid container spacing={2} sx={{ m: 2 }}>
@@ -170,7 +76,6 @@ export default function UploadPage() {
                             }
                         </>
                     )}
-
                 </div>
                 {files.length == 0 &&
                     <DragDrop
@@ -191,78 +96,55 @@ export default function UploadPage() {
                         height={300}
                         width={300} />
                 )}
-
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-                <Stack spacing={2} alignItems="center">
-                    <Typography variant="h6">
-                        {files.length.toString() + ' image' + (files.length > 1 ? 's' : '') + ' left'}
-                    </Typography>
-                    <TextField
-                        label="Text"
-                        fullWidth
-                        value={metadata.text}
-                        type="text"
-                        autoComplete="off"
-                        name="text"
-                        onChange={(e) => {
-                            setSingle('text', e.target.value);
+            <Grid className='flex flex-col gap-3' size={{ xs: 12, md: 6 }}>
+                <Typography variant="h6" className='self-center'>
+                    {`${files.length} image${files.length > 1 ? 's' : ''} left`}
+                </Typography>
+                <MetadataForm value={metadata} reducer={(key, val) => set(key, val)} />
+
+                <Typography variant="subtitle2">
+                    File type: {files.length == 0 ? 'None' : files[0].blob.type}
+                </Typography>
+
+                {error && (
+                    <Alert severity='error'>{error?.message}</Alert>
+                )}
+
+                <div className='flex flex-row justify-around'>
+                    <Button
+                        onClick={() => {
+                            next();
+                            enqueueSnackbar('Skipped 1 image', { variant: 'info' });
                         }}
-                    />
-                    <TagsInput
-                        value={metadata.tags}
-                        onChange={v => setSingle('tags', v)} />
-                    <Box className="flex w-full items-center">
-                        <Tooltip title="Rating">
-                            <RatingIcon />
-                        </Tooltip>
-                        <RatingComponent
-                            value={metadata.rating}
-                            onChange={(_, newValue) => {
-                                setSingle('rating', newValue);
-                            }} />
-                        <Box sx={{ ml: 1 }}>
-                            {_.upperFirst(metadata.rating)}
-                        </Box>
-                    </Box>
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        disabled={state !== 'idle' || files.length == 0}>
+                        skip
+                    </Button>
 
-                    <Box className="w-full">
-                        <Typography variant="subtitle2">
-                            File type: {files.length == 0 ? 'None' : files[0].blob.type}
-                        </Typography>
-                    </Box>
+                    <Button
+                        variant='contained'
+                        onClick={async () => {
+                            if (await submit(metadata, files[0].blob)) {
+                                enqueueSnackbar('Uploaded successfully', {
+                                    variant: 'success'
+                                });
+                                next();
+                            }
+                        }}
+                        color="primary"
+                        startIcon={<SendIcon />}
+                        disabled={files.length == 0}
+                        loading={state !== 'idle'}>
+                        submit
+                    </Button>
 
-                    <Box sx={{ p: 1, position: 'relative' }} >
-
-                        <Stack direction="row" spacing={2}>
-
-                            <Tooltip title="Submit">
-                                <span>
-                                    <Fab onClick={async () => {
-                                        setLoading(true);
-                                        await submit(metadata, files[0].blob);
-                                        setLoading(false);
-                                    }} color="primary" disabled={loading || files.length == 0}>
-                                        <SendIcon />
-                                    </Fab>
-                                </span>
-                            </Tooltip>
-
-                            <Tooltip title="Skip current image">
-                                <span>
-                                    <Fab onClick={() => {
-                                        next();
-                                        enqueueSnackbar('Skipped 1 image', { variant: 'info' });
-                                    }} color="error" disabled={loading || files.length == 0}>
-                                        <DeleteIcon />
-                                    </Fab>
-                                </span>
-                            </Tooltip>
-
-                            <SearchButton text={metadata.text} tags={metadata.tags} />
-                        </Stack>
-                    </Box>
-                </Stack>
+                    <SearchButton
+                        text={metadata.text}
+                        tags={metadata.tags}
+                        disabled={files.length === 0} />
+                </div>
             </Grid>
         </Grid>
     );

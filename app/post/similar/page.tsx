@@ -10,7 +10,7 @@ import _ from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
 import { useSnackbar } from 'notistack';
 import Box from '@mui/material/Box';
-import PostGrid from '@/components/PostGridItem';
+import Posts from '@/components/Posts';
 
 interface Preview {
     file: Blob;
@@ -20,6 +20,7 @@ interface Preview {
 interface SimilarPost {
     id: string;
     imageURL: string;
+    text: string;
     diff: number;
 }
 
@@ -91,7 +92,6 @@ export default function UploadPage() {
                                 src={file.url}
                                 alt='preview'
                                 unoptimized
-                                crossOrigin='anonymous'
                                 height={300}
                                 width={300}
                                 style={{
@@ -150,13 +150,14 @@ export default function UploadPage() {
                         <Typography variant="subtitle2">
                             Image hash: {result.hash}
                         </Typography>
-                        <Grid container spacing={1}>
-                            {result.similar.map(val => (
-                                <Grid size={{ xs: 12, md: 6 }} key={val.id}>
-                                    <PostGrid value={val} newTab />
-                                </Grid>
-                            ))}
-                        </Grid>
+                        <Posts layout='grid' posts={result.similar} slotProps={{
+                            grid: {
+                                size: {
+                                    xs: 12,
+                                    md: 6
+                                }
+                            }
+                        }} />
                     </>
                 )}
 

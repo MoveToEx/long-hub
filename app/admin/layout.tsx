@@ -3,7 +3,6 @@ import { ReactNode } from 'react';
 import _ from 'lodash';
 import { auth } from '@/lib/dal';
 import { notFound } from "next/navigation";
-import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
 import { ResponsivePaper, PanelTabs } from './components';
 
@@ -12,10 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default async function Layout({
-    children,
     tabs
 }: {
-    children: ReactNode,
     tabs: ReactNode
 }) {
     const user = await auth();
@@ -25,13 +22,13 @@ export default async function Layout({
     }
 
     return (
-        <Box>
+        <div className='flex flex-col self-start justify-center w-full'>
             <ResponsivePaper>
                 <PanelTabs
                     titles={['dashboard', 'post', 'user', 'tag', 'deletion', 'config']}
                     slot={tabs}
                 />
             </ResponsivePaper>
-        </Box>
+        </div>
     )
 }

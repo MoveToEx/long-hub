@@ -1,51 +1,17 @@
 'use client';
 
-import MUIPagination from '@mui/material/Pagination';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import { usePathname, useSearchParams, useSelectedLayoutSegment } from 'next/navigation';
+import { useSelectedLayoutSegment } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { createQueryString } from '@/lib/util';
 import _ from 'lodash';
-import { ComponentType, ReactNode, useState, Suspense } from 'react';
+import { ReactNode } from 'react';
 import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 
 import Typography from '@mui/material/Typography';
-import { Configuration } from '@/lib/config';
-
-export function Pagination({
-    page,
-    count
-}: {
-    page: number,
-    count: number
-}) {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const pathname = usePathname();
-
-    return (
-        <Stack alignItems="center">
-            <MUIPagination
-                shape="rounded"
-                count={count}
-                page={page}
-                onChange={(_, v) => {
-                    router.push(createQueryString(pathname, {
-                        ...[...searchParams.entries()].reduce((a, x) => ({
-                            ...a,
-                            [x[0]]: x[1]
-                        }), {}),
-                        page: v
-                    }));
-                }} />
-        </Stack>
-    )
-}
 
 export function ResponsivePaper({
     children
@@ -108,22 +74,20 @@ export function PanelTabs({
 
     return (
         <Box>
-            <Box>
-                <Tabs
-                    value={titles.indexOf(selected ?? '')}
-                    variant='scrollable'
-                    scrollButtons='auto'
-                    onChange={(_, newValue) => {
-                        router.push(titles[newValue]);
-                    }}
-                    sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    {
-                        titles.map(value => (
-                            <Tab label={value} key={value} />
-                        ))
-                    }
-                </Tabs>
-            </Box>
+            <Tabs
+                value={titles.indexOf(selected ?? '')}
+                variant='scrollable'
+                scrollButtons='auto'
+                onChange={(_, newValue) => {
+                    router.push(titles[newValue]);
+                }}
+                sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                {
+                    titles.map(value => (
+                        <Tab label={value} key={value} />
+                    ))
+                }
+            </Tabs>
             <Box sx={{ p: 2 }}>
                 {slot}
             </Box>

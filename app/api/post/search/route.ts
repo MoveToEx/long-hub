@@ -4,6 +4,7 @@ import _ from 'lodash';
 import { zjson } from "@/lib/server-util";
 import { z } from "zod";
 import { Prisma, Rating } from "@prisma/client";
+import { auth } from "@/lib/dal";
 
 const operatorMapping = {
     'gt': 'gt',
@@ -38,7 +39,7 @@ const schema = z.object({
         z.object({
             type: z.literal('rating'),
             op: z.undefined(),
-            value: z.nativeEnum(Rating)
+            value: z.enum(Rating)
         }),
         z.object({
             type: z.literal('tag'),
@@ -213,17 +214,15 @@ function transform<K extends Types>(item: Entry<K>) {
 }
 
 export async function POST(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-
-    const offset = Number(searchParams.get('offset') ?? 0);
-    const limit = Number(searchParams.get('limit') ?? 24);
+    const offset = Number(req.nextUrl.searchParams.get('offset') ?? 0);
+    const limit = Number(req.nextUrl.searchParams.get('limit') ?? 24);
 
     const { data, error } = zjson.pipe(schema).safeParse(await req.text());
 
     if (error) {
         return NextResponse.json({
             message: 'Invalid request',
-            error: error.errors
+            error: z.treeifyError(error)
         }, {
             status: 400
         });
@@ -232,6 +231,18 @@ export async function POST(req: NextRequest) {
     const where = {
         AND: [] as NonNullable<Prisma.Args<typeof prisma.post, 'findMany'>['where']>[]
     };
+
+    const user = await auth();
+
+    if (user?.preference?.allowNSFW !== true) {
+        where.AND.push({
+            tags: {
+                none: {
+                    name: 'nsfw'
+                }
+            }
+        });
+    }
 
     for (const item of data.filter) {
         where.AND.push(transform(item));

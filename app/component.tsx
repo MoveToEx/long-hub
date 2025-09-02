@@ -14,8 +14,9 @@ import Link from "next/link";
 import Image from 'next/image';
 import style from './page.module.css';
 import { preload } from "swr";
-import { PostFetcher, usePosts, useUser } from "./context";
-import PostGridItem from "@/components/PostGridItem";
+import { PostFetcher, usePosts, useSession } from "./context";
+import { Post } from "@/lib/types";
+import Posts from "@/components/Posts";
 
 export function NewPostChart({
     height
@@ -72,11 +73,7 @@ export function NewPostChart({
 }
 
 export function RandomPostGrid() {
-    const [randomPost, setRandomPost] = useState<{
-        id: string,
-        text: string,
-        imageURL: string
-    }[] | null>(null);
+    const [randomPost, setRandomPost] = useState<Post[] | null>(null);
 
     useEffect(() => {
         (async () => {
@@ -103,17 +100,6 @@ export function RandomPostGrid() {
                 <Grid size={6}>
                     <Skeleton height={128} />
                 </Grid>
-            </Grid>
-        )
-    }
-
-    if (randomPost.length == 0) {
-        return (
-            <Grid container spacing={1}>
-                <Grid size={6} height={128} />
-                <Grid size={6} height={128} />
-                <Grid size={6} height={128} />
-                <Grid size={6} height={128} />
             </Grid>
         )
     }
@@ -146,7 +132,7 @@ export function RandomPostGrid() {
 }
 
 export function ContributionChart() {
-    const user = useUser();
+    const user = useSession();
     const data = useSWR(['__action_getContribution', user.data?.id], ([_, u]) => !u ? null : getContribution());
     const activities = useMemo(() => {
         if (!data.data) {
@@ -187,7 +173,7 @@ export function ContributionChart() {
     if (user.data === undefined) {
         return (
             <Box className="w-full flex flex-row justify-center items-baseline">
-                <Button component={Link} href="/account/login" variant="outlined" sx={{ m: 2 }}>
+                <Button component={Link} href="/auth/login" variant="outlined" sx={{ m: 2 }}>
                     Log in
                 </Button>
                 <span>
@@ -224,23 +210,21 @@ export function ContributionChart() {
 }
 
 export function RecentPosts() {
-    const { isLoading, data } = usePosts(4);
+    const { data } = usePosts(4);
     return (
-        <Grid container spacing={2}>
-            {
-                isLoading && _.range(4).map(i => (
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i.toString()}>
-                        <Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
-                    </Grid>
-                ))
-            }
-            {
-                data && data.data.map(post => (
-                    <Grid size={{ xs: 12, sm: 6, md: 3 }} key={post.id}>
-                        <PostGridItem value={post} />
-                    </Grid>
-                ))
-            }
-        </Grid>
+        <Posts
+            layout='grid'
+            count={4}
+            posts={data?.data}
+            slotProps={{
+                grid: {
+                    size: {
+                        xs: 12,
+                        sm: 6,
+                        md: 3
+                    }
+                }
+            }}
+        />
     )
 }

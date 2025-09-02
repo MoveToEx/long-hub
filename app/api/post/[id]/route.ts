@@ -10,7 +10,7 @@ import { Prisma, Rating } from "@prisma/client";
 
 const updateSchema = z.object({
     text: z.optional(z.string()),
-    rating: z.optional(z.nativeEnum(Rating)),
+    rating: z.optional(z.enum(Rating)),
     tags: z.optional(z.array(z.string()))
 });
 
@@ -82,7 +82,7 @@ export async function PATCH(req: NextRequest, {
 
     const { id } = await params;
 
-    if (!z.string().uuid().safeParse(id).success) {
+    if (!z.guid().safeParse(id).success) {
         return NextResponse.json({
             error: 'Unknown ID format'
         }, {
@@ -109,7 +109,10 @@ export async function PATCH(req: NextRequest, {
     const { data: meta, error } = updateSchema.safeParse(await req.json());
 
     if (error) {
-        return NextResponse.json(error.errors, {
+        return NextResponse.json({
+            message: 'Invalid request',
+            error: z.treeifyError(error)
+        }, {
             status: 400
         });
     }
@@ -180,7 +183,7 @@ export async function DELETE(req: NextRequest, {
 }) {
     const { id } = await params;
 
-    if (!z.string().uuid().safeParse(id).success) {
+    if (!z.guid().safeParse(id).success) {
         return NextResponse.json({
             error: 'Unknown ID format'
         }, {
@@ -201,7 +204,10 @@ export async function DELETE(req: NextRequest, {
     const { data, error } = deleteSchema.safeParse(await req.json());
 
     if (error) {
-        return NextResponse.json(error.errors, {
+        return NextResponse.json({
+            message: 'Invalid request',
+            error: z.treeifyError(error)
+        }, {
             status: 400
         });
     }

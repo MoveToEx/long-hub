@@ -1,14 +1,12 @@
 'use client';
 
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import Fab from '@mui/material/Fab';
+import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Tooltip from '@mui/material/Tooltip';
-import PostGrid from '@/components/PostGridItem';
+import Posts from '@/components/Posts';
 
 import { useCallback, useState } from 'react';
 import { useSnackbar } from 'notistack';
@@ -20,10 +18,12 @@ import { useSearchResult, SearchQuery } from '@/app/context';
 
 export function SearchButton({
     text,
-    tags
+    tags,
+    disabled
 }: {
     text: string,
-    tags: string[]
+    tags: string[],
+    disabled: boolean
 }) {
     const transform = useCallback((text: string, tags: string[]) => {
         const filter = [];
@@ -54,30 +54,46 @@ export function SearchButton({
 
     return (
         <>
-            <Tooltip title="Search with current conditions">
-                <Fab onClick={() => {
+            <Button
+                onClick={() => {
                     setQuery(transform(text, tags));
                     setOpen(true);
-                }} color="secondary" disabled={isLoading}>
-                    <SearchIcon />
-                </Fab>
-            </Tooltip>
-            <Dialog onClose={() => setOpen(false)} open={open && !isLoading && data !== undefined} maxWidth="md" fullWidth>
+                }}
+                color="secondary"
+                startIcon={<SearchIcon />}
+                loading={isLoading}
+                disabled={disabled}>
+                search
+            </Button>
+
+            <Dialog
+                onClose={() => setOpen(false)}
+                open={open && !isLoading && data !== undefined}
+                maxWidth="md"
+                fullWidth>
+
                 <DialogTitle>Search Result</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
                         {`${data?.count} result(s) in total`}
                     </DialogContentText>
                     <Box sx={{ m: 2 }}>
-                        <Grid container>
-                            {
-                                data?.data.map(post => (
-                                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={post.id}>
-                                        <PostGrid value={post} newTab />
-                                    </Grid>
-                                ))
-                            }
-                        </Grid>
+                        <Posts
+                            layout='grid'
+                            posts={data?.data}
+                            allowCopy={false}
+                            slotProps={{
+                                grid: {
+                                    size: {
+                                        xs: 12,
+                                        sm: 6,
+                                        md: 4
+                                    }
+                                },
+                                link: {
+                                    target: '_blank'
+                                }
+                            }} />
                     </Box>
                 </DialogContent>
             </Dialog>

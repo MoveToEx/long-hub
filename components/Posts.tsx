@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, ReactNode } from 'react';
 import { useSnackbar } from 'notistack';
 import styles from './components.module.css';
 import Fab from '@mui/material/Fab';
@@ -8,16 +8,29 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { copyImage } from '@/lib/util';
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
-import Grid from '@mui/material/Grid';
+import Grid, { GridBaseProps } from '@mui/material/Grid';
 import { ReactElement } from 'react';
-import Image, { ImageProps } from 'next/image';
-
 import { preload } from 'swr';
 import Stack from '@mui/material/Stack';
+import Image, { ImageProps } from 'next/image';
 import Typography from '@mui/material/Typography';
-import Link, { LinkProps } from 'next/link';
+import Link from 'next/link';
 import TagRow from './TagRow';
 import { PostFetcher } from '@/app/context';
+import { Post } from '@/lib/types';
+
+type SlotProps = {
+    image?: Omit<ImageProps, 'src' | 'alt'>,
+    link?: Omit<Parameters<typeof Link>[0], 'href'>,
+    grid?: GridBaseProps,
+    container?: GridBaseProps,
+}
+
+type ItemProps = {
+    slotProps?: SlotProps,
+    post: Post,
+    prefetch?: boolean,
+}
 
 function GridSkeleton({
     count
@@ -29,7 +42,7 @@ function GridSkeleton({
             <Grid container spacing={2}>
                 {_.range(count).map(i => (
                     <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i.toString()}>
-                        <Skeleton variant="rectangular" height={300} sx={{ width: '100%' }} />
+                        <Skeleton variant="rectangular" height={250} width={300} sx={{ maxWidth: '100%' }} />
                     </Grid>
                 ))}
             </Grid>
@@ -47,7 +60,7 @@ function ListSkeleton({
             <Grid container spacing={2}>
                 {_.range(count).map(i => (
                     <Grid size={{ xs: 12, md: 8 }} offset={{ md: 2 }} key={i.toString()}>
-                        <Skeleton variant="rectangular" height={150} sx={{ width: '100%' }} />
+                        <Skeleton variant="rectangular" height={150} width={300} sx={{ maxWidth: '100%' }} />
                     </Grid>
                 ))}
             </Grid>
@@ -58,19 +71,15 @@ function ListSkeleton({
 
 export function GridPost({
     post,
-    ImageProps,
-    LinkProps,
+    slotProps,
     prefetch = true,
+    allowCopy = true,
     imageWrapper,
 }: {
-    post: {
-        imageURL: string;
-        text?: string;
-        id: string;
-    },
-    ImageProps?: Omit<ImageProps, 'src' | 'alt'>,
-    LinkProps?: Omit<LinkProps, 'href'>,
+    post: Post,
+    slotProps?: SlotProps,
     prefetch?: boolean,
+    allowCopy?: boolean,
     imageWrapper?: (elem: ReactElement) => ReactElement | undefined
 }) {
     const { enqueueSnackbar } = useSnackbar();
@@ -92,47 +101,49 @@ export function GridPost({
 
     const imageElement = (
         <Image
-            src={post.imageURL}
-            alt={post.text ?? post.id}
-            height={300}
+            height={250}
             width={300}
             unoptimized
             crossOrigin="anonymous"
             loading="eager"
             className={
                 (copying ? 'opacity-50 cursor-default ' : '') +
-                "object-contain h-[300px] w-full"
+                "object-contain h-[250px] w-full object-center"
             }
             onMouseOver={prefetch ? () => {
                 preload('/api/post/' + post.id, PostFetcher);
             } : undefined}
-            {...ImageProps}
+            {...slotProps?.image}
+            src={post.imageURL}
+            alt={post.id}
         />
     );
 
     return (
         <div className="group relative">
-            <Fab
-                sx={theme => ({
-                    position: 'absolute',
-                    transition: theme.transitions.create('opacity', {
-                        duration: theme.transitions.duration.shortest
-                    })
-                })}
-                onClick={async () => {
-                    if (copying) return;
+            {allowCopy &&
+                <Fab
+                    sx={theme => ({
+                        transition: theme.transitions.create('opacity', {
+                            duration: theme.transitions.duration.shortest
+                        }),
+                        position: 'absolute'
+                    })}
+                    onClick={async () => {
+                        if (copying) return;
 
-                    await copyUrl(post.imageURL);
-                }}
-                size="medium"
-                className="left-2 top-2 opacity-0 group-hover:opacity-100">
-                <ContentCopyIcon />
-            </Fab>
+                        await copyUrl(post.imageURL);
+                    }}
+                    size="medium"
+                    className="left-2 top-2 opacity-0 group-hover:opacity-100">
+                    <ContentCopyIcon />
+                </Fab>
+            }
             <Link
+                {...slotProps?.link}
                 href={`/post/${post.id}`}
                 prefetch={prefetch}
-                className="block relative"
-                {...LinkProps}>
+                className="block relative">
                 {imageWrapper?.(imageElement) ?? imageElement}
                 {copying &&
                     <CircularProgress
@@ -147,36 +158,28 @@ export function GridPost({
 
 export function ListPost({
     post,
-    ImageProps,
-    LinkProps,
+    slotProps,
     prefetch = true
-}: {
-    post: {
-        imageURL: string;
-        text?: string;
-        tags?: { name: string }[];
-        id: string;
-    },
-    ImageProps?: Omit<ImageProps, 'src' | 'alt'>,
-    LinkProps?: Omit<LinkProps, 'href'>,
-    prefetch?: boolean
-}) {
+}: ItemProps) {
     return (
         <Grid container spacing={1} onMouseOver={prefetch ? () => {
             preload('/api/post/' + post.id, PostFetcher);
         } : undefined}>
             <Grid size={4}>
-                <Link href={`/post/${post.id}`} className="max-w-full" {...LinkProps}>
+                <Link
+                    className="max-w-full"
+                    href={`/post/${post.id}`}
+                    {...slotProps?.link}>
                     <Image
                         src={post.imageURL}
                         alt={post.id}
+                        {...slotProps?.image}
                         height={160}
                         width={160}
                         unoptimized
                         crossOrigin="anonymous"
                         loading="eager"
                         className="w-full min-h-40 object-contain"
-                        {...ImageProps}
                     />
                 </Link>
             </Grid>
@@ -191,49 +194,53 @@ export function ListPost({
     );
 }
 
-export default function Posts<E extends {
-    id: string,
-    text?: string,
-    imageURL: string,
-    tags?: { name: string }[]
-}>({
-    prefetch,
-    skeleton,
+type PostsProps<E extends Post> = {
+    layout: 'grid' | 'list',
+    posts: E[] | undefined,
+    prefetch?: boolean,
+    count?: number,
+    allowCopy?: boolean,
+    slotProps?: SlotProps,
+    wrapper?: (element: ReactElement, post: E) => ReactElement,
+};
+
+export default function Posts<E extends Post>({
     layout,
     posts,
-    ImageProps,
-    LinkProps,
+    prefetch,
+    count,
+    allowCopy = true,
+    slotProps,
     wrapper
-}: {
-    prefetch?: boolean,
-    skeleton?: number,
-    layout: 'grid' | 'list',
-    posts?: E[] | undefined,
-    ImageProps?: Omit<ImageProps, 'src' | 'alt'>,
-    LinkProps?: Omit<LinkProps, 'href' | 'prefetch'>,
-    wrapper?: (element: ReactElement, post: E) => ReactElement,
-}) {
-    if (posts === undefined && skeleton) {
+}: PostsProps<E>) {
+    if (!posts) {
+        if (!count) {
+            return <></>
+        }
         if (layout === 'grid') {
-            return <GridSkeleton count={skeleton} />
+            return <GridSkeleton count={count} />
         } else {
-            return <ListSkeleton count={skeleton} />
+            return <ListSkeleton count={count} />
         }
     }
-    if (!posts) return <></>;
-
 
     return (
-        <Box sx={{ m: 1 }}>
-            <Grid container spacing={2}>
+        <Box sx={{ m: 1 }} className='w-full'>
+            <Grid
+                container
+                spacing={2}
+                {...slotProps?.container}>
                 {
                     layout == 'grid' &&
                     posts.map(post => (
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={post.id}>
+                        <Grid
+                            size={{ xs: 12, sm: 6, md: 3 }}
+                            {...slotProps?.grid}
+                            key={post.id}>
                             <GridPost
+                                allowCopy={allowCopy}
                                 prefetch={prefetch}
-                                ImageProps={ImageProps}
-                                LinkProps={LinkProps}
+                                slotProps={slotProps}
                                 post={post}
                                 imageWrapper={(elem) => wrapper?.(elem, post)}
                             />
@@ -243,11 +250,14 @@ export default function Posts<E extends {
                 {
                     layout == 'list' &&
                     posts.map(post => (
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={post.id}>
+                        <Grid
+                            size={{ xs: 12, sm: 8 }}
+                            offset={{ sm: 2 }}
+                            {...slotProps?.grid}
+                            key={post.id}>
                             <ListPost
                                 prefetch={prefetch}
-                                ImageProps={ImageProps}
-                                LinkProps={LinkProps}
+                                slotProps={slotProps}
                                 post={post} />
                         </Grid>
                     ))

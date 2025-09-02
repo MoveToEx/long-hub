@@ -1,4 +1,4 @@
-import { useUser } from '@/app/context';
+import { useSession } from '@/app/context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -8,12 +8,12 @@ export default function RequiresLogin({
 }: {
     permission?: number 
 }) {
-    const { data, isLoading } = useUser();
+    const { data, isLoading } = useSession();
     const router = useRouter();
 
     useEffect(() => {
         if (data === undefined && isLoading === false) {
-            router.push('/account/login');
+            router.push('/auth/login');
             return;
         }
         

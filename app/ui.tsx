@@ -44,8 +44,8 @@ import * as C from '@/lib/constants';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useUser } from './context';
-import logout from './account/logout/action';
+import { useSession } from './context';
+import logout from './actions';
 
 const drawerWidth = 256;
 
@@ -177,7 +177,7 @@ function Drawer({
     open: boolean,
     onClose: () => void,
 }) {
-    const user = useUser();
+    const user = useSession();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -266,7 +266,7 @@ function Drawer({
 
 function UserMenu() {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const { data, isLoading, mutate } = useUser();
+    const { data, isLoading, mutate } = useSession();
 
     return (
         <>
@@ -298,7 +298,7 @@ function UserMenu() {
                 }
                 {data &&
                     <div>
-                        <MenuItem component={Link} href="/account" onClick={() => setAnchorEl(null)}>
+                        <MenuItem component={Link} href="/user" onClick={() => setAnchorEl(null)}>
                             <ListItemIcon>
                                 <AccountCircle fontSize="small" />
                             </ListItemIcon>
@@ -318,13 +318,13 @@ function UserMenu() {
                 }
                 {data === undefined &&
                     <div>
-                        <MenuItem component={Link} href="/account/login" onClick={() => setAnchorEl(null)}>
+                        <MenuItem component={Link} href="/auth/login" onClick={() => setAnchorEl(null)}>
                             <ListItemIcon>
                                 <LoginIcon fontSize="small" />
                             </ListItemIcon>
                             Log in
                         </MenuItem>
-                        <MenuItem component={Link} href="/account/signup" onClick={() => setAnchorEl(null)}>
+                        <MenuItem component={Link} href="/auth/signup" onClick={() => setAnchorEl(null)}>
                             <ListItemIcon>
                                 <Logout fontSize="small" />
                             </ListItemIcon>
@@ -379,19 +379,25 @@ function RootTemplate({
 
             <Box
                 component="main"
+                className='flex'
                 sx={theme => ({
                     [theme.breakpoints.up('md')]: {
                         ml: drawerOpen ? `${drawerWidth}px` : theme.spacing(7),
                     },
-                    transition: theme.transitions.create(['margin'])
+                    transition: theme.transitions.create(['margin']),
+                    minHeight: '100vh',
                 })}>
-                <Container sx={theme => ({
-                    [theme.breakpoints.down('md')]: {
-                        px: 0
-                    }
-                })}>
+                <Container
+                    className='flex flex-col'
+                    sx={theme => ({
+                        [theme.breakpoints.down('md')]: {
+                            px: 0
+                        }
+                    })}>
                     <Toolbar sx={{ zIndex: -1 }} />
-                    {children}
+                    <div className='flex flex-1 justify-center items-center'>
+                        {children}
+                    </div>
                 </Container>
             </Box>
         </>

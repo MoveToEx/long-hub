@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     if (error) {
         return NextResponse.json({
             message: 'Invalid request',
-            error: error.flatten()
+            error: z.treeifyError(error)
         }, {
             status: 400
         });

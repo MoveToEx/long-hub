@@ -1,6 +1,7 @@
 import { ResolvingMetadata, Metadata } from 'next';
 import { ReactNode } from 'react';
 import _ from 'lodash';
+import { prisma } from '@/lib/db';
 
 export async function generateMetadata(
     {
@@ -41,5 +42,9 @@ export async function generateMetadata(
 export default function Layout({ children }: {
     children: ReactNode
 }) {
-    return children;
+    return (
+        <div className='flex flex-col self-start justify-center w-full'>
+            {children}
+        </div>
+    );
 }

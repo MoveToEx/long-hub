@@ -60,7 +60,7 @@ export default async function signUp(_state: unknown, fd: FormData) {
     if (!/^[a-zA-Z0-9_]{4,}$/.test(username)) {
         return {
             error: true,
-            message: 'Invalid username',
+            message: 'Username has been occupied',
             timestamp: Number(new Date())
         };
     }

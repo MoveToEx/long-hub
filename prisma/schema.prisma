@@ -3,6 +3,10 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
@@ -103,15 +107,18 @@ model user {
   passwordHash String   @db.VarChar(255)
   createdAt    DateTime @default(now())
 
+  /// [Preference]
+  preference   Json     @default("{}") @db.JsonB
+
   post              post[]
   deletion_requests deletion_request[]
   upload_session    upload_session[]
 }
 
 model configuration {
-  id          Int      @id @default(autoincrement())
-  key         String   @db.VarChar(32) @unique
-  value       String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  key       String   @unique @db.VarChar(32)
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

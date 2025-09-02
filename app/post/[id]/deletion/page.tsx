@@ -1,7 +1,6 @@
 'use client';
 
 import Grid from '@mui/material/Grid';
-import Image from 'next/image';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -22,6 +21,7 @@ import { CancelRequest, HasPendingRequest, SubmitRequest } from './actions';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { CircularProgress } from '@mui/material';
+import PostImage from '@/components/post/PostImage';
 
 export default function Post({
     params
@@ -46,15 +46,7 @@ export default function Post({
         <Grid container spacing={2} sx={{ m: 2 }}>
             <RequiresLogin />
             <Grid size={{ xs: 12, md: 4 }}>
-                {data &&
-                    <Image
-                        className="w-full h-auto max-h-80 object-contain"
-                        crossOrigin='anonymous'
-                        alt="Preview"
-                        unoptimized
-                        src={data.imageURL}
-                        height={320}
-                        width={320} />}
+                <PostImage id={id} />
             </Grid>
             <Grid size={{ xs: 12, md: 8 }} sx={{ mt: 2 }}>
                 <Typography variant='h5'>Deletion request on #{id}</Typography>

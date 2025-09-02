@@ -43,10 +43,14 @@ export default function RatingComponent({
             value={ReverseRatingsMapping[value]}
             max={3}
             highlightSelectedOnly
-            onChange={onChange ? (event, value) => {
-                onChange(event, value !== null ? RatingsMapping[value - 1] : RatingsMapping[0]);
-            } : undefined}
-            IconContainerComponent={IconContainer}
+            onChange={(event, value) => {
+                onChange?.(event, value !== null ? RatingsMapping[value - 1] : RatingsMapping[0]);
+            }}
+            slotProps={{
+                icon: {
+                    component: IconContainer
+                }
+            }}
             {...other} />
     )
 }

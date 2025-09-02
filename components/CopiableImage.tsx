@@ -3,25 +3,15 @@
 import Image from 'next/image';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
-import { copyImage, copyImageElement } from '@/lib/util';
-import styles from './components.module.css';
+import { copyImageElement } from '@/lib/util';
 import { ImageProps } from 'next/image';
 import { useRef } from 'react';
 
-export default function CopiableImage({
-    src,
-    alt,
-    ImageProps = undefined
-}: {
-    src: string,
-    alt: string,
-    ImageProps?: Omit<ImageProps, 'src' | 'alt'> & Partial<Omit<ImageProps, 'height' | 'width'>>
-}) {
+export default function CopiableImage({ src, alt, ...props }: ImageProps) {
     const { enqueueSnackbar } = useSnackbar();
     const image = useRef<HTMLImageElement>(null);
     return (
         <Image
-            {...ImageProps}
             ref={image}
             className="w-full h-auto max-h-80 object-contain"
             unoptimized
@@ -38,8 +28,10 @@ export default function CopiableImage({
                     return;
                 }
 
-                if (src.endsWith('gif')) enqueueSnackbar('Only the first frame will be copied', { variant: 'info' });
-                
+                if (src instanceof String && src.endsWith('gif')) {
+                    enqueueSnackbar('Only the first frame will be copied', { variant: 'info' });
+                }
+
                 try {
                     await copyImageElement(image.current);
                     enqueueSnackbar('Copied to clipboard', { variant: 'success' });
@@ -48,6 +40,7 @@ export default function CopiableImage({
                     enqueueSnackbar('Failed: ' + e, { variant: 'error' });
                 }
             }}
+            {...props}
         />
     );
 }

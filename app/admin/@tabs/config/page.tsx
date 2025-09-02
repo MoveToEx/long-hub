@@ -1,10 +1,9 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { ConfigItems } from "./components";
+import { ConfigPanel } from "./components";
 
 import SettingsIcon from '@mui/icons-material/Settings';
 
-import _ from "lodash";
 import { getAll } from "@/lib/config";
 
 export default async function ConfigTab() {
@@ -19,7 +18,7 @@ export default async function ConfigTab() {
                 <SettingsIcon />
                 Site configuration
             </Typography>
-            <ConfigItems conf={conf} />
+            <ConfigPanel value={conf} />
         </Box>
     )
 }

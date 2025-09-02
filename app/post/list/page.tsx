@@ -5,17 +5,13 @@ import Box from '@mui/material/Box';
 import * as C from '@/lib/constants';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
 import { useState, useEffect, useDeferredValue } from 'react';
 import { PostsFetcher, usePosts } from '@/app/context';
 import { useSnackbar } from 'notistack';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import WindowIcon from '@mui/icons-material/Window';
-import ViewListIcon from '@mui/icons-material/ViewList';
 import { preload } from 'swr';
 import Posts from '@/components/Posts';
 import { useSyncedSearchParams } from '@/lib/hooks';
+import ToggleLayout from '@/components/list/ToggleLayout';
 
 export default function Page() {
 	const [layout, setLayout] = useState<'grid' | 'list'>('grid');
@@ -44,30 +40,15 @@ export default function Page() {
 	return (
 		<Box sx={{ m: 2 }}>
 			<Box className="flex justify-end items-end">
-				<ToggleButtonGroup size="small" value={layout} exclusive onChange={(event, value) => {
-					if (value !== null) {
-						setLayout(value);
-					}
-				}}>
-					<Tooltip title="Grid layout">
-						<ToggleButton value="grid">
-							<WindowIcon />
-						</ToggleButton>
-					</Tooltip>
-					<Tooltip title="List layout">
-						<ToggleButton value="list">
-							<ViewListIcon />
-						</ToggleButton>
-					</Tooltip>
-				</ToggleButtonGroup>
+				<ToggleLayout value={layout} onChange={val => setLayout(val)} />
 			</Box>
 
 			<Posts
-				skeleton={24}
+				count={24}
 				layout={layout}
 				posts={data?.data} />
 
-			<Stack alignItems="center" sx={{ m: 4 }}>
+			<Stack alignItems="center" sx={{ my: 4 }}>
 				<Pagination
 					disabled={isLoading}
 					count={totalPages}

@@ -10,5 +10,9 @@ export default function Layout({
 }: {
     children: ReactNode
 }) {
-    return children;
+    return (
+        <div className='flex flex-col self-start justify-center w-full'>
+            {children}
+        </div>
+    );
 }

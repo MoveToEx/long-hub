@@ -14,7 +14,10 @@ export async function POST(req: NextRequest) {
     const { data, success, error } = schema.safeParse(await req.json());
     
     if (!success) {
-        return NextResponse.json(error.errors, {
+        return NextResponse.json({
+            message: 'Invalid request',
+            error: z.treeifyError(error)
+        }, {
             status: 400
         });
     }

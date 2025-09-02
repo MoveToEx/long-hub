@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation';
 
 export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
     const [state, action] = useActionState(signUp, null);
-    const ref = useRef<TurnstileInstance | null>(null);
+    const ref = useRef<TurnstileInstance>(null);
     const modalContext = useContext(ModalContext);
     const router = useRouter();
 
@@ -36,7 +36,14 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
     }, [state, router, modalContext]);
 
     return (
-        <Box className="flex flex-col items-center">
+        <Box
+            sx={{
+                width: {
+                    sm: '500px'
+                },
+                m: 2
+            }}
+            className="flex flex-col items-center">
             <Typography variant="h4">
                 Sign up
             </Typography>
@@ -75,7 +82,7 @@ export default function SignupPage({ turnstileKey }: { turnstileKey: string }) {
                 <Box className="flex justify-end">
                     <Typography variant="body2">
                         Already have an account?
-                        <MUILink component={Link} href="/account/login">
+                        <MUILink component={Link} href="/auth/login">
                             Log in
                         </MUILink>
                     </Typography>
