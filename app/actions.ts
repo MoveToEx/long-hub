@@ -15,22 +15,22 @@ export async function getPostsCount() {
     const result: {
         date: Date,
         count: bigint
-    }[] = await prisma.$queryRaw(Prisma.sql`
+    }[] = await prisma.$queryRaw`
         SELECT "createdAt"::DATE AS "date", COUNT(*) AS "count"
         FROM post
         WHERE "createdAt" > NOW() - INTERVAL '28 days' AND "deletedAt" IS NULL
         GROUP BY date
-        ORDER BY date ASC`);
+        ORDER BY date ASC`;
     
     return result;
 }
 
 export async function getRandomPost() {
-    const data: Post[] = await prisma.$queryRaw(Prisma.sql`
+    const data: Post[] = await prisma.$queryRaw`
         SELECT "id", "text", "imageURL" FROM post
         WHERE "deletedAt" IS NULL
         ORDER BY RANDOM()
-        LIMIT 4`);
+        LIMIT 4`;
     return data;
 }
 
@@ -44,12 +44,12 @@ export async function getContribution() {
     const data: {
         count: bigint,
         date: Date
-    }[] = await prisma.$queryRaw(Prisma.sql`
+    }[] = await prisma.$queryRaw`
         SELECT COUNT(*) AS "count", "createdAt"::DATE AS "date"
         FROM post
         WHERE "uploaderId" = ${user.id} AND "createdAt" > NOW() - INTERVAL '364 days' AND "deletedAt" IS NULL
         GROUP BY "date"
-        ORDER BY "date" ASC`);
+        ORDER BY "date" ASC`;
 
     return data;
 }

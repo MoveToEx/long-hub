@@ -14,21 +14,21 @@ export default async function DashboardTab() {
     const contribution: {
         name: string,
         count: bigint
-    }[] = await prisma.$queryRaw(Prisma.sql`
+    }[] = await prisma.$queryRaw`
         SELECT "user"."name" AS "name", COUNT(*) AS "count" FROM "post"
         INNER JOIN "user" ON "post"."uploaderId" = "user"."id"
         WHERE "post"."createdAt" >= NOW() - INTERVAL '28 days' AND "deletedAt" is NULL
-        GROUP BY "user"."id"`);
+        GROUP BY "user"."id"`;
 
     const series: {
         date: Date,
         count: bigint
-    }[] = await prisma.$queryRaw(Prisma.sql`
+    }[] = await prisma.$queryRaw`
         SELECT "createdAt"::DATE AS "date", COUNT(*) AS "count"
         FROM post
         WHERE "createdAt" > NOW() - INTERVAL '28 days' AND "deletedAt" IS NULL
         GROUP BY date
-        ORDER BY date ASC`);
+        ORDER BY date ASC`;
 
     const vec: { indexed: BigInt, total: BigInt }[] = await prisma.$queryRaw`
             SELECT COUNT(*) as total,

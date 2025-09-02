@@ -125,8 +125,7 @@ export async function PATCH(req: NextRequest, {
 
         if (data.text !== meta.text) {
             transactions.push(
-                prisma.$queryRaw(Prisma.sql`
-                    UPDATE post SET "embedding" = NULL WHERE "id" = ${id}`)
+                prisma.$queryRaw`UPDATE post SET "embedding" = NULL WHERE "id" = ${id}`
             );
         }
     }
