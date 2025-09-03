@@ -46,6 +46,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from './context';
 import logout from './actions';
+import { usePreference } from '@/lib/local-preference';
 
 const drawerWidth = 256;
 
@@ -409,14 +410,21 @@ export default function ProviderWrapper({
 }: {
     children: ReactNode
 }) {
-    const preferDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const [preference, _] = usePreference();
+    const sysDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+
+    const mode = useMemo(() => {
+        if (preference.theme == 'system') return sysDarkMode ? 'dark' : 'light';
+        return preference.theme;
+    }, [sysDarkMode, preference]);
+    
     const currentTheme = useMemo(
         () => createTheme({
             palette: {
-                mode: preferDarkMode ? 'dark' : 'light',
+                mode
             },
         }),
-        [preferDarkMode]
+        [mode]
     );
 
     return (

@@ -4,6 +4,7 @@ import { Configuration } from '@/lib/config';
 import { setConfig } from './actions';
 
 import KeyVal, { Descriptor } from '@/components/keyval/KeyVal';
+import Grid from '@mui/material/Grid';
 import z from 'zod';
 import { useMemo } from 'react';
 
@@ -30,23 +31,23 @@ export function ConfigPanel({ value }: { value: Configuration }) {
     }), [registry]);
 
     return (
-        <KeyVal
-            schema={schema}
-            value={value}
-            registry={registry}
-            reducer={async ({ key, value }) => {
-                await setConfig(key, value as Configuration[typeof key]);
-            }}
-            slotProps={{
-                grid: {
-                    size: {
-                        xs: 12,
-                        md: 8
-                    },
-                    offset: {
-                        md: 2
-                    }
-                }
-            }} />
+        <Grid container>
+            <Grid
+                size={{
+                    xs: 12,
+                    md: 8
+                }}
+                offset={{
+                    md: 2
+                }}>
+                <KeyVal
+                    schema={schema}
+                    value={value}
+                    registry={registry}
+                    reducer={async ({ key, value }) => {
+                        await setConfig(key, value as Configuration[typeof key]);
+                    }} />
+            </Grid>
+        </Grid>
     )
 }

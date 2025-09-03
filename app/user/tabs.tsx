@@ -5,6 +5,7 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Skeleton from '@mui/material/Skeleton';
+import Divider from '@mui/material/Divider';
 
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 
@@ -12,6 +13,7 @@ import CopiableText from "@/components/CopiableText";
 import KeyVal, { type Descriptor } from "@/components/keyval/KeyVal";
 import { useSession } from "../context";
 import { z } from 'zod';
+import { usePreference } from "@/lib/local-preference";
 
 export function InfoTab() {
     const { data, error, isLoading } = useSession();
@@ -112,6 +114,15 @@ export function PreferenceTab() {
         })
     }), [registry]);
 
+    const localSchema = useMemo(() => ({
+        theme: z.enum(['light', 'dark', 'system']).register(registry, {
+            description: '',
+            label: '🎨 Color theme'
+        })
+    }), [registry]);
+
+    const [localPreference, setLocalPreference] = usePreference();
+
     const { data, error, isLoading, mutate } = useSession();
     const [loading, setLoading] = useState(false);
 
@@ -128,36 +139,64 @@ export function PreferenceTab() {
     }
 
     return (
-        <div className='flex-1 min-h-48 flex flex-col justify-between'>
-            <div>
-                <KeyVal
-                    schema={schema}
-                    registry={registry}
-                    value={data.preference}
-                    reducer={async ({ key, value }) => {
-                        setLoading(true);
-                        try {
-                            await fetch('/api/user/', {
-                                method: 'PATCH',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    preference: {
-                                        [key]: value
-                                    }
-                                })
-                            });
-                            await mutate();
-                        }
-                        catch (e) { }
-                        finally {
-                            setLoading(false);
-                        }
+        <div className='min-h-48'>
+            <Grid container>
+                <Grid
+                    size={{
+                        xs: 12,
+                        md: 6
                     }}
-                    disabled={loading}
-                />
-            </div>
+                    offset={{
+                        md: 3
+                    }}>
+
+                    <KeyVal
+                        schema={schema}
+                        registry={registry}
+                        value={data.preference}
+                        reducer={async ({ key, value }) => {
+                            setLoading(true);
+                            try {
+                                await fetch('/api/user/', {
+                                    method: 'PATCH',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        preference: {
+                                            [key]: value
+                                        }
+                                    })
+                                });
+                                await mutate();
+                            }
+                            catch (e) { }
+                            finally {
+                                setLoading(false);
+                            }
+                        }}
+                        disabled={loading}
+                    />
+
+                    <Divider />
+
+                    <Typography variant='subtitle2' align='left' color='textSecondary'>
+                        Preferences below are stored on your device
+                    </Typography>
+
+                    <KeyVal
+                        schema={localSchema}
+                        registry={registry}
+                        value={localPreference}
+                        reducer={async ({ key, value }) => {
+                            setLocalPreference({
+                                ...localPreference,
+                                [key]: value
+                            })
+                        }}
+                    />
+                </Grid>
+            </Grid>
 
 
             <div>
