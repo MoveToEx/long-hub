@@ -114,11 +114,10 @@ export default function KeyVal<T extends KeyValSchema>({
         const { label, description } = meta;
 
         elem.push(
-            <div className='my-4'>
+            <div className='my-4' key={key}>
                 <KeyValItem
                     disabled={disabled}
                     reducer={reducer}
-                    key={key}
                     itemKey={key}
                     label={label}
                     schema={item}
