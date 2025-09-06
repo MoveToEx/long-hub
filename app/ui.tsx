@@ -1,8 +1,8 @@
 'use client';
 
 import './globals.css'
-import { styled, alpha, useTheme } from '@mui/material/styles';
-import { useState, useMemo, Suspense, ReactNode, ElementType, ComponentProps, FunctionComponent } from 'react';
+import { styled, useTheme, useColorScheme } from '@mui/material/styles';
+import { useState, useMemo, Suspense, ReactNode, ElementType, ComponentProps, FC, useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -76,7 +76,7 @@ const AlterableTypography = styled(Typography, {
 
 type DrawerItemParam = {
     type: 'item',
-    icon: FunctionComponent,
+    icon: FC,
     title: string,
     href: string
 }
@@ -153,7 +153,7 @@ function DrawerItem<T extends ElementType>({
 }: {
     title: ReactNode,
     href: string,
-    IconComponent: FunctionComponent<SvgIconProps>,
+    IconComponent: FC<SvgIconProps>,
     LinkComponent?: T,
     LinkProps?: ComponentProps<T>
 }) {
@@ -405,39 +405,53 @@ function RootTemplate({
     )
 }
 
-export default function ProviderWrapper({
+const theme = createTheme({
+    colorSchemes: {
+        dark: true,
+    },
+    cssVariables: {
+        colorSchemeSelector: 'data'
+    }
+});
+
+function ProviderWrapper({
     children
 }: {
     children: ReactNode
 }) {
     const [preference, _] = usePreference();
     const sysDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const { setMode } = useColorScheme();
 
-    const mode = useMemo(() => {
-        if (preference.theme == 'system') return sysDarkMode ? 'dark' : 'light';
-        return preference.theme;
-    }, [sysDarkMode, preference]);
-    
-    const currentTheme = useMemo(
-        () => createTheme({
-            palette: {
-                mode
-            },
-        }),
-        [mode]
-    );
+    useEffect(() => {
+        if (preference.theme == 'system') setMode(sysDarkMode ? 'dark' : 'light');
+        else setMode(preference.theme);
+    }, [preference, sysDarkMode, setMode]);
 
     return (
-        <ThemeProvider theme={currentTheme}>
-            <SnackbarProvider
-                maxSnack={5}
-                autoHideDuration={2000}>
-                <RootTemplate>
-                    <Suspense>
-                        {children}
-                    </Suspense>
-                </RootTemplate>
-            </SnackbarProvider>
+        <SnackbarProvider
+            maxSnack={5}
+            autoHideDuration={2000}>
+
+            <RootTemplate>
+                <Suspense>
+                    {children}
+                </Suspense>
+            </RootTemplate>
+        </SnackbarProvider>
+    )
+}
+
+export default function ThemeWrapper({
+    children
+}: {
+    children: ReactNode
+}) {
+    return (
+        <ThemeProvider theme={theme}>
+            <ProviderWrapper>
+                {children}
+            </ProviderWrapper>
         </ThemeProvider>
     )
 }
