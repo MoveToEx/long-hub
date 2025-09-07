@@ -18,6 +18,7 @@ export async function generateMetadata(
             id
         },
         select: {
+            text: true,
             imageURL: true
         }
     });
@@ -27,9 +28,16 @@ export async function generateMetadata(
             title: 'Post ???'
         }
     }
+
+    let text = post.text;
+    if (text.length > 64) {
+        text = text.slice(0, 64);
+    }
+    
     return {
         title: 'Post ' + _.first(id.split('-')),
         openGraph: {
+            description: text,
             images: [
                 {
                     url: post.imageURL
