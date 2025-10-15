@@ -3,6 +3,7 @@
 import { SparkLineChart } from "@mui/x-charts/SparkLineChart";
 import { getContribution, getPostsCount, getRandomPost } from "./actions";
 import useSWR from "swr";
+import useSWRImmutable from "swr/immutable";
 import Skeleton from "@mui/material/Skeleton";
 import Grid from '@mui/material/Grid';
 import _ from 'lodash';
@@ -72,20 +73,21 @@ export function NewPostChart({
     )
 }
 
-export function RandomPostGrid() {
-    const [randomPost, setRandomPost] = useState<Post[] | null>(null);
-
+export function RandomPostGrid({ seed }: { seed: number }) {
+    const { data, isLoading } = useSWRImmutable(['__action_getRandomPosts', seed], ([_, x]) => getRandomPost(x), {
+        keepPreviousData: true,
+    });
+    
     useEffect(() => {
-        (async () => {
-            const result = await getRandomPost();
-            for (const post of result) {
-                preload(`/api/post/${post.id}`, PostFetcher);
-            }
-            setRandomPost(result);
-        })();
-    }, []);
+        if (!data) return;
 
-    if (randomPost === null) {
+        for (const it of data) {
+            preload(`/api/post/${it.id}`, PostFetcher);
+        }
+
+    }, [data]);
+
+    if (isLoading) {
         return (
             <Grid container spacing={1}>
                 <Grid size={6}>
@@ -104,10 +106,14 @@ export function RandomPostGrid() {
         )
     }
 
+    if (!data) {
+        return <span> Unknown error </span>
+    }
+
     return (
         <Grid container spacing={1}>
             {
-                randomPost.map(post => (
+                data.map(post => (
                     <Grid size={6} key={post.id}>
                         <Link
                             href={`/post/${post.id}`}

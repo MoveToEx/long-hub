@@ -25,12 +25,16 @@ export async function getPostsCount() {
     return result;
 }
 
-export async function getRandomPost() {
-    const data: Post[] = await prisma.$queryRaw`
-        SELECT "id", "text", "imageURL" FROM post
-        WHERE "deletedAt" IS NULL
-        ORDER BY RANDOM()
-        LIMIT 4`;
+export async function getRandomPost(seed: number) {
+    const data = await prisma.$transaction(async tx => {
+        tx.$executeRaw`SELECT setseed(${seed})`;
+        
+        return tx.$queryRaw<Post[]>`
+            SELECT "id", "text", "imageURL" FROM post
+            WHERE "deletedAt" IS NULL
+            ORDER BY RANDOM()
+            LIMIT 4`;
+    })
     return data;
 }
 

@@ -7,7 +7,11 @@ import Link from 'next/link';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import IconButton from '@mui/material/IconButton';
 import Divider from '@mui/material/Divider';
+import Tooltip from '@mui/material/Tooltip';
+import RefreshIcon from '@mui/icons-material/Refresh';
+
 import Grid from '@mui/material/Grid';
 import { PostsFetcher, usePosts, useTags } from './context';
 import { useSnackbar } from 'notistack';
@@ -15,12 +19,14 @@ import { preload } from 'swr';
 import './page.module.css';
 
 import { ContributionChart, NewPostChart, RandomPostGrid, RecentPosts } from './component';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
 	const tag = useTags();
 	const post = usePosts(4);
 	const { enqueueSnackbar } = useSnackbar();
+
+	const [seed, setSeed] = useState(() => Math.random() * 2 - 1);
 
 	useEffect(() => {
 		preload('/api/post?limit=24&offset=0', PostsFetcher);
@@ -93,8 +99,15 @@ export default function Home() {
 					md: 3
 				}}>
 					<Paper sx={{ p: 2 }}>
-						<Typography variant="h5" sx={{ mb: 2 }}>Random posts</Typography>
-						<RandomPostGrid />
+						<div className='flex flex-row items-baseline justify-between'>
+							<Typography variant="h5" sx={{ mb: 2 }}>Random</Typography>
+							<Tooltip title={<span>Refresh</span>}>
+								<IconButton aria-label='refresh' onClick={() => setSeed(Math.random() * 2 - 1)}>
+									<RefreshIcon />
+								</IconButton>
+							</Tooltip>
+						</div>
+						<RandomPostGrid seed={seed} />
 					</Paper>
 				</Grid>
 
