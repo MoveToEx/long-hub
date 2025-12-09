@@ -15,11 +15,11 @@ function TagRow({
     }
     return (
         <Stack direction="row" display="inline-block" useFlexGap>
-            {tags.map((e, i) => (
+            {tags.map(e => (
                 <Chip
                     component={Link}
                     href={'/tag/' + e}
-                    key={i}
+                    key={e}
                     label={e}
                     sx={{ fontSize: '16px', m: .5 }}
                     icon={noicon ? undefined : <TagIcon />}

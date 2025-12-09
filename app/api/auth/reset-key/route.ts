@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from 'crypto';
 import { auth } from '@/lib/dal';
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
     const user = await auth();
 
     if (user == null) {

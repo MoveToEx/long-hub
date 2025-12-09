@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 import _ from 'lodash';
 import { zjson } from "@/lib/server-util";
 import { z } from "zod";
-import { Prisma, Rating } from "@prisma/client";
+import { Prisma, Rating } from "@/lib/schema";
 import { auth } from "@/lib/dal";
 
 const operatorMapping = {
@@ -127,7 +127,7 @@ const rules: Transformers = {
         const _: never = op;
         return _;
     },
-    rating: ({ op, value }) => {
+    rating: ({ value }) => {
         return {
             rating: value
         };

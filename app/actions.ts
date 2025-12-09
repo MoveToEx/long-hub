@@ -1,8 +1,7 @@
 'use server';
 
 import { auth } from "@/lib/dal";
-import { prisma } from "@/lib/db";
-import { Prisma } from "@prisma/client";
+import { prisma } from '@/lib/db';
 import { getSession } from "@/lib/session";
 import { Post } from "@/lib/types";
 
@@ -27,7 +26,7 @@ export async function getPostsCount() {
 
 export async function getRandomPost(seed: number) {
     const data = await prisma.$transaction(async tx => {
-        tx.$executeRaw`SELECT setseed(${seed})`;
+        const _ = tx.$executeRaw`SELECT setseed(${seed})`;
         
         return tx.$queryRaw<Post[]>`
             SELECT "id", "text", "imageURL" FROM post

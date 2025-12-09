@@ -1,4 +1,4 @@
-import PgBoss from 'pg-boss';
+import { PgBoss } from 'pg-boss';
 import embeddingRunner, { type JobParams as EmbeddingParams } from './embedding';
 import recycleRunner, { type JobParams as RecycleParams } from './recycle';
 import hashRunner, { type JobParams as HashParams } from './image-hash';
@@ -11,7 +11,6 @@ export enum Jobs {
 
 const singleton = async () => {
     const boss = new PgBoss(process.env.DATABASE_URL as string);
-    boss.on('error', console.error);
     await boss.start();
 
     for (const key in Jobs) {

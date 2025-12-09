@@ -1,8 +1,8 @@
 'use client';
 
 import { prisma } from '@/lib/db';
-import { DataGrid, GridColDef, GridActionsCellItem, useGridApiContext, getGridDateOperators, getGridStringOperators, GridInitialState } from '@mui/x-data-grid';
-import { Prisma, Rating, Status } from '@prisma/client';
+import { DataGrid, GridColDef, GridActionsCellItem, useGridApiContext, GridInitialState } from '@mui/x-data-grid';
+import { Prisma, Rating, Status } from '@/lib/schema';
 import { EditPost, DeletePost, RecoverPost, getRows } from './actions';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Image from 'next/image';
@@ -13,7 +13,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import UndoIcon from '@mui/icons-material/Undo';
-
 
 import { useSnackbar } from 'notistack';
 import { useCallback, useMemo, useState } from 'react';

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -7,7 +7,6 @@ import icon from '@/public/o.png';
 import Image from "next/image";
 import { NewPostChart, ContributionChart } from "./components";
 import _ from "lodash";
-import { Prisma } from "@prisma/client";
 
 
 export default async function DashboardTab() {
@@ -30,7 +29,7 @@ export default async function DashboardTab() {
         GROUP BY date
         ORDER BY date ASC`;
 
-    const vec: { indexed: BigInt, total: BigInt }[] = await prisma.$queryRaw`
+    const vec: { indexed: bigint, total: bigint }[] = await prisma.$queryRaw`
             SELECT COUNT(*) as total,
             COUNT(*) FILTER (WHERE "text_embedding" IS NOT NULL) AS indexed
             FROM post

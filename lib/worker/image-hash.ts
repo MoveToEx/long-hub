@@ -1,4 +1,4 @@
-import PgBoss, { Job } from 'pg-boss';
+import { PgBoss, Job } from 'pg-boss';
 import { prisma } from '@/lib/db';
 import phash from 'sharp-phash';
 

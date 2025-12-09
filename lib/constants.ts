@@ -1,4 +1,4 @@
-import { Rating } from '@prisma/client';
+import { Rating } from '@/lib/schema';
 import _ from 'lodash';
 
 export const pageLimit = 24;

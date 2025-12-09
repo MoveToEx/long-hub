@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/db';
 import { DataGrid, GridColDef, GridToolbar, GridActionsCellItem, useGridApiContext } from '@mui/x-data-grid';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/lib/schema';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';

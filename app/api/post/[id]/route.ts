@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 import { auth } from '@/lib/dal';
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
 import { z } from 'zod';
 import _ from 'lodash';
 import { responses } from "@/lib/server-util";
-import { Prisma, Rating } from "@prisma/client";
+import { Prisma, Rating } from "@/lib/schema";
 
 const updateSchema = z.object({
     text: z.optional(z.string()),

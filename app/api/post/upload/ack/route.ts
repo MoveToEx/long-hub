@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { responses, zjson } from '@/lib/server-util';
 import { auth } from '@/lib/dal';
 import { Permission } from '@/lib/constants';
-import { Rating, Status, UploadSessionStatus } from '@prisma/client';
+import { Rating, Status, UploadSessionStatus } from '@/lib/schema';
 import { revalidatePath } from 'next/cache';
 import env from '@/lib/env';
 import s3 from '@/lib/s3';
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         });
     }
 
-    const post = await prisma.post.create({
+    await prisma.post.create({
         data: {
             id: data.id,
             text: data.metadata.text,

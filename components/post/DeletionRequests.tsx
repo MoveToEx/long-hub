@@ -14,7 +14,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import CircularProgress from '@mui/material/CircularProgress';
 import { usePost } from '@/app/context';
-import { RequestStatus } from '@prisma/client';
+import { RequestStatus } from '@/lib/schema';
 
 const RequestIcon = {
     'pending': <HourglassBottomIcon />,

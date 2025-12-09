@@ -1,15 +1,15 @@
 {
   "ts-node": {
     "compilerOptions": {
-      "module": "commonjs",
-      "target": "ES2022"
+      "module": "esnext",
+      "target": "es2023"
     },
     "require": [
       "tsconfig-paths/register"
     ]
   },
   "compilerOptions": {
-    "target": "es2022",
+    "target": "es2023",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -18,7 +18,7 @@
     "downlevelIteration": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",

@@ -73,7 +73,7 @@ export default function SelfPage() {
         <Box component={ResponsivePaper}>
             <RequiresLogin />
             <div>
-                <Typography variant="h4" sx={{ mt: 2, ml: 2 }}>
+                <Typography className='flex flex-row items-center' variant="h4" sx={{ mt: 2, ml: 2 }}>
                     <AccountCircle fontSize="large" />{data.name}
                 </Typography>
             </div>

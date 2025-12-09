@@ -1,4 +1,4 @@
-import PgBoss, { Job } from 'pg-boss';
+import { PgBoss, Job } from 'pg-boss';
 import { prisma } from '@/lib/db';
 import { embeddingProvider } from '@/lib/embedding';
 
@@ -23,5 +23,5 @@ export default async function embeddingRunner(
 
     const s = `[${v[0].join(',')}]`;
     await prisma.$queryRaw`
-        UPDATE post SET "text_embedding" = ${s}::vector WHERE "id" = uuid(${post.id})`;
+        UPDATE post SET "text_embedding" = ${s}::vector WHERE "id" = ${post.id}`;
 }

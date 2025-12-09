@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import _ from 'lodash';
-import { Rating } from '@prisma/client';
+import { Rating } from '@/lib/schema';
 
 export type SyncedSearchParamItem<V> = {
     defaultValue: V,

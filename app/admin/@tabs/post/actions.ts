@@ -1,12 +1,12 @@
 'use server';
 
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 
 import { auth } from '@/lib/dal';
 
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";
-import { Prisma, Rating, RequestStatus } from "@prisma/client";
+import { Prisma, Rating, RequestStatus } from "@/lib/schema";
 import { GridGetRowsParams, GridGetRowsResponse } from "@mui/x-data-grid";
 import _ from "lodash";
 
@@ -214,7 +214,7 @@ export async function getRows(params: GridGetRowsParams): Promise<GridGetRowsRes
 
     if (params.filterModel.quickFilterValues) {
         for (const item of params.filterModel.quickFilterValues) {
-            if (/^[0-9a-fA-F\-]+$/.test(item)) {
+            if (/^[0-9a-fA-F-]+$/.test(item)) {
                 const uuid = item.replaceAll('-', '').toLowerCase();
                 const bits = 32 - uuid.length;
                 _.merge(where, {

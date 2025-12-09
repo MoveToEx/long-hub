@@ -1,7 +1,7 @@
-import PgBoss, { Job } from 'pg-boss';
+import { PgBoss, Job } from 'pg-boss';
 import { prisma } from '@/lib/db';
 import s3 from '@/lib/s3';
-import { UploadSessionStatus } from '@prisma/client';
+import { UploadSessionStatus } from '@/lib/schema';
 
 export type JobParams = {
     id: string;

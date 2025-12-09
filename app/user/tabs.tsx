@@ -72,7 +72,7 @@ export function APITab() {
                         <div className='flex flex-col items-end gap-2'>
                             <CopiableText text={data.accessKey} />
                             <Button
-                                startIcon={<AutorenewIcon />}
+                                startIcon={<AutorenewIcon className={disabled ? 'animate-spin' : ''} />}
                                 color='error'
                                 onClick={async () => {
                                     setDisabled(true);

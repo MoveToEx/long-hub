@@ -1,7 +1,7 @@
 'use server';
 
-import { prisma } from "@/lib/db";
-import { RequestStatus } from "@prisma/client";
+import { prisma } from '@/lib/db';
+import { RequestStatus } from "@/lib/schema";
 import { auth } from "@/lib/dal";
 import * as C from '@/lib/constants';
 import { revalidatePath } from "next/cache";

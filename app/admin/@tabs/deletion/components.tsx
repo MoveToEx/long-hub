@@ -1,11 +1,11 @@
 'use client';
 
-import { Prisma, RequestStatus } from "@prisma/client";
-import { prisma } from "@/lib/db";
+import { Prisma, RequestStatus } from "@/lib/schema";
+import { prisma } from '@/lib/db';
 import Grid from '@mui/material/Grid';
 import { ReactElement, useMemo, useState } from "react";
 import Image from "next/image";
-import { DataGrid, GridActionsCellItem, GridColDef, GridToolbar, useGridApiContext } from "@mui/x-data-grid";
+import { DataGrid, GridActionsCellItem, GridColDef, useGridApiContext } from "@mui/x-data-grid";
 import Link from "next/link";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';

@@ -16,7 +16,7 @@ import TableRow from '@mui/material/TableRow';
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import { useTags } from '@/app/context';
-import { Rating } from '@prisma/client';
+import { Rating } from '@/lib/schema';
 import { useState } from 'react';
 import { startsWith } from '@/lib/util';
 

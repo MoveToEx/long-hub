@@ -66,7 +66,7 @@ const StyledDrawer = styled(MuiDrawer, {
 const AlterableTypography = styled(Typography, {
     shouldForwardProp: prop => prop !== 'visible'
 })<TypographyProps & {
-    visible: Boolean
+    visible: boolean
 }>(({ theme, visible }) => ({
     height: visible ? theme.spacing(2) : 0,
     overflow: 'hidden',
@@ -192,10 +192,10 @@ function Drawer({
         }
         return (
             <List>
-                {items.map((e, i) => {
+                {items.map(e => {
                     if (e.type == 'divider') {
                         return (
-                            <div key={i}>
+                            <div key={e.title}>
                                 <Divider component="li" />
                                 <AlterableTypography
                                     visible={open}
@@ -211,7 +211,7 @@ function Drawer({
                     if (URL.canParse(e.href)) {
                         return (
                             <DrawerItem
-                                key={i}
+                                key={e.href}
                                 LinkComponent="a"
                                 LinkProps={{
                                     target: '_blank'
@@ -222,7 +222,7 @@ function Drawer({
                         )
                     }
                     return (
-                        <DrawerItem key={i} title={e.title} href={e.href} IconComponent={e.icon} />
+                        <DrawerItem key={e.href} title={e.title} href={e.href} IconComponent={e.icon} />
                     )
                 })}
             </List>

@@ -7,7 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import RatingComponent from '@/components/Rating';
 import RatingIcon from '@/components/RatingIcon';
 import { TagsInput } from '@/components/TagsInput';
-import { Rating } from '@prisma/client';
+import { Rating } from '@/lib/schema';
 import _ from 'lodash';
 
 type Metadata = {

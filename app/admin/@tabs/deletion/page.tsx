@@ -1,12 +1,12 @@
 
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 
 import _ from "lodash";
-import { RequestStatus } from "@prisma/client";
+import { RequestStatus } from "@/lib/schema";
 import { RequestDashboard } from "./components";
 
 

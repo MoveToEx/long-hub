@@ -1,11 +1,10 @@
 'use server';
 
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 import { auth } from '@/lib/dal';
 import crypto from 'crypto';
 import { revalidatePath } from "next/cache";
 import * as C from '@/lib/constants';
-import bcrypt from 'bcryptjs';
 
 export async function DeleteUser(id: number) {
     const op = await auth();

@@ -1,8 +1,8 @@
 'use server';
 
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 import { embeddingProvider } from "@/lib/embedding";
-import { post } from "@prisma/client";
+import { post } from "@/lib/schema";
 
 
 export async function vSearch(text: string) {

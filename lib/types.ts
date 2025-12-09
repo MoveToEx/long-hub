@@ -1,5 +1,5 @@
-import { prisma } from "./db";
-import { Prisma } from "@prisma/client";
+import { prisma } from '@/lib/db';
+import { Prisma } from "@/lib/schema";
 import { Preference } from "./preference";
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

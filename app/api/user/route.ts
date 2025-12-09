@@ -2,7 +2,7 @@ import { auth } from "@/lib/dal";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 import { schema } from "@/lib/preference";
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 import _ from "lodash";
 
 const patchSchema = z.object({

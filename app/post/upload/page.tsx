@@ -19,7 +19,7 @@ import { SearchButton } from './components';
 import { useCompositeState, useUploadState } from '@/lib/hooks';
 
 import DragDrop from '@/components/DragDrop';
-import { Rating } from '@prisma/client';
+import { Rating } from '@/lib/schema';
 import MetadataForm from '@/components/edit/MetadataForm';
 
 type Metadata = {

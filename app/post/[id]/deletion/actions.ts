@@ -3,7 +3,7 @@
 import { auth } from '@/lib/dal';
 import { prisma } from '@/lib/db';
 import { redirect } from 'next/navigation';
-import { RequestStatus } from '@prisma/client';
+import { RequestStatus } from '@/lib/schema';
 import { revalidatePath } from 'next/cache';
 
 export async function SubmitRequest(state: string, fd: FormData) {

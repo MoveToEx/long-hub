@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import _ from 'lodash';
 import { useSnackbar } from 'notistack';
 import { usePost } from '@/app/context';
-import { Rating } from '@prisma/client';
+import { Rating } from '@/lib/schema';
 import PostImage from '@/components/post/PostImage';
 import RequiresLogin from '@/components/RequiresLogin';
 import MetadataForm from '@/components/edit/MetadataForm';
@@ -24,7 +24,7 @@ export default function Post({
     const { id } = use(params);
     const [submitting, setSubmitting] = useState(false);
     const initialized = useRef(false);
-    const { state: meta, setSingle: set, reset, setMany } = useCompositeState({
+    const { state: meta, setSingle: set, reset: _reset, setMany } = useCompositeState({
         text: '',
         rating: Rating.none as Rating,
         tags: [] as string[],

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';

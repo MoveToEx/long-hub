@@ -7,7 +7,7 @@ import useSWRImmutable from "swr/immutable";
 import Skeleton from "@mui/material/Skeleton";
 import Grid from '@mui/material/Grid';
 import _ from 'lodash';
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import CalendarHeatmap from "react-calendar-heatmap";
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
@@ -16,7 +16,6 @@ import Image from 'next/image';
 import style from './page.module.css';
 import { preload } from "swr";
 import { PostFetcher, usePosts, useSession } from "./context";
-import { Post } from "@/lib/types";
 import Posts from "@/components/Posts";
 
 export function NewPostChart({

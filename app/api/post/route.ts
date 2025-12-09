@@ -2,8 +2,7 @@ import { prisma } from '@/lib/db';
 import { NextRequest, NextResponse } from "next/server";
 import _ from 'lodash';
 import { auth } from '@/lib/dal';
-import { Preference } from '@/lib/preference';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/lib/schema';
 
 export async function GET(req: NextRequest) {
     const offset = Number(req.nextUrl.searchParams.get('offset') ?? 0);

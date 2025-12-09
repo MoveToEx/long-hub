@@ -1,6 +1,6 @@
 import MUIRating, { IconContainerProps, RatingProps as MUIRatingProps } from '@mui/material/Rating';
 import { styled } from '@mui/material/styles';
-import { Rating } from '@prisma/client';
+import { Rating } from '@/lib/schema';
 import { ReverseRatingsMapping, RatingsMapping } from '@/lib/constants';
 import SquareIcon from '@mui/icons-material/Square';
 import { SyntheticEvent } from 'react';

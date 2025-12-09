@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from "@/lib/db";
+import { prisma } from '@/lib/db';
 import { auth } from '@/lib/dal';
 import { revalidatePath } from "next/cache";
 

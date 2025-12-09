@@ -1,7 +1,7 @@
 import useSWR from 'swr';
 import _ from 'lodash';
-import { Prisma } from '@prisma/client';
-import { prisma } from "@/lib/db";
+import { Prisma } from '@/lib/schema';
+import { prisma } from '@/lib/db';
 import type * as U from '@/lib/types';
 
 type NonSerializable = Date;

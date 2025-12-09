@@ -25,8 +25,8 @@ export default function SelectInput({
                     disabled={disabled}
                     value={value}
                     onChange={event => onChange(event.target.value)}>
-                    {options.map((val, idx) => (
-                        <MenuItem key={idx} value={val}>{val}</MenuItem>
+                    {options.map(val => (
+                        <MenuItem key={val} value={val}>{val}</MenuItem>
                     ))}
                 </Select>
             </FormControl>

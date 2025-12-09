@@ -10,11 +10,13 @@ export async function POST(req: NextRequest) {
         hash = await phash(await req.arrayBuffer());
     }
     catch (e) {
-        return NextResponse.json({
-            message: 'Invalid image'
-        }, {
-            status: 400
-        });
+        if (e instanceof Error) {
+            return NextResponse.json({
+                message: 'Invalid image: ' + e.message
+            }, {
+                status: 400
+            });
+        }
     }
 
     const posts = await prisma.$queryRaw`
