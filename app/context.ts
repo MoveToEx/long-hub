@@ -109,10 +109,10 @@ export function usePosts(limit: number = 24, offset: number = 0) {
 export const PostFetcher = throwableFetcher;
 export const usePost = (id: string) => useSWR<Post>('/api/post/' + id, PostFetcher);
 
-export const TaggedPostsFetcher = throwableFetcher;
-export function useTaggedPost(tag: string, page: number) {
-    return useSWR<PostsResponse>('/api/post/tag/' + tag + '?limit=24&offset=' + (page - 1) * 24, TaggedPostsFetcher);
-}
+// export const TaggedPostsFetcher = throwableFetcher;
+// export function useTaggedPost(tag: string, page: number) {
+//     return useSWR<PostsResponse>('/api/post/tag/' + tag + '?limit=24&offset=' + (page - 1) * 24, TaggedPostsFetcher);
+// }
 
 export type SearchQuery = {
     filter: {
